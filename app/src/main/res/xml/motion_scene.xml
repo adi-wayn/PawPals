@@ -2,6 +2,8 @@
 <MotionScene xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:motion="http://schemas.android.com/apk/res-auto">
 
+    <!-- This MotionScene will now handle only the bottom sheet -->
+
     <ConstraintSet android:id="@+id/start">
         <Constraint
             android:id="@id/bottomSheet"
@@ -23,7 +25,6 @@
             motion:layout_constraintBottom_toBottomOf="parent"
             motion:layout_constraintHeight_percent="0.9" />
 
-
         <Constraint android:id="@id/communityInfo" android:visibility="visible" />
         <Constraint android:id="@id/actionButtons" android:visibility="visible" />
         <Constraint android:id="@id/communityButton" android:visibility="visible" />
@@ -32,5 +33,11 @@
     <Transition
         motion:constraintSetStart="@id/start"
         motion:constraintSetEnd="@id/end"
-        motion:duration="500" />
+        motion:duration="500">
+        <OnSwipe
+            motion:touchAnchorId="@id/bottomSheet"
+            motion:touchAnchorSide="top"
+            motion:dragDirection="dragUp" />
+    </Transition>
+
 </MotionScene>

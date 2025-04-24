@@ -1,211 +1,277 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.motion.widget.MotionLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
+    android:id="@+id/rootLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    app:layoutDescription="@xml/motion_scene"
     tools:context=".MainActivity">
 
-    <com.google.android.gms.maps.MapView
-        android:id="@+id/mapView"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+    <!-- Main content MotionLayout (bottom sheet, map, UI) -->
+    <androidx.constraintlayout.motion.widget.MotionLayout
+        android:id="@+id/main"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layoutDescription="@xml/motion_scene">
 
-    <ImageButton
-        android:id="@+id/imageButton"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="24dp"
-        android:background="@drawable/bg_rounded_white"
-        android:contentDescription="תפריט"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/baseline_menu_24" />
+        <!-- MapView -->
+        <com.google.android.gms.maps.MapView
+            android:id="@+id/mapView"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/bottomSheet"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:background="@drawable/bg_sheet"
-        android:padding="16dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        <!-- Hamburger button -->
+        <ImageButton
+            android:id="@+id/imageButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="24dp"
+            android:background="@drawable/bg_rounded_white"
+            android:contentDescription="תפריט"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/baseline_menu_24" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:animateLayoutChanges="true"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <View
-                android:layout_width="36dp"
-                android:layout_height="4dp"
-                android:background="@drawable/bg_handle"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginBottom="8dp" />
-
-            <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="64dp"
-                android:layout_marginTop="24dp"
-                android:background="@drawable/bg_toggle_container"
-                android:padding="8dp"
-                android:elevation="6dp">
-
-                <LinearLayout
-                    android:id="@+id/customToggleSwitch"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="horizontal"
-                    android:background="@drawable/bg_toggle_selector"
-                    android:gravity="center"
-                    android:paddingHorizontal="16dp">
-
-                    <TextView
-                        android:id="@+id/labelInvisible"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="לא נראה"
-                        android:textColor="#F44336"
-                        android:gravity="center"
-                        android:textSize="16sp" />
-
-                    <TextView
-                        android:id="@+id/labelVisible"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="נראה"
-                        android:textColor="#4CAF50"
-                        android:gravity="center"
-                        android:textSize="16sp" />
-                </LinearLayout>
-            </FrameLayout>
+        <!-- Bottom Sheet -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/bottomSheet"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="@drawable/bg_sheet"
+            android:padding="16dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
 
             <LinearLayout
-                android:id="@+id/communityInfo"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:layout_marginTop="24dp"
-                android:gravity="center_horizontal">
+                android:animateLayoutChanges="true"
+                app:layout_constraintTop_toTopOf="parent">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="42 משתמשים מחוברים באזור שלך"
-                    android:textStyle="bold"
-                    android:textSize="16sp" />
+                <View
+                    android:layout_width="36dp"
+                    android:layout_height="4dp"
+                    android:background="@drawable/bg_handle"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginBottom="8dp" />
 
-                <TextView
-                    android:layout_width="wrap_content"
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="64dp"
+                    android:layout_marginTop="24dp"
+                    android:background="@drawable/bg_toggle_container"
+                    android:padding="8dp"
+                    android:elevation="6dp">
+
+                    <LinearLayout
+                        android:id="@+id/customToggleSwitch"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal"
+                        android:background="@drawable/bg_toggle_selector"
+                        android:gravity="center"
+                        android:paddingHorizontal="16dp">
+
+                        <TextView
+                            android:id="@+id/labelInvisible"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="לא נראה"
+                            android:textColor="#F44336"
+                            android:gravity="center"
+                            android:textSize="16sp" />
+
+                        <TextView
+                            android:id="@+id/labelVisible"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="נראה"
+                            android:textColor="#4CAF50"
+                            android:gravity="center"
+                            android:textSize="16sp" />
+                    </LinearLayout>
+                </FrameLayout>
+
+                <LinearLayout
+                    android:id="@+id/communityInfo"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="ברוך הבא לקהילת הכלבים של רמת גן!"
-                    android:textSize="14sp"
-                    android:textColor="#666666"
-                    android:layout_marginTop="4dp" />
+                    android:orientation="vertical"
+                    android:layout_marginTop="24dp"
+                    android:gravity="center_horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="42 משתמשים מחוברים באזור שלך"
+                        android:textStyle="bold"
+                        android:textSize="16sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="ברוך הבא לקהילת הכלבים של רמת גן!"
+                        android:textSize="14sp"
+                        android:textColor="#666666"
+                        android:layout_marginTop="4dp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/actionButtons"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:layout_marginTop="24dp"
+                    android:weightSum="3">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="8dp"
+                        android:background="@drawable/bg_card"
+                        android:layout_marginEnd="8dp">
+
+                        <ImageView
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:src="@drawable/ic_report" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="דיווח חדש"
+                            android:textSize="14sp"
+                            android:layout_marginTop="4dp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="8dp"
+                        android:background="@drawable/bg_card"
+                        android:layout_marginHorizontal="4dp">
+
+                        <ImageView
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:src="@drawable/ic_community" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="עמוד הקהילה"
+                            android:textSize="14sp"
+                            android:layout_marginTop="4dp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="8dp"
+                        android:background="@drawable/bg_card"
+                        android:layout_marginStart="8dp">
+
+                        <ImageView
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:src="@drawable/ic_view_reports" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="צפה בדיווחים"
+                            android:textSize="14sp"
+                            android:layout_marginTop="4dp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/communityButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="דוחות"
+                    android:layout_marginTop="16dp"
+                    android:backgroundTint="@color/black"
+                    android:textColor="@android:color/white"
+                    android:padding="12dp"
+                    android:layout_gravity="center" />
             </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <LinearLayout
-                android:id="@+id/actionButtons"
-                android:layout_width="match_parent"
+    </androidx.constraintlayout.motion.widget.MotionLayout>
+
+    <!-- Drawer MotionLayout (handles side drawer only) -->
+    <androidx.constraintlayout.motion.widget.MotionLayout
+        android:id="@+id/drawerMotionLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layoutDescription="@xml/motion_drawer_scene">
+
+        <View
+            android:id="@+id/overlay"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="#80000000"
+            android:visibility="gone"
+            android:elevation="20dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <LinearLayout
+            android:id="@+id/sideDrawer"
+            android:layout_width="280dp"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:background="@android:color/white"
+            android:padding="24dp"
+            android:elevation="10dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+
+            <TextView
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center"
-                android:layout_marginTop="24dp"
-                android:weightSum="3">
+                android:text="הפרופיל שלי"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:paddingVertical="12dp" />
 
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:padding="8dp"
-                    android:background="@drawable/bg_card"
-                    android:layout_marginEnd="8dp">
-
-                    <ImageView
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:src="@drawable/ic_report" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="דיווח חדש"
-                        android:textSize="14sp"
-                        android:layout_marginTop="4dp" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:padding="8dp"
-                    android:background="@drawable/bg_card"
-                    android:layout_marginHorizontal="4dp">
-
-                    <ImageView
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:src="@drawable/ic_community" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="עמוד הקהילה"
-                        android:textSize="14sp"
-                        android:layout_marginTop="4dp" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:padding="8dp"
-                    android:background="@drawable/bg_card"
-                    android:layout_marginStart="8dp">
-
-                    <ImageView
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:src="@drawable/ic_view_reports" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="צפה בדיווחים"
-                        android:textSize="14sp"
-                        android:layout_marginTop="4dp" />
-                </LinearLayout>
-            </LinearLayout>
-
-            <Button
-                android:id="@+id/communityButton"
-                android:layout_width="match_parent"
+            <TextView
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="דוחות"
-                android:layout_marginTop="16dp"
-                android:backgroundTint="@color/black"
-                android:textColor="@android:color/white"
-                android:padding="12dp"
-                android:layout_gravity="center" />
+                android:text="הגדרות"
+                android:textSize="18sp"
+                android:paddingVertical="12dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="התנתק"
+                android:textSize="18sp"
+                android:paddingVertical="12dp" />
         </LinearLayout>
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.motion.widget.MotionLayout>
 
-</androidx.constraintlayout.motion.widget.MotionLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
