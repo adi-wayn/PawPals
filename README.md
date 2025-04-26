@@ -54,17 +54,6 @@ PawPals aims to enhance the experience of dog ownership by providing a hyper-loc
 
 ---
 
-## 📸 UI Preview
-Screens include:
-- Splash screen
-- Sign in / Register
-- Home (Map + Bottom Sheet)
-- Profile and Community pages
-
-*Design language: rounded corners, warm palette, professional-clean with pet-friendly charm.*
-
----
-
 ## 🧪 Status
 > 🟢 In active development (Academic Project - Software Engineering course @ Ariel University)
 
@@ -78,10 +67,10 @@ Pull requests are welcome! For major changes, please open an issue first to disc
 ---
 
 ## 📬 Contact
-Developed by: **Adi Wain**  
+Developed by: **Adi Wayn**  
 📧 Email: [adiwayn@gmail.com](mailto:adiwayn@gmail.com)
 
 ---
 
 ## 📄 License
-This project is licensed under the MIT License — see the LICENSE file for details.
+This project is licensed under the MIT License – [see the LICENSE file](LICENSE) for details.
