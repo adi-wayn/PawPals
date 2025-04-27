@@ -1,0 +1,17 @@
+<resources>
+
+    <!-- סגנון כללי לאפליקציה -->
+    <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- צבע רקע של האפליקציה -->
+        <item name="android:windowBackground">#FFFDF7</item>
+    </style>
+
+    <!-- סגנון ברירת מחדל לכל MaterialButton -->
+    <style name="Widget.PawPals.Button" parent="Widget.MaterialComponents.Button">
+        <item name="backgroundTint">#E3702D</item> <!-- כתום -->
+        <item name="cornerRadius">12dp</item> <!-- עיגול פינות -->
+        <item name="android:textColor">#FFFFFF</item> <!-- טקסט לבן -->
+        <item name="android:textSize">16sp</item> <!-- גודל טקסט -->
+    </style>
+
+</resources>

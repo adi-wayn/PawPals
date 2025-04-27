@@ -78,21 +78,19 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- כפתור הרשמה -->
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/button_register"
+        style="@style/Widget.PawPals.Button"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="Sign Up"
-        android:backgroundTint="#E3702D"
-        android:textColor="#FFFFFF"
-        android:textSize="16sp"
         android:padding="14dp"
-        android:background="@drawable/bg_rounded_orange"
         app:layout_constraintTop_toBottomOf="@id/input_confirm_password"
         android:layout_marginTop="24dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
+
+
 
     <!-- טקסט מעבר להתחברות -->
     <TextView

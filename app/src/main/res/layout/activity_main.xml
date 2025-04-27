@@ -223,16 +223,15 @@
                 </LinearLayout>
 
                 <!-- כפתור דוחות -->
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/communityButton"
+                    style="@style/Widget.PawPals.Button"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="דוחות"
-                    android:textColor="#FFFFFF"
-                    android:backgroundTint="#E3702D"
-                    android:background="@drawable/bg_rounded_orange"
                     android:padding="14dp"
                     android:layout_marginTop="24dp" />
+
             </LinearLayout>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
