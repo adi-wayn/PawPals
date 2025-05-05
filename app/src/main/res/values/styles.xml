@@ -6,6 +6,13 @@
         <item name="android:windowBackground">#FFFDF7</item>
     </style>
 
+    <!--בבררת מחדל לטקסט-->
+    <style name="PawPals.TextTitle">
+        <item name="android:textSize">26sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">#1F3B3D</item>
+    </style>
+
     <!-- סגנון ברירת מחדל לכל MaterialButton -->
     <style name="Widget.PawPals.Button" parent="Widget.MaterialComponents.Button">
         <item name="backgroundTint">#E3702D</item> <!-- כתום -->
