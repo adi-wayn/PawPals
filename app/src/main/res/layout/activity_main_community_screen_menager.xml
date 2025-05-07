@@ -47,6 +47,7 @@
         tools:layout_editor_absoluteX="49dp"
         tools:layout_editor_absoluteY="396dp" />
 
+
     <Button
         android:id="@+id/button8"
         android:layout_width="142dp"
@@ -92,6 +93,25 @@
         app:iconTint="@color/black"
         tools:layout_editor_absoluteX="48dp"
         tools:layout_editor_absoluteY="559dp" />
+
+    <Button
+        android:id="@+id/button11"
+        android:layout_width="144dp"
+        android:layout_height="114dp"
+        android:backgroundTint="@color/white"
+        android:drawableTint="@color/white"
+        android:foregroundTint="@color/white"
+        android:freezesText="false"
+        android:text="תגובת מנהל"
+        android:textColor="@color/black"
+        android:textColorLink="@color/black"
+        app:icon="@android:drawable/ic_dialog_info"
+        app:iconGravity="textTop"
+        app:iconPadding="4dp"
+        app:iconSize="60dp"
+        app:iconTint="@color/black"
+        tools:layout_editor_absoluteX="234dp"
+        tools:layout_editor_absoluteY="244dp" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
