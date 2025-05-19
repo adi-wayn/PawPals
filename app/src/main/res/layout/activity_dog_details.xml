@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/dog_details_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    android:layoutDirection="locale"
+    android:background="?android:windowBackground">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal">
+
+        <!-- Dog picture -->
+        <ImageView
+            android:id="@+id/dog_picture"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:src="@drawable/ic_dog_placeholder"
+            android:scaleType="centerCrop"
+            android:layout_marginBottom="12dp"
+            android:contentDescription="@string/dog_picture" />
+
+        <!-- Dog name -->
+        <TextView
+            android:id="@+id/dog_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/dog_name_placeholder"
+            android:textAppearance="?attr/textAppearanceHeadline6"
+            android:layout_marginBottom="4dp" />
+
+        <!-- Dog age -->
+        <TextView
+            android:id="@+id/dog_age"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/dog_age_placeholder"
+            android:textAppearance="?attr/textAppearanceSubtitle1"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Details section -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/breed"
+            android:textStyle="bold" />
+        <TextView
+            android:id="@+id/dog_breed"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:text="@string/breed_placeholder" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/neutered"
+            android:textStyle="bold" />
+        <TextView
+            android:id="@+id/dog_neutered"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:text="@string/yes" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/personality"
+            android:textStyle="bold" />
+        <TextView
+            android:id="@+id/dog_personality"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:text="@string/personality_placeholder" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/mood"
+            android:textStyle="bold" />
+        <TextView
+            android:id="@+id/dog_mood"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:text="@string/mood_placeholder" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/notes"
+            android:textStyle="bold" />
+        <TextView
+            android:id="@+id/dog_notes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/notes_placeholder"
+            android:layout_marginBottom="16dp" />
+
+    </LinearLayout>
+</ScrollView>
