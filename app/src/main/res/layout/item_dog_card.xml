@@ -12,7 +12,6 @@
         android:layout_width="80dp"
         android:layout_height="80dp"
         android:layout_gravity="center"
-        android:background="@drawable/profile_picture_background"
         android:contentDescription="@string/dog_picture"
         android:scaleType="centerCrop"
         tools:srcCompat="@tools:sample/avatars" />

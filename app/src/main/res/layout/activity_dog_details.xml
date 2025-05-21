@@ -22,7 +22,7 @@
             android:layout_marginBottom="12dp"
             android:contentDescription="@string/dog_picture"
             android:scaleType="centerCrop"
-            android:src="@drawable/ic_dog_placeholder"
+            android:src="@drawable/rex_image"
             tools:srcCompat="@tools:sample/avatars" />
 
         <!-- Dog name -->

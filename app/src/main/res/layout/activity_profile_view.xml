@@ -28,10 +28,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_gravity="center"
-                android:background="@drawable/profile_picture_background"
                 android:contentDescription="@string/profile_picture"
                 android:scaleType="centerCrop"
-                android:src="@drawable/ic_default_profile"
                 tools:srcCompat="@tools:sample/avatars" />
 
             <View
