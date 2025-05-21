@@ -3,30 +3,89 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    android:background="#FFFFFF">
 
+    <!-- כותרת -->
     <TextView
         android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="40dp"
-        android:text="what do you see?"
-        android:textSize="30dp"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:text="What do you see?"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- שורה עליונה -->
+    <Button
+        android:id="@+id/button_inspector"
+        android:layout_width="138dp"
+        android:layout_height="114dp"
+        android:layout_marginTop="40dp"
+        android:layout_marginEnd="16dp"
+        android:backgroundTint="@color/white"
+        android:text="Dog Patrol"
+        android:textColor="@color/black"
+        app:icon="@drawable/ic_inspector"
+        app:iconGravity="top"
+        app:iconSize="60dp"
+        app:iconTint="@null"
+        app:layout_constraintTop_toBottomOf="@id/textView"
+        app:layout_constraintEnd_toStartOf="@id/button_bin"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <Button
-        android:id="@+id/button"
-        android:layout_width="273dp"
-        android:layout_height="165dp"
-        android:layout_marginTop="272dp"
-        android:layout_marginEnd="44dp"
+        android:id="@+id/button_bin"
+        android:layout_width="138dp"
+        android:layout_height="114dp"
+        android:layout_marginTop="40dp"
         android:backgroundTint="@color/white"
-        android:text="poop bin"
+        android:text="Trash Bin"
+        android:textColor="@color/black"
         app:icon="@drawable/trash_bin"
         app:iconGravity="top"
         app:iconSize="60dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:iconTint="@null"
+        app:layout_constraintTop_toBottomOf="@id/textView"
+        app:layout_constraintStart_toEndOf="@id/button_inspector"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- שורה תחתונה -->
+    <Button
+        android:id="@+id/button_danger"
+        android:layout_width="138dp"
+        android:layout_height="114dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="16dp"
+        android:backgroundTint="@color/white"
+        android:text="Danger"
+        android:textColor="@color/black"
+        app:icon="@drawable/ic_danger"
+        app:iconGravity="top"
+        app:iconSize="60dp"
+        app:iconTint="@null"
+        app:layout_constraintTop_toBottomOf="@id/button_inspector"
+        app:layout_constraintEnd_toStartOf="@id/button_help"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/button_help"
+        android:layout_width="138dp"
+        android:layout_height="114dp"
+        android:layout_marginTop="24dp"
+        android:backgroundTint="@color/white"
+        android:text="Help"
+        android:textColor="@color/black"
+        app:icon="@drawable/ic_help"
+        app:iconGravity="top"
+        app:iconSize="60dp"
+        app:iconTint="@null"
+        app:layout_constraintTop_toBottomOf="@id/button_bin"
+        app:layout_constraintStart_toEndOf="@id/button_danger"
+        app:layout_constraintEnd_toEndOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
