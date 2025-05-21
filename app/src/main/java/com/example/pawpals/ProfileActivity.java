@@ -39,7 +39,7 @@ public class ProfileActivity extends AppCompatActivity {
         for (Dog dog : dogList) {
             View dogCard = LayoutInflater.from(this).inflate(R.layout.activity_dog_details, dogsContainer, false);
 
-            ImageView dogImage = dogCard.findViewById(R.id.dog_image);
+            ImageView dogImage = dogCard.findViewById(R.id.dog_picture);
             TextView dogName = dogCard.findViewById(R.id.dog_name);
             TextView dogBreed = dogCard.findViewById(R.id.dog_breed);
 
