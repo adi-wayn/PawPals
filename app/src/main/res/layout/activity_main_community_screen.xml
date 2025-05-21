@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="Widget.PawPals.ButtonTransparent"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/imageView2"
+        android:layout_width="0dp"
+        android:layout_height="84dp"
+        android:layout_marginTop="41dp"
+        android:layout_marginEnd="27dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:srcCompat="@tools:sample/avatars" />
+
+    <TextView
+        android:id="@+id/textView4"
+        style="@style/PawPals.TextTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="35dp"
+        android:layout_marginTop="60dp"
+        android:layout_marginEnd="24dp"
+        android:text="שם הקהילה"
+        app:layout_constraintEnd_toStartOf="@+id/imageView2"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <Button
+        android:id="@+id/button7"
+        android:layout_width="144dp"
+        android:layout_height="114dp"
+        android:backgroundTint="@color/white"
+        android:drawableTint="@color/white"
+        android:foregroundTint="@color/white"
+        android:freezesText="false"
+        android:text="מפת אזור"
+        android:textColor="@color/black"
+        android:textColorLink="@color/black"
+        app:icon="@android:drawable/ic_dialog_map"
+        app:iconGravity="textTop"
+        app:iconPadding="4dp"
+        app:iconSize="60dp"
+        app:iconTint="@color/black"
+        tools:layout_editor_absoluteX="49dp"
+        tools:layout_editor_absoluteY="396dp" />
+
+    <Button
+        android:id="@+id/button8"
+        android:layout_width="142dp"
+        android:layout_height="111dp"
+        android:backgroundTint="@color/white"
+        android:text="מערכת פניות"
+        android:textColor="@color/black"
+        android:textColorLink="@color/white"
+        app:icon="@drawable/imagetostl_com_whatsapp_image_2025_05_07_at_17_27_17"
+        app:iconGravity="textTop"
+        app:iconPadding="4dp"
+        app:iconSize="70dp"
+        app:iconTint="@color/black"
+        tools:layout_editor_absoluteX="243dp"
+        tools:layout_editor_absoluteY="398dp" />
+
+    <Button
+        android:id="@+id/button9"
+        android:layout_width="138dp"
+        android:layout_height="120dp"
+        android:backgroundTint="@color/white"
+        android:text="צא'ט"
+        android:textColor="@color/black"
+        app:icon="@android:drawable/stat_notify_chat"
+        app:iconGravity="textTop"
+        app:iconPadding="4dp"
+        app:iconSize="70dp"
+        app:iconTint="#0D0505"
+        tools:layout_editor_absoluteX="240dp"
+        tools:layout_editor_absoluteY="559dp" />
+
+    <Button
+        android:id="@+id/button10"
+        android:layout_width="145dp"
+        android:layout_height="113dp"
+        android:backgroundTint="@color/white"
+        android:text="חברי קבילה"
+        android:textColor="@color/black"
+        app:icon="@drawable/ic_community"
+        app:iconGravity="textTop"
+        app:iconPadding="4dp"
+        app:iconSize="60dp"
+        app:iconTint="@color/black"
+        tools:layout_editor_absoluteX="48dp"
+        tools:layout_editor_absoluteY="559dp" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
