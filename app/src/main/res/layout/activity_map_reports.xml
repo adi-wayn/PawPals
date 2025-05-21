@@ -18,13 +18,30 @@
 
     <Button
         android:id="@+id/button"
-        android:layout_width="273dp"
-        android:layout_height="165dp"
+        android:layout_width="138dp"
+        android:layout_height="114dp"
         android:layout_marginTop="272dp"
         android:layout_marginEnd="44dp"
         android:backgroundTint="@color/white"
         android:text="poop bin"
+        android:textColor="@color/black"
         app:icon="@drawable/trash_bin"
+        app:iconGravity="top"
+        app:iconSize="60dp"
+        app:iconTint="@color/black"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/button1"
+        android:layout_width="138dp"
+        android:layout_height="114dp"
+        android:layout_marginTop="272dp"
+        android:layout_marginEnd="232dp"
+        android:backgroundTint="@color/white"
+        android:text="inspector"
+        android:textColor="@color/black"
+        app:icon="@drawable/ic_inspector"
         app:iconGravity="top"
         app:iconSize="60dp"
         app:layout_constraintEnd_toEndOf="parent"
