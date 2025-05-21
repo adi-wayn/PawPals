@@ -6,12 +6,39 @@
         <item name="android:windowBackground">#FFFDF7</item>
     </style>
 
+    <!-- סגנון כללי עבור אפליקציית PawPals -->
+    <style name="PawPals">
+        <item name="android:background">#FFFFFF</item>
+        <item name="android:textColor">#000000</item>
+    </style>
+
+    <!-- סגנון לכותרות -->
+    <style name="PawPals.TextTitle">
+        <item name="android:textSize">26sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">#1F3B3D</item>
+    </style>
+
+    <!-- סגנון לטקסט על כפתורים -->
+    <style name="PawPals.TextButton">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">#1F3B3D</item>
+        <item name="android:gravity">bottom</item>
+    </style>
+
     <!-- סגנון ברירת מחדל לכל MaterialButton -->
     <style name="Widget.PawPals.Button" parent="Widget.MaterialComponents.Button">
         <item name="backgroundTint">#E3702D</item> <!-- כתום -->
         <item name="cornerRadius">12dp</item> <!-- עיגול פינות -->
         <item name="android:textColor">#FFFFFF</item> <!-- טקסט לבן -->
         <item name="android:textSize">16sp</item> <!-- גודל טקסט -->
+    </style>
+
+    <!-- כפתור עם רקע שקוף -->
+    <style name="Widget.PawPals.ButtonTransparent" parent="Widget.MaterialComponents.Button">
+        <item name="backgroundTint">@android:color/transparent</item>
+        <item name="cornerRadius">12dp</item>
     </style>
 
 </resources>

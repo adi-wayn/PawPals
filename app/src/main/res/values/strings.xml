@@ -1,3 +1,23 @@
 <resources>
     <string name="app_name">PawPals</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="profile_picture">User Profile Picture</string>
+    <string name="dogs">Dogs</string>
+    <string name="in_same_community">In the same community</string>
+    <string name="not_in_community">Not in the same community</string>
+    <string name="user_name_placeholder">User Name</string>
+    <string name="dog_picture">Dog picture</string>
+    <string name="dog_name_placeholder">Dog Name</string>
+    <string name="dog_age_placeholder">Age: 3 years</string>
+    <string name="breed">Breed</string>
+    <string name="breed_placeholder">Golden Retriever</string>
+    <string name="neutered">Neutered</string>
+    <string name="personality">Personality</string>
+    <string name="personality_placeholder">Friendly and energetic</string>
+    <string name="mood">Mood</string>
+    <string name="mood_placeholder">Happy</string>
+    <string name="notes">Notes</string>
+    <string name="notes_placeholder">Loves to play fetch. Good with other dogs.</string>
+
 </resources>

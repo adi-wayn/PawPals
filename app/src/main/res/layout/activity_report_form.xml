@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FAF7FF"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Tabs -->
+        <RadioGroup
+            android:id="@+id/category_tabs"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="end"
+            android:layout_marginBottom="8dp">
+
+            <RadioButton
+                android:id="@+id/tab_complaint"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Complaint" />
+
+            <RadioButton
+                android:id="@+id/tab_help"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Assistance" />
+
+            <RadioButton
+                android:id="@+id/tab_personal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Private" />
+        </RadioGroup>
+
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@android:color/darker_gray"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Fields -->
+        <EditText
+            android:id="@+id/input_subject"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Subject"
+            android:inputType="text" />
+
+        <EditText
+            android:id="@+id/input_type_1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Category 1"
+            android:inputType="text" />
+
+        <EditText
+            android:id="@+id/input_type_2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Category 2"
+            android:inputType="text" />
+
+        <EditText
+            android:id="@+id/input_priority"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Priority"
+            android:inputType="text" />
+
+        <!-- Multiline input -->
+        <EditText
+            android:id="@+id/input_description"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:hint="Message Content"
+            android:gravity="top|start"
+            android:background="@android:drawable/editbox_background"
+            android:inputType="textMultiLine" />
+
+        <!-- Submit Button -->
+        <Button
+            android:id="@+id/button_submit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Submit Request"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="16dp"
+            android:drawableStart="@drawable/ic_heart"
+            android:drawablePadding="8dp" />
+    </LinearLayout>
+</ScrollView>

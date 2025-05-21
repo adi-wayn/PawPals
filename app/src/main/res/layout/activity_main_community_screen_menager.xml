@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="Widget.PawPals.ButtonTransparent"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"> 
+
+    <ImageView
+        android:id="@+id/imageView2"
+        android:layout_width="0dp"
+        android:layout_height="84dp"
+        android:layout_marginTop="41dp"
+        android:layout_marginEnd="27dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:srcCompat="@tools:sample/avatars" />
+
+    <TextView
+        android:id="@+id/textView4"
+        style="@style/PawPals.TextTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="35dp"
+        android:layout_marginTop="60dp"
+        android:layout_marginEnd="24dp"
+        android:text="Community name"
+        app:layout_constraintEnd_toStartOf="@+id/imageView2"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <Button
+        android:id="@+id/button7"
+        android:layout_width="144dp"
+        android:layout_height="114dp"
+        android:layout_marginStart="48dp"
+        android:backgroundTint="@color/white"
+        android:drawableTint="@color/white"
+        android:foregroundTint="@color/white"
+        android:freezesText="false"
+        android:text="area map"
+        android:textColor="@color/black"
+        android:textColorLink="@color/black"
+        app:icon="@android:drawable/ic_dialog_map"
+        app:iconGravity="textTop"
+        app:iconPadding="4dp"
+        app:iconSize="60dp"
+        app:iconTint="@color/black"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.67" />
+
+    <Button
+        android:id="@+id/button8"
+        android:layout_width="142dp"
+        android:layout_height="111dp"
+        android:layout_marginTop="44dp"
+        android:layout_marginEnd="36dp"
+        android:backgroundTint="@color/white"
+        android:text="report system"
+        android:textColor="@color/black"
+        android:textColorLink="@color/white"
+        app:icon="@drawable/imagetostl_com_whatsapp_image_2025_05_07_at_17_27_17"
+        app:iconGravity="textTop"
+        app:iconPadding="4dp"
+        app:iconSize="70dp"
+        app:iconTint="@color/black"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/button11" />
+
+    <Button
+        android:id="@+id/button9"
+        android:layout_width="138dp"
+        android:layout_height="120dp"
+        android:layout_marginEnd="40dp"
+        android:backgroundTint="@color/white"
+        android:text="chat"
+        android:textColor="@color/black"
+        app:icon="@android:drawable/stat_notify_chat"
+        app:iconGravity="textTop"
+        app:iconPadding="4dp"
+        app:iconSize="70dp"
+        app:iconTint="#0D0505"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/button8"
+        app:layout_constraintVertical_bias="0.421" />
+
+    <Button
+        android:id="@+id/button10"
+        android:layout_width="145dp"
+        android:layout_height="113dp"
+        android:layout_marginStart="48dp"
+        android:layout_marginBottom="56dp"
+        android:backgroundTint="@color/white"
+        android:text="members"
+        android:textColor="@color/black"
+        app:icon="@drawable/ic_community"
+        app:iconGravity="textTop"
+        app:iconPadding="4dp"
+        app:iconSize="60dp"
+        app:iconTint="@color/black"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/button7"
+        app:layout_constraintVertical_bias="0.911" />
+
+    <Button
+        android:id="@+id/button11"
+        android:layout_width="144dp"
+        android:layout_height="114dp"
+        android:layout_marginTop="256dp"
+        android:layout_marginEnd="36dp"
+        android:backgroundTint="@color/white"
+        android:drawableTint="@color/white"
+        android:foregroundTint="@color/white"
+        android:freezesText="false"
+        android:text="view inquiries"
+        android:textColor="@color/black"
+        android:textColorLink="@color/black"
+        app:icon="@android:drawable/ic_dialog_info"
+        app:iconGravity="textTop"
+        app:iconPadding="4dp"
+        app:iconSize="60dp"
+        app:iconTint="@color/black"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
