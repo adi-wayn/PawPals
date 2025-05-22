@@ -36,6 +36,13 @@
             android:name=".SettingsActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".CommunityActivity"
+            android:exported="false"/>
+
+        <activity
+            android:name=".ReportMapActivity"
+            android:exported="false"/>
     </application>
 
 </manifest>

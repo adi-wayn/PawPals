@@ -1,7 +1,10 @@
 package com.example.pawpals;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -95,5 +98,34 @@ public class MainActivity extends AppCompatActivity {
             // Restore hamburger button
             menuButton.setVisibility(View.VISIBLE);
         });
+
+        View communityCard = findViewById(R.id.communityButtonContainer);
+        communityCard.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, CommunityActivity.class);
+            startActivity(intent);
+        });
+
+        View newReportButton = findViewById(R.id.newReportButtonContainer);
+        newReportButton.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, ReportMapActivity.class);
+            startActivity(intent);
+        });
+
+        View myProfileButton = findViewById(R.id.myProfileButton);
+        myProfileButton.setOnClickListener(v -> {
+            // סגירת התפריט
+            drawerMotion.transitionToState(R.id.closed);
+            overlay.setVisibility(View.GONE);
+            isDrawerOpen = false;
+            menuButton.setVisibility(View.VISIBLE);
+
+            // מעבר לעמוד הפרופיל
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
+                startActivity(intent);
+            }, 300); // עיכוב של 300 מילישניות
+        });
+
+
     }
 }
