@@ -43,6 +43,11 @@
         <activity
             android:name=".ReportMapActivity"
             android:exported="false"/>
+
+        <activity
+            android:name=".CommunitySearchActivity"
+            android:exported="false"/>
+
     </application>
 
 </manifest>
