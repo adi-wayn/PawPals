@@ -52,6 +52,18 @@ public class FirestoreHelper {
                 });
     }
 
+    public void checkIfUserProfileExists(String userId, FirestoreExistCallback callback) {
+        db.collection("users")
+                .document(userId)
+                .get()
+                .addOnSuccessListener(snapshot -> callback.onResult(snapshot.exists()))
+                .addOnFailureListener(callback::onError);
+    }
+
+    public interface FirestoreExistCallback {
+        void onResult(boolean exists);
+        void onError(Exception e);
+    }
 
 
     public interface FirestoreCallback {
