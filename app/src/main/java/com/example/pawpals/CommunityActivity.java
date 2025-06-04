@@ -12,11 +12,22 @@ public class CommunityActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_community_screen);
-        // ניתן להוסיף לוגיקה נוספת כאן
 
         Button membersButton = findViewById(R.id.button10);
         membersButton.setOnClickListener(v -> {
             Intent intent = new Intent(CommunityActivity.this, CommunitySearchActivity.class);
+            startActivity(intent);
+        });
+
+        Button chatButton = findViewById(R.id.button9);
+        chatButton.setOnClickListener(v -> {
+            Intent intent = new Intent(CommunityActivity.this, ChatActivity.class);
+            startActivity(intent);
+        });
+
+        Button reportButton = findViewById(R.id.button8);
+        reportButton.setOnClickListener(v -> {
+            Intent intent = new Intent(CommunityActivity.this, ReportFormActivity.class);
             startActivity(intent);
         });
     }

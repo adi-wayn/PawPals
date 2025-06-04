@@ -126,6 +126,20 @@ public class MainActivity extends AppCompatActivity {
             }, 300); // עיכוב של 300 מילישניות
         });
 
+        View settingsButton = findViewById(R.id.settingsButton);
+        settingsButton.setOnClickListener(v -> {
+            // סגירת התפריט הצדדי
+            drawerMotion.transitionToState(R.id.closed);
+            overlay.setVisibility(View.GONE);
+            isDrawerOpen = false;
+            menuButton.setVisibility(View.VISIBLE);
+
+            // מעבר לעמוד ההגדרות
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+                startActivity(intent);
+            }, 300); // עיכוב של 300 מילישניות כדי לאפשר לאנימציית הסגירה לרוץ
+        });
 
     }
 }
