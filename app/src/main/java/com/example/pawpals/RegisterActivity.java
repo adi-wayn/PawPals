@@ -39,10 +39,10 @@ public class RegisterActivity extends AppCompatActivity {
         buttonRegister.setOnClickListener(v -> attemptRegistration());
 
         // מעבר למסך התחברות
-//        linkLogin.setOnClickListener(v -> {
-//            startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
-//            finish();
-//        });
+        linkLogin.setOnClickListener(v -> {
+            startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
+            finish();
+        });
     }
 
     private void attemptRegistration() {
