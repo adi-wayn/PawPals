@@ -67,8 +67,9 @@ Pull requests are welcome! For major changes, please open an issue first to disc
 ---
 
 ## 📬 Contact
-Developed by: **Adi Wayn**  
+Developed by: **Adi Wayn** , **Halel Avigezer**
 📧 Email: [adiwayn@gmail.com](mailto:adiwayn@gmail.com)
+          [avigezerhalel@gmail.com](mailto:avigezerhalel@gmail.com)
 
 ---
 
