@@ -3,6 +3,18 @@ package com.example.pawpals;
 import java.util.ArrayList;
 
 public class Community {
-    public ArrayList<DogOwner> Members;
+    private String name;
+    public ArrayList<User> Members;
 
+    public Community(String name) {
+        this.name = name;
+        this.Members = new ArrayList<>();
+    }
+
+    public String getName() { return name; }
+
+    @Override
+    public String toString() {
+        return name;
+    }
 }
