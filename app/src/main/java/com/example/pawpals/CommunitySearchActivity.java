@@ -15,7 +15,7 @@ public class CommunitySearchActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
     private CommunityAdapter adapter;
-    private List<UserProfile> allProfiles;
+    private List<User> allProfiles;
     private ChipGroup filterChipGroup;
     private SearchView searchView;
 
@@ -28,7 +28,7 @@ public class CommunitySearchActivity extends AppCompatActivity {
         filterChipGroup = findViewById(R.id.filterChipGroup);
         recyclerView = findViewById(R.id.recyclerView);
 
-        allProfiles = loadDummyProfiles();
+        //allProfiles = loadDummyProfiles();
         adapter = new CommunityAdapter(allProfiles);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
@@ -56,9 +56,9 @@ public class CommunitySearchActivity extends AppCompatActivity {
 
     private void filterProfiles(String query) {
         String lowerQuery = query.toLowerCase(Locale.ROOT);
-        List<UserProfile> filtered = new ArrayList<>();
+        List<User> filtered = new ArrayList<>();
 
-        for (UserProfile user : allProfiles) {
+        for (User user : allProfiles) {
             boolean matchesText = user.getName().toLowerCase(Locale.ROOT).contains(lowerQuery);
 
             boolean matchesFilter = true;
@@ -69,11 +69,9 @@ public class CommunitySearchActivity extends AppCompatActivity {
                 String label = chip.getText().toString().toLowerCase(Locale.ROOT);
 
                 // Simplified demo filters:
-                if (label.contains("2+dogs") && user.getDogCount() < 2) {
+                if (label.contains("2+dogs") && user.dogs.size() < 2) {
                     matchesFilter = false;
-                } else if (label.contains("dog 1") && user.getDogCount() != 1) {
-                    matchesFilter = false;
-                } else if (label.contains("my frends") && !user.isFriend()) {
+                } else if (label.contains("dog 1") && user.dogs.size() != 1) {
                     matchesFilter = false;
                 }
             }
@@ -84,14 +82,5 @@ public class CommunitySearchActivity extends AppCompatActivity {
         }
 
         adapter.updateData(filtered);
-    }
-
-    private List<UserProfile> loadDummyProfiles() {
-        List<UserProfile> profiles = new ArrayList<>();
-        profiles.add(new UserProfile("Adi", 1, true));
-        profiles.add(new UserProfile("Tal", 3, false));
-        profiles.add(new UserProfile("Dana", 2, true));
-        profiles.add(new UserProfile("Roni", 1, false));
-        return profiles;
     }
 }

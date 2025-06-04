@@ -9,13 +9,13 @@ import java.util.List;
 
 public class CommunityAdapter extends RecyclerView.Adapter<CommunityAdapter.ViewHolder> {
 
-    private List<UserProfile> users;
+    private List<User> users;
 
-    public CommunityAdapter(List<UserProfile> users) {
+    public CommunityAdapter(List<User> users) {
         this.users = users;
     }
 
-    public void updateData(List<UserProfile> newUsers) {
+    public void updateData(List<User> newUsers) {
         users = newUsers;
         notifyDataSetChanged();
     }
@@ -28,9 +28,9 @@ public class CommunityAdapter extends RecyclerView.Adapter<CommunityAdapter.View
 
     @Override
     public void onBindViewHolder(CommunityAdapter.ViewHolder holder, int position) {
-        UserProfile user = users.get(position);
+        User user = users.get(position);
         holder.nameText.setText(user.getName());
-        holder.infoText.setText("Dogs: " + user.getDogCount() + (user.isFriend() ? " | Friend" : ""));
+        holder.infoText.setText("Dogs: " + user.dogs.size());
     }
 
     @Override

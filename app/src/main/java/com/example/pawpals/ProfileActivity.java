@@ -32,9 +32,9 @@ public class ProfileActivity extends AppCompatActivity {
         dogsContainer = findViewById(R.id.dogs_container);
 
         List<Dog> dogList = new ArrayList<>();
-        dogList.add(new Dog("Rex", "German Shepherd", R.drawable.rex_image));
-        dogList.add(new Dog("Luna", "Golden Retriever", R.drawable.luna_image));
-        dogList.add(new Dog("Milo", "Poodle", R.drawable.milo_image));
+//        dogList.add(new Dog("Rex", "German Shepherd", R.drawable.rex_image));
+//        dogList.add(new Dog("Luna", "Golden Retriever", R.drawable.luna_image));
+//        dogList.add(new Dog("Milo", "Poodle", R.drawable.milo_image));
 
         for (Dog dog : dogList) {
             View dogCard = LayoutInflater.from(this).inflate(R.layout.activity_dog_details, dogsContainer, false);
