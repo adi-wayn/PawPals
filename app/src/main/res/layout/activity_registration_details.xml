@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFDF7"
+    android:padding="24dp">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Your Details"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="#1F3B3D"
+            android:layout_marginBottom="16dp"/>
+
+        <EditText
+            android:id="@+id/input_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Full Name"
+            android:inputType="textPersonName"
+            android:padding="12dp"
+            android:background="@drawable/bg_input"
+            android:layout_marginBottom="16dp" />
+
+        <EditText
+            android:id="@+id/input_community"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Community Name"
+            android:padding="12dp"
+            android:background="@drawable/bg_input"
+            android:layout_marginBottom="16dp" />
+
+        <CheckBox
+            android:id="@+id/checkbox_create_community"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Create new community and become manager"
+            android:textSize="14sp"
+            android:layout_marginBottom="24dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_continue"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Continue"
+            android:padding="14dp"
+            android:layout_marginTop="16dp"/>
+    </LinearLayout>
+</ScrollView>
