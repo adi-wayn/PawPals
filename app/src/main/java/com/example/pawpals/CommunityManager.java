@@ -1,6 +1,5 @@
 package com.example.pawpals;
 
-import java.util.ArrayList;
 import java.util.Map;
 
 public class CommunityManager extends User {
