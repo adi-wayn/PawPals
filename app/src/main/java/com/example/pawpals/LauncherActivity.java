@@ -8,13 +8,13 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.pawpals.firebase.AuthHelper;
-import com.example.pawpals.firebase.FirestoreHelper;
+import com.example.pawpals.firebase.UserRepository;
 import com.google.firebase.auth.FirebaseUser;
 
 public class LauncherActivity extends AppCompatActivity {
 
     private final AuthHelper authHelper = new AuthHelper();
-    private final FirestoreHelper firestoreHelper = new FirestoreHelper();
+    private final UserRepository userRepository = new UserRepository();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -29,7 +29,7 @@ public class LauncherActivity extends AppCompatActivity {
         } else {
             // מחובר – נבדוק אם יש לו פרופיל
             String userId = currentUser.getUid();
-            firestoreHelper.checkIfUserProfileExists(userId, new FirestoreHelper.FirestoreExistCallback() {
+            userRepository.checkIfUserProfileExists(userId, new UserRepository.FirestoreExistCallback() {
                 @Override
                 public void onResult(boolean exists) {
                     Intent intent = exists

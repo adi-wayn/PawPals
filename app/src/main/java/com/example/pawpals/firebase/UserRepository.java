@@ -8,11 +8,11 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.HashMap;
 import java.util.Map;
 
-public class FirestoreHelper {
-    private static final String TAG = "FirestoreHelper";
+public class UserRepository {
+    private static final String TAG = "UserRepository";
     private final FirebaseFirestore db;
 
-    public FirestoreHelper() {
+    public UserRepository() {
         db = FirebaseFirestore.getInstance();
     }
 
@@ -28,24 +28,6 @@ public class FirestoreHelper {
                 })
                 .addOnFailureListener(e -> {
                     Log.w(TAG, "Error creating user profile", e);
-                    callback.onFailure(e);
-                });
-    }
-
-    public void createCommunity(String communityName, String createdByUserId, FirestoreCallback callback) {
-        Map<String, Object> communityData = new HashMap<>();
-        communityData.put("name", communityName);
-        communityData.put("createdBy", createdByUserId);
-
-        db.collection("communities")
-                .document(communityName)
-                .set(communityData)
-                .addOnSuccessListener(aVoid -> {
-                    Log.d(TAG, "Community created: " + communityName);
-                    callback.onSuccess(communityName);
-                })
-                .addOnFailureListener(e -> {
-                    Log.w(TAG, "Failed to create community", e);
                     callback.onFailure(e);
                 });
     }

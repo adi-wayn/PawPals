@@ -6,12 +6,12 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
-import com.example.pawpals.firebase.FirestoreHelper;
+import com.example.pawpals.firebase.*;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
-
 import model.Community;
+import model.CommunityManager;
 import model.User;
 
 public class RegistrationDetailsActivity extends AppCompatActivity {
@@ -67,10 +67,10 @@ public class RegistrationDetailsActivity extends AppCompatActivity {
     }
 
     private void saveUserAndCommunity(String name, String communityName, boolean isManager) {
-        FirestoreHelper firestoreHelper = new FirestoreHelper();
+        CommunityRepository communityRepository = new CommunityRepository();
 
         if (isManager) {
-            firestoreHelper.createCommunity(communityName, userId, new FirestoreHelper.FirestoreCallback() {
+            communityRepository.createCommunity(communityName, userId, new CommunityRepository.FirestoreCallback() {
                 @Override
                 public void onSuccess(String id) {
                     saveUser(name, communityName, isManager);
@@ -87,12 +87,13 @@ public class RegistrationDetailsActivity extends AppCompatActivity {
     }
 
     private void saveUser(String name, String communityName, boolean isManager) {
-        FirestoreHelper firestoreHelper = new FirestoreHelper();
+        UserRepository userRepository = new UserRepository();
         Community community = new Community(communityName);
         User user = new User(name, community);
         user.setManager(isManager);
+        community.setManager((CommunityManager) user);
 
-        firestoreHelper.createUserProfile(userId, user, new FirestoreHelper.FirestoreCallback() {
+        userRepository.createUserProfile(userId, user, new UserRepository.FirestoreCallback() {
             @Override
             public void onSuccess(String documentId) {
                 Toast.makeText(RegistrationDetailsActivity.this, "Welcome!", Toast.LENGTH_SHORT).show();

@@ -6,14 +6,11 @@ import android.util.Patterns;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.appcompat.app.AppCompatActivity;
-
 import com.example.pawpals.firebase.AuthHelper;
-import com.example.pawpals.firebase.FirestoreHelper;
+import com.example.pawpals.firebase.UserRepository;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.FirebaseFirestore;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -22,7 +19,7 @@ public class LoginActivity extends AppCompatActivity {
     private TextView linkRegister;
 
     private final AuthHelper authHelper = new AuthHelper();
-    private final FirestoreHelper firestoreHelper = new FirestoreHelper();
+    private final UserRepository userRepository = new UserRepository();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,7 +72,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void checkUserProfile(String userId) {
-        firestoreHelper.checkIfUserProfileExists(userId, new FirestoreHelper.FirestoreExistCallback() {
+        userRepository.checkIfUserProfileExists(userId, new UserRepository.FirestoreExistCallback(){
             @Override
             public void onResult(boolean exists) {
                 if (exists) {

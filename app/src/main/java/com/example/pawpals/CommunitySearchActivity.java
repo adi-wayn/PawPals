@@ -62,7 +62,7 @@ public class CommunitySearchActivity extends AppCompatActivity {
         List<User> filtered = new ArrayList<>();
 
         for (User user : allProfiles) {
-            boolean matchesText = user.getName().toLowerCase(Locale.ROOT).contains(lowerQuery);
+            boolean matchesText = user.getUserName().toLowerCase(Locale.ROOT).contains(lowerQuery);
 
             boolean matchesFilter = true;
             List<Integer> chipIds = filterChipGroup.getCheckedChipIds();

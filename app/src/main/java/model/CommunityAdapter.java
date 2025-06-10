@@ -32,7 +32,7 @@ public class CommunityAdapter extends RecyclerView.Adapter<CommunityAdapter.View
     @Override
     public void onBindViewHolder(CommunityAdapter.ViewHolder holder, int position) {
         User user = users.get(position);
-        holder.nameText.setText(user.getName());
+        holder.nameText.setText(user.getUserName());
         holder.infoText.setText("Dogs: " + user.dogs.size());
     }
 

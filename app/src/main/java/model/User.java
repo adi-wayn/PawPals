@@ -11,21 +11,21 @@ import java.util.List;
 import java.util.Map;
 
 public class User  implements Parcelable {
-    protected String name;
+    protected String userName;
 
     protected Community community;
     protected ArrayList<Dog> dogs;
     protected boolean isManager;
 
-    public User(String name, Community community) {
-        this.name = name;
+    public User(String userName, Community community) {
+        this.userName = userName;
         this.community = community;
         this.dogs = new ArrayList<>();
         this.isManager = false;
     }
 
     protected User(Parcel in) {
-        name = in.readString();
+        userName = in.readString();
         isManager = in.readByte() != 0;
     }
 
@@ -53,11 +53,11 @@ public class User  implements Parcelable {
         this.dogs = dogs;
     }
 
-    public void setName(String name){this.name=name;}
+    public void setUserName(String userName){this.userName = userName;}
     public void setCommunity(Community community){this.community =community;}
 
-    public String getName() {
-        return this.name;
+    public String getUserName() {
+        return this.userName;
     }
     public void setManager(boolean manager) {
         this.isManager = manager;
@@ -69,7 +69,7 @@ public class User  implements Parcelable {
 
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>();
-        map.put("name", this.name);
+        map.put("userName", this.userName);
         map.put("community", this.community.toString());
         map.put("isManager", this.isManager);
 
@@ -91,7 +91,7 @@ public class User  implements Parcelable {
 
     @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
-        dest.writeString(name);
+        dest.writeString(userName);
         dest.writeByte((byte) (isManager ? 1 : 0));
     }
 }
