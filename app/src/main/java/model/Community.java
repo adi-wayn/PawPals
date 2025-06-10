@@ -1,4 +1,4 @@
-package com.example.pawpals;
+package model;
 
 import java.util.ArrayList;
 

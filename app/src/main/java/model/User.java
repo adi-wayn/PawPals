@@ -1,4 +1,4 @@
-package com.example.pawpals;
+package model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -12,14 +12,13 @@ import java.util.Map;
 
 public class User  implements Parcelable {
     protected String name;
-    protected String password;
+
     protected Community community;
     protected ArrayList<Dog> dogs;
     protected boolean isManager;
 
-    public User(String name, String password, Community community) {
+    public User(String name, Community community) {
         this.name = name;
-        this.password = password;
         this.community = community;
         this.dogs = new ArrayList<>();
         this.isManager = false;
@@ -27,7 +26,6 @@ public class User  implements Parcelable {
 
     protected User(Parcel in) {
         name = in.readString();
-        password = in.readString();
         isManager = in.readByte() != 0;
     }
 
@@ -42,6 +40,18 @@ public class User  implements Parcelable {
             return new User[size];
         }
     };
+
+    public Community getCommunity() {
+        return community;
+    }
+
+    public ArrayList<Dog> getDogs() {
+        return dogs;
+    }
+
+    public void setDogs(ArrayList<Dog> dogs) {
+        this.dogs = dogs;
+    }
 
     public void setName(String name){this.name=name;}
     public void setCommunity(Community community){this.community =community;}
@@ -60,7 +70,6 @@ public class User  implements Parcelable {
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>();
         map.put("name", this.name);
-        map.put("password", this.password);
         map.put("community", this.community.toString());
         map.put("isManager", this.isManager);
 
@@ -83,7 +92,6 @@ public class User  implements Parcelable {
     @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
         dest.writeString(name);
-        dest.writeString(password);
         dest.writeByte((byte) (isManager ? 1 : 0));
     }
 }

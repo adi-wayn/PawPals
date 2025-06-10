@@ -15,3 +15,5 @@
 local.properties
 # Firebase config
 **/google-services.json
+.DS_Store
+

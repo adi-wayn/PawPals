@@ -11,6 +11,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import model.CommunityAdapter;
+import model.User;
+
 public class CommunitySearchActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
@@ -69,9 +72,9 @@ public class CommunitySearchActivity extends AppCompatActivity {
                 String label = chip.getText().toString().toLowerCase(Locale.ROOT);
 
                 // Simplified demo filters:
-                if (label.contains("2+dogs") && user.dogs.size() < 2) {
+                if (label.contains("2+dogs") && user.getDogs().size() < 2) {
                     matchesFilter = false;
-                } else if (label.contains("dog 1") && user.dogs.size() != 1) {
+                } else if (label.contains("dog 1") && user.getDogs().size() != 1) {
                     matchesFilter = false;
                 }
             }

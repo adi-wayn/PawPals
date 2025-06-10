@@ -1,11 +1,11 @@
-package com.example.pawpals;
+package model;
 
 import java.util.Map;
 
 public class CommunityManager extends User {
 
-    public CommunityManager(String name, String password, Community community) {
-        super(name, password, community);
+    public CommunityManager(String name, Community community) {
+        super(name, community);
         this.isManager = true;
     }
 

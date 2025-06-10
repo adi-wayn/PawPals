@@ -141,5 +141,19 @@ public class MainActivity extends AppCompatActivity {
             }, 300); // עיכוב של 300 מילישניות כדי לאפשר לאנימציית הסגירה לרוץ
         });
 
+        View logoutButton = findViewById(R.id.logoutButton);
+        logoutButton.setOnClickListener(v -> {
+            // סגירת התפריט
+            drawerMotion.transitionToState(R.id.closed);
+            overlay.setVisibility(View.GONE);
+            isDrawerOpen = false;
+            menuButton.setVisibility(View.VISIBLE);
+
+            // מעבר לעמוד הפרופיל
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                startActivity(intent);
+            }, 300); // עיכוב של 300 מילישניות
+        });
     }
 }

@@ -2,7 +2,7 @@ package com.example.pawpals.firebase;
 
 import android.util.Log;
 
-import com.example.pawpals.User;
+import model.User;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.HashMap;

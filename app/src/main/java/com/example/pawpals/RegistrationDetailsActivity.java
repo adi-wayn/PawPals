@@ -11,6 +11,9 @@ import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import model.Community;
+import model.User;
+
 public class RegistrationDetailsActivity extends AppCompatActivity {
 
     private EditText inputName, inputCommunity;
@@ -86,7 +89,7 @@ public class RegistrationDetailsActivity extends AppCompatActivity {
     private void saveUser(String name, String communityName, boolean isManager) {
         FirestoreHelper firestoreHelper = new FirestoreHelper();
         Community community = new Community(communityName);
-        User user = new User(name, null, community);
+        User user = new User(name, community);
         user.setManager(isManager);
 
         firestoreHelper.createUserProfile(userId, user, new FirestoreHelper.FirestoreCallback() {
