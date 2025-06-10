@@ -2,10 +2,12 @@ package com.example.pawpals;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.Patterns;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -77,6 +79,8 @@ public class RegisterActivity extends AppCompatActivity {
             public void onSuccess(FirebaseUser user) {
                 // כאן אפשר לשמור גם פרופיל ב-Firestore אם נרצה
                 // נניח שנעבור למסך בית לאחר הרשמה
+                Log.d("Register", "Registration success: " + user.getEmail());
+                Toast.makeText(RegisterActivity.this, "Welcome " + user.getEmail(), Toast.LENGTH_SHORT).show();
                 startActivity(new Intent(RegisterActivity.this, RegistrationDetailsActivity.class));
                 finish();
             }
