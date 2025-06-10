@@ -2,8 +2,6 @@ package com.example.pawpals.firebase;
 
 import android.util.Log;
 
-import androidx.annotation.NonNull;
-
 import com.example.pawpals.User;
 import com.google.firebase.firestore.FirebaseFirestore;
 
