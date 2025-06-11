@@ -6,13 +6,15 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
-import com.example.pawpals.firebase.*;
+
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import model.Community;
 import model.CommunityManager;
 import model.User;
+import model.firebase.CommunityRepository;
+import model.firebase.UserRepository;
 
 public class RegistrationDetailsActivity extends AppCompatActivity {
 

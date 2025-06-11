@@ -7,8 +7,8 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.pawpals.firebase.AuthHelper;
-import com.example.pawpals.firebase.UserRepository;
+import model.firebase.AuthHelper;
+import model.firebase.UserRepository;
 import com.google.firebase.auth.FirebaseUser;
 
 public class LauncherActivity extends AppCompatActivity {
