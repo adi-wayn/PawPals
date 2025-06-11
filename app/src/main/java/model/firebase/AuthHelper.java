@@ -1,4 +1,4 @@
-package com.example.pawpals.firebase;
+package model.firebase;
 
 import android.app.Activity;
 import android.util.Log;
