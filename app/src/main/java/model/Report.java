@@ -1,45 +1,40 @@
 package model;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 public class Report {
     public String type;
-    public String complainant;
+    public String senderName;
     public  String subject;
-    public  String tekst;
+    public  String text;
 
-    public Report(String type, String complainant, String subject, String tekst){
+    public Report(String type, String senderName, String subject, String text){
         this.type=type;
-        this.complainant =complainant;
+        this.senderName = senderName;
         this.subject =subject;
-        this.tekst =tekst;
+        this.text = text;
     }
     public Report(){
-        this.type=null;
-        this.complainant =null;
-        this.subject =null;
-        this.tekst =null;
     }
     public String getType(){
         return type;
     }
-    public String getComplainant(){
-        return complainant;
+    public String getSenderName(){
+        return senderName;
     }
     public String getSubject(){
         return subject;
     }
-    public String getTekst(){
-        return tekst;
+    public String getText(){
+        return text;
     }
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>();
         map.put("Type", this.type);
-        map.put("Complainant", this.complainant);
+        map.put("Complainant", this.senderName);
         map.put("Subject", this.subject);
-        map.put("Tekst", this.tekst);
+        map.put("Tekst", this.text);
 
         return map;
     }
