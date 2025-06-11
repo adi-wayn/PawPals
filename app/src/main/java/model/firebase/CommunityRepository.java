@@ -18,10 +18,11 @@ public class CommunityRepository {
     }
 
     // יצירת קהילה חדשה
-    public void createCommunity(String communityName, String managerUserId, FirestoreCallback callback) {
+    public void createCommunity(String communityName, String managerUserId, List<Report> reports, FirestoreCallback callback) {
         Map<String, Object> communityData = new HashMap<>();
         communityData.put("name", communityName);
         communityData.put("managerId", managerUserId);
+        communityData.put("reports", reports);
 
         db.collection("communities")
                 .document(communityName)
@@ -93,6 +94,57 @@ public class CommunityRepository {
                 .addOnFailureListener(callback::onError);
     }
 
+    // יצירת דיווח בתוך קהילה
+    public void createReport(String communityId, Report report, FirestoreCallback callback) {
+        Map<String, Object> reportMap = report.toMap();
+
+        db.collection("communities")
+                .document(communityId)
+                .collection("reports")
+                .add(reportMap)
+                .addOnSuccessListener(docRef -> {
+                    Log.d(TAG, "Report created under community " + communityId);
+                    callback.onSuccess(docRef.getId());
+                })
+                .addOnFailureListener(e -> {
+                    Log.w(TAG, "Failed to create report", e);
+                    callback.onFailure(e);
+                });
+    }
+
+    // שליפה של כל הדיווחים של קהילה
+    public void getReportsByCommunity(String communityId, FirestoreReportsListCallback callback) {
+        db.collection("communities")
+                .document(communityId)
+                .collection("reports")
+                .get()
+                .addOnSuccessListener(query -> {
+                    List<Report> reports = new ArrayList<>();
+                    for (DocumentSnapshot doc : query.getDocuments()) {
+                        reports.add(doc.toObject(Report.class));
+                    }
+                    callback.onSuccess(reports);
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
+    // שליפה של דיווחים לפי משתמש בתוך קהילה
+    public void getReportsByUserInCommunity(String communityId, String senderName, FirestoreReportsListCallback callback) {
+        db.collection("communities")
+                .document(communityId)
+                .collection("reports")
+                .whereEqualTo("sender name", senderName)
+                .get()
+                .addOnSuccessListener(query -> {
+                    List<Report> reports = new ArrayList<>();
+                    for (DocumentSnapshot doc : query.getDocuments()) {
+                        reports.add(doc.toObject(Report.class));
+                    }
+                    callback.onSuccess(reports);
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
     // === ממשקי callback ===
 
     public interface FirestoreCallback {
@@ -112,6 +164,11 @@ public class CommunityRepository {
 
     public interface FirestoreCommunitiesListCallback {
         void onSuccess(List<Community> communities);
+        void onFailure(Exception e);
+    }
+
+    public interface FirestoreReportsListCallback {
+        void onSuccess(List<Report> reports);
         void onFailure(Exception e);
     }
 }
