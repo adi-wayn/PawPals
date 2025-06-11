@@ -1,4 +1,4 @@
-package com.example.pawpals.firebase;
+package model.firebase;
 
 import android.util.Log;
 import com.google.firebase.firestore.DocumentSnapshot;
