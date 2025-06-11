@@ -104,9 +104,17 @@ public class MainActivity extends AppCompatActivity {
 
         View communityCard = findViewById(R.id.communityButtonContainer);
         communityCard.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, CommunityActivity.class);
-            intent.putExtra("currentUser", currentUser);
-            startActivity(intent);
+            if (currentUser.isManager()) {
+                // If the user is a manager, go to the community management screen
+                Intent intent = new Intent(MainActivity.this, CommunityManagementActivity.class);
+                intent.putExtra("currentUser", currentUser);
+                startActivity(intent);
+            } else {
+                // If the user is not a manager, go to the community activity screen
+                Intent intent = new Intent(MainActivity.this, CommunityActivity.class);
+                intent.putExtra("currentUser", currentUser);
+                startActivity(intent);
+            }
         });
 
         View newReportButton = findViewById(R.id.newReportButtonContainer);

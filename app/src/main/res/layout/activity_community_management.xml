@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FAF7FF"
+    android:padding="16dp"
+    tools:context=".ManagerCommunityActivity">
+
+    <!-- Header: Community name and avatar -->
+    <ImageView
+        android:id="@+id/imageViewProfile"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="8dp"
+        android:src="@drawable/ic_profile_placeholder"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <TextView
+        android:id="@+id/textViewCommunityName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="PawPals Community"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="@color/black"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintEnd_toStartOf="@id/imageViewProfile"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- RecyclerView for viewing reports -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/reportsRecyclerView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:padding="4dp"
+        android:clipToPadding="false"
+        android:overScrollMode="ifContentScrolls"
+        android:scrollbars="vertical"
+        app:layout_constraintTop_toBottomOf="@id/imageViewProfile"
+        app:layout_constraintBottom_toTopOf="@id/buttonAreaMap"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:listitem="@layout/item_bulletin_post" />
+
+    <!-- Button: Area Map -->
+    <Button
+        android:id="@+id/buttonAreaMap"
+        android:layout_width="144dp"
+        android:layout_height="114dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginBottom="16dp"
+        android:backgroundTint="@color/white"
+        android:text="area map"
+        android:textColor="@color/black"
+        app:icon="@android:drawable/ic_dialog_map"
+        app:iconGravity="textTop"
+        app:iconPadding="4dp"
+        app:iconSize="60dp"
+        app:iconTint="@color/black"
+        app:layout_constraintBottom_toTopOf="@id/buttonMembers"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <!-- Button: View Reports (instead of Report System) -->
+    <Button
+        android:id="@+id/buttonViewReports"
+        android:layout_width="144dp"
+        android:layout_height="114dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:backgroundTint="@color/white"
+        android:text="view reports"
+        android:textColor="@color/black"
+        app:icon="@android:drawable/ic_dialog_info"
+        app:iconGravity="textTop"
+        app:iconPadding="4dp"
+        app:iconSize="60dp"
+        app:iconTint="@color/black"
+        app:layout_constraintBottom_toTopOf="@id/buttonChat"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Button: Members -->
+    <Button
+        android:id="@+id/buttonMembers"
+        android:layout_width="144dp"
+        android:layout_height="114dp"
+        android:layout_marginStart="16dp"
+        android:backgroundTint="@color/white"
+        android:text="members"
+        android:textColor="@color/black"
+        app:icon="@drawable/ic_community"
+        app:iconGravity="textTop"
+        app:iconPadding="4dp"
+        app:iconSize="60dp"
+        app:iconTint="@color/black"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <!-- Button: Chat -->
+    <Button
+        android:id="@+id/buttonChat"
+        android:layout_width="144dp"
+        android:layout_height="114dp"
+        android:layout_marginEnd="16dp"
+        android:backgroundTint="@color/white"
+        android:text="chat"
+        android:textColor="@color/black"
+        app:icon="@android:drawable/stat_notify_chat"
+        app:iconGravity="textTop"
+        app:iconPadding="4dp"
+        app:iconSize="60dp"
+        app:iconTint="@color/black"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

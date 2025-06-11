@@ -1,24 +1,45 @@
 package model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.util.HashMap;
 import java.util.Map;
 
-public class Dog {
+public class Dog implements Parcelable {
     private String name;
     private String breed;
     private int age;
     private boolean isSterilized;
     private String info;
-    private int imageResId;
 
-    public Dog(String name, String breed, int age, boolean isSterilized, String info, int imageResId) {
+    public Dog(String name, String breed, int age, boolean isSterilized, String info) {
         this.name = name;
         this.breed = breed;
         this.age = age;
         this.isSterilized = isSterilized;
         this.info = info;
-        this.imageResId = imageResId;
     }
+
+    protected Dog(Parcel in) {
+        name = in.readString();
+        breed = in.readString();
+        age = in.readInt();
+        isSterilized = in.readByte() != 0;
+        info = in.readString();
+    }
+
+    public static final Creator<Dog> CREATOR = new Creator<Dog>() {
+        @Override
+        public Dog createFromParcel(Parcel in) {
+            return new Dog(in);
+        }
+
+        @Override
+        public Dog[] newArray(int size) {
+            return new Dog[size];
+        }
+    };
 
     // Getters
     public String getName() {
@@ -62,10 +83,6 @@ public class Dog {
         this.info = info;
     }
 
-    public int getImageResId() {
-        return this.imageResId;
-    }
-
     // Convert Dog to Map (for Firestore)
     public Map<String, Object> toMap() {
         Map<String, Object> dogMap = new HashMap<>();
@@ -75,5 +92,20 @@ public class Dog {
         dogMap.put("isSterilized", isSterilized);
         dogMap.put("info", info);
         return dogMap;
+    }
+
+    // Parcelable methods
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(name);
+        dest.writeString(breed);
+        dest.writeInt(age);
+        dest.writeByte((byte) (isSterilized ? 1 : 0));
+        dest.writeString(info);
     }
 }

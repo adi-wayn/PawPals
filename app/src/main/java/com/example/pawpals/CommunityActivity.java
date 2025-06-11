@@ -14,7 +14,7 @@ public class CommunityActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main_community_screen);
+        setContentView(R.layout.activity_community);
 
         Button membersButton = findViewById(R.id.button10);
         membersButton.setOnClickListener(v -> {
