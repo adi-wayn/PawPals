@@ -26,6 +26,8 @@ public class User  implements Parcelable {
 
     protected User(Parcel in) {
         userName = in.readString();
+        community = in.readParcelable(Community.class.getClassLoader());
+        dogs = in.createTypedArrayList(Dog.CREATOR);
         isManager = in.readByte() != 0;
     }
 
@@ -92,6 +94,9 @@ public class User  implements Parcelable {
     @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
         dest.writeString(userName);
+        dest.writeParcelable(community, flags);
+        dest.writeTypedList(dogs);
         dest.writeByte((byte) (isManager ? 1 : 0));
     }
+
 }

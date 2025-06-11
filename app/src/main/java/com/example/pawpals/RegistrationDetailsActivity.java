@@ -10,8 +10,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import model.Community;
 import model.CommunityManager;
+import model.Report;
 import model.User;
 import model.firebase.CommunityRepository;
 import model.firebase.UserRepository;
@@ -72,7 +77,7 @@ public class RegistrationDetailsActivity extends AppCompatActivity {
         CommunityRepository communityRepository = new CommunityRepository();
 
         if (isManager) {
-            communityRepository.createCommunity(communityName, userId, new CommunityRepository.FirestoreCallback() {
+            communityRepository.createCommunity(communityName, userId, new ArrayList<>(), new CommunityRepository.FirestoreCallback() {
                 @Override
                 public void onSuccess(String id) {
                     saveUser(name, communityName, isManager);
@@ -93,13 +98,21 @@ public class RegistrationDetailsActivity extends AppCompatActivity {
         Community community = new Community(communityName);
         User user = new User(name, community);
         user.setManager(isManager);
-        community.setManager((CommunityManager) user);
 
+        if (user.isManager()){
+            CommunityManager communityManager = new CommunityManager(name, community);
+            community.setManager(communityManager);
+            user = communityManager; // אם המשתמש הוא מנהל קהילה, נשתמש ב-CommunityManager
+        }
+
+        User finalUser = user;
         userRepository.createUserProfile(userId, user, new UserRepository.FirestoreCallback() {
             @Override
             public void onSuccess(String documentId) {
                 Toast.makeText(RegistrationDetailsActivity.this, "Welcome!", Toast.LENGTH_SHORT).show();
-                startActivity(new Intent(RegistrationDetailsActivity.this, MainActivity.class));
+                Intent intent = new Intent(RegistrationDetailsActivity.this, MainActivity.class);
+                intent.putExtra("currentUser", finalUser);
+                startActivity(intent);
                 finish();
             }
 

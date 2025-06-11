@@ -15,12 +15,15 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import model.User;
+
 public class MainActivity extends AppCompatActivity {
 
     private float initialTouchY = 0;
     private float lastProgress = 0f;
     private boolean isDragging = false;
     private boolean isDrawerOpen = false;
+    private final User currentUser = getIntent().getParcelableExtra("currentUser");
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -102,12 +105,14 @@ public class MainActivity extends AppCompatActivity {
         View communityCard = findViewById(R.id.communityButtonContainer);
         communityCard.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, CommunityActivity.class);
+            intent.putExtra("currentUser", currentUser);
             startActivity(intent);
         });
 
         View newReportButton = findViewById(R.id.newReportButtonContainer);
         newReportButton.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, ReportMapActivity.class);
+            intent.putExtra("currentUser", currentUser);
             startActivity(intent);
         });
 
@@ -122,6 +127,7 @@ public class MainActivity extends AppCompatActivity {
             // מעבר לעמוד הפרופיל
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
                 Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
+                intent.putExtra("currentUser", currentUser);
                 startActivity(intent);
             }, 300); // עיכוב של 300 מילישניות
         });
@@ -137,6 +143,7 @@ public class MainActivity extends AppCompatActivity {
             // מעבר לעמוד ההגדרות
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
                 Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+                intent.putExtra("currentUser", currentUser);
                 startActivity(intent);
             }, 300); // עיכוב של 300 מילישניות כדי לאפשר לאנימציית הסגירה לרוץ
         });
@@ -149,7 +156,7 @@ public class MainActivity extends AppCompatActivity {
             isDrawerOpen = false;
             menuButton.setVisibility(View.VISIBLE);
 
-            // מעבר לעמוד הפרופיל
+            // יציאה מהאפליקציה
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
                 Intent intent = new Intent(MainActivity.this, LoginActivity.class);
                 startActivity(intent);
