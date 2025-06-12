@@ -1,11 +1,15 @@
 package model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.util.ArrayList;
-public class Community {
+
+public class Community implements Parcelable {
     private String name;
     private CommunityManager Manager;
     public ArrayList<User> Members;
-    public  ArrayList<Report> Reports;
+    public ArrayList<Report> Reports;
 
     public Community(String name) {
         this.name = name;
@@ -20,8 +24,28 @@ public class Community {
         this.Reports = new ArrayList<>();
     }
 
+    protected Community(Parcel in) {
+        name = in.readString();
+        Manager = in.readParcelable(CommunityManager.class.getClassLoader());
+        Members = in.createTypedArrayList(User.CREATOR);
+        Reports = in.createTypedArrayList(Report.CREATOR);
+    }
 
-    public String getName() { return name; }
+    public static final Creator<Community> CREATOR = new Creator<Community>() {
+        @Override
+        public Community createFromParcel(Parcel in) {
+            return new Community(in);
+        }
+
+        @Override
+        public Community[] newArray(int size) {
+            return new Community[size];
+        }
+    };
+
+    public String getName() {
+        return name;
+    }
 
     public CommunityManager getManager() {
         return Manager;
@@ -31,21 +55,14 @@ public class Community {
         this.Manager = manager;
     }
 
-    public ArrayList<Report> getReports(){
+    public ArrayList<Report> getReports() {
         return Reports;
     }
-    //פונקציה שמחזירה את כל מי שמטייפ מסויים
-    public ArrayList<Report> getReportByType(String s){
-        ArrayList<Report> reportByType=new ArrayList<>();
-        for (int i =0;i <Reports.size();i++){
-            Report temp = Reports.get(i);
-            if (temp.type=="Ad"){
-                reportByType.add(temp);
-            }
-            if (temp.type=="Private message"){
-                reportByType.add(temp);
-            }
-            if (temp.type=="Complaint"){
+
+    public ArrayList<Report> getReportByType(String s) {
+        ArrayList<Report> reportByType = new ArrayList<>();
+        for (Report temp : Reports) {
+            if (temp.type.equals(s)) {
                 reportByType.add(temp);
             }
         }
@@ -56,7 +73,21 @@ public class Community {
     public String toString() {
         return name;
     }
-    public void  addReport(Report r){
+
+    public void addReport(Report r) {
         this.Reports.add(r);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(name);
+        dest.writeParcelable(Manager, flags);
+        dest.writeTypedList(Members);
+        dest.writeTypedList(Reports);
     }
 }

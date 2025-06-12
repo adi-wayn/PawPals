@@ -76,7 +76,19 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onResult(boolean exists) {
                 if (exists) {
-                    startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                    userRepository.getUserById(userId, new UserRepository.FirestoreUserCallback() {
+                        @Override
+                        public void onSuccess(model.User user) {
+                            intent.putExtra("currentUser", user);
+                        }
+
+                        @Override
+                        public void onFailure(Exception e) {
+                            Toast.makeText(LoginActivity.this, "Error retrieving user data", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                    startActivity(intent);
                 } else {
                     startActivity(new Intent(LoginActivity.this, RegistrationDetailsActivity.class));
                 }

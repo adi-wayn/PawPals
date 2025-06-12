@@ -1,5 +1,6 @@
 package com.example.pawpals;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
@@ -7,14 +8,17 @@ import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Toast;
-
 import androidx.appcompat.app.AppCompatActivity;
+import model.Report;
+import model.User;
+import model.firebase.CommunityRepository;
 
 public class ReportFormActivity extends AppCompatActivity {
 
-    private RadioGroup categoryTabs;
-    private EditText inputSubject, inputType1, inputType2, inputPriority, inputDescription;
+    private RadioGroup typeTabs;
+    private EditText inputSenderName, inputSubject, inputText;
     private Button buttonSubmit;
+    private final User currentUser = getIntent().getParcelableExtra("currentUser");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,55 +26,80 @@ public class ReportFormActivity extends AppCompatActivity {
         setContentView(R.layout.activity_report_form);
 
         // Connect UI elements
-        categoryTabs = findViewById(R.id.category_tabs);
+        typeTabs = findViewById(R.id.type_tabs);
+        inputSenderName = findViewById(R.id.input_sender_name);
         inputSubject = findViewById(R.id.input_subject);
-        inputType1 = findViewById(R.id.input_type_1);
-        inputType2 = findViewById(R.id.input_type_2);
-        inputPriority = findViewById(R.id.input_priority);
-        inputDescription = findViewById(R.id.input_description);
+        inputText = findViewById(R.id.input_text);
         buttonSubmit = findViewById(R.id.button_submit);
 
         buttonSubmit.setOnClickListener(v -> {
-            String category = getSelectedCategory();
+            String type = getSelectedType();
+            String senderName = inputSenderName.getText().toString();
             String subject = inputSubject.getText().toString();
-            String type1 = inputType1.getText().toString();
-            String type2 = inputType2.getText().toString();
-            String priority = inputPriority.getText().toString();
-            String description = inputDescription.getText().toString();
+            String text = inputText.getText().toString();
 
-            if (subject.isEmpty() || description.isEmpty()) {
+
+            if (subject.isEmpty() || text.isEmpty()) {
                 Toast.makeText(this, "Please fill in at least the subject and message.", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            // Log the data (for testing)
-            Log.d("ReportForm", "Category: " + category);
-            Log.d("ReportForm", "Subject: " + subject);
-            Log.d("ReportForm", "Category 1: " + type1);
-            Log.d("ReportForm", "Category 2: " + type2);
-            Log.d("ReportForm", "Priority: " + priority);
-            Log.d("ReportForm", "Message: " + description);
+            // צור אובייקט Report
+            Report report = new Report(type, senderName, subject, text);
 
-            Toast.makeText(this, "Your request was submitted successfully!", Toast.LENGTH_LONG).show();
+            // שמור במסד הנתונים תחת הקהילה
+            CommunityRepository repo = new CommunityRepository();
+            repo.getCommunityIdByName(currentUser.getCommunity().getName(), new CommunityRepository.FirestoreIdCallback() {
+                @Override
+                public void onSuccess(String communityId) {
+                    repo.createReport(communityId, report, new CommunityRepository.FirestoreCallback() {
+                        @Override
+                        public void onSuccess(String documentId) {
+                            Toast.makeText(ReportFormActivity.this, "Report submitted!", Toast.LENGTH_SHORT).show();
+                            // מעבר לעמוד הקהילה
+                            Intent intent = new Intent(ReportFormActivity.this, CommunityActivity.class);
+                            intent.putExtra("currentUser", currentUser);
+                            startActivity(intent);
+                            finish();
+                            finish(); // חזור למסך הקודם
+                        }
+
+                        @Override
+                        public void onFailure(Exception e) {
+                            Toast.makeText(ReportFormActivity.this, "Error saving report: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        }
+                    });
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                    Toast.makeText(ReportFormActivity.this, "Community not found: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                }
+            });
+
+            // Log the data (for testing)
+            Log.d("ReportForm", "type: " + type);
+            Log.d("ReportForm", "sender name: " + senderName);
+            Log.d("ReportForm", "subject: " + subject);
+            Log.d("ReportForm", "text: " + text);
+
             clearForm();
         });
     }
 
-    private String getSelectedCategory() {
-        int selectedId = categoryTabs.getCheckedRadioButtonId();
+    private String getSelectedType() {
+        int selectedId = typeTabs.getCheckedRadioButtonId();
         if (selectedId != -1) {
             RadioButton selectedRadio = findViewById(selectedId);
             return selectedRadio.getText().toString();
         }
-        return "No category selected";
+        return "No type selected";
     }
 
     private void clearForm() {
+        typeTabs.clearCheck();
+        inputSenderName.setText("");
         inputSubject.setText("");
-        inputType1.setText("");
-        inputType2.setText("");
-        inputPriority.setText("");
-        inputDescription.setText("");
-        categoryTabs.clearCheck();
+        inputText.setText("");
     }
 }

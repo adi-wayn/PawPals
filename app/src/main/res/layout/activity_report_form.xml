@@ -10,9 +10,9 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- Tabs -->
+        <!-- Tabs: סוג הדיווח -->
         <RadioGroup
-            android:id="@+id/category_tabs"
+            android:id="@+id/type_tabs"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
@@ -38,58 +38,48 @@
                 android:text="Private" />
         </RadioGroup>
 
-        <!-- Divider -->
+        <!-- קו הפרדה -->
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:background="@android:color/darker_gray"
             android:layout_marginBottom="12dp" />
 
-        <!-- Fields -->
+        <!-- נושא ההודעה -->
+        <EditText
+            android:id="@+id/input_sender_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Sender Name"
+            android:inputType="text"
+            android:layout_marginBottom="8dp"/>
+
+        <!-- תיאור קצר נוסף -->
         <EditText
             android:id="@+id/input_subject"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Subject"
-            android:inputType="text" />
+            android:inputType="text"
+            android:layout_marginBottom="8dp"/>
 
+        <!-- תוכן ההודעה -->
         <EditText
-            android:id="@+id/input_type_1"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Category 1"
-            android:inputType="text" />
-
-        <EditText
-            android:id="@+id/input_type_2"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Category 2"
-            android:inputType="text" />
-
-        <EditText
-            android:id="@+id/input_priority"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Priority"
-            android:inputType="text" />
-
-        <!-- Multiline input -->
-        <EditText
-            android:id="@+id/input_description"
+            android:id="@+id/input_text"
             android:layout_width="match_parent"
             android:layout_height="120dp"
             android:hint="Message Content"
             android:gravity="top|start"
             android:background="@android:drawable/editbox_background"
-            android:inputType="textMultiLine" />
+            android:inputType="textMultiLine"
+            android:layout_marginBottom="16dp"/>
 
-        <!-- Submit Button -->
+        <!-- כפתור שליחה -->
         <Button
             android:id="@+id/button_submit"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Submit Request"
+            android:text="Submit Report"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="16dp"
             android:drawableStart="@drawable/ic_heart"

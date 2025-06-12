@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import model.Community;
+import model.Report;
 
 public class CommunityRepository {
     private static final String TAG = "CommunityRepository";
@@ -94,6 +95,24 @@ public class CommunityRepository {
                 .addOnFailureListener(callback::onError);
     }
 
+    // החזרת documentId לפי שם הקהילה
+    public void getCommunityIdByName(String communityName, FirestoreIdCallback callback) {
+        db.collection("communities")
+                .whereEqualTo("name", communityName)
+                .limit(1)
+                .get()
+                .addOnSuccessListener(query -> {
+                    if (!query.isEmpty()) {
+                        String id = query.getDocuments().get(0).getId();
+                        callback.onSuccess(id);
+                    } else {
+                        callback.onFailure(new Exception("No community found with the given name"));
+                    }
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
+
     // יצירת דיווח בתוך קהילה
     public void createReport(String communityId, Report report, FirestoreCallback callback) {
         Map<String, Object> reportMap = report.toMap();
@@ -164,6 +183,11 @@ public class CommunityRepository {
 
     public interface FirestoreCommunitiesListCallback {
         void onSuccess(List<Community> communities);
+        void onFailure(Exception e);
+    }
+
+    public interface FirestoreIdCallback {
+        void onSuccess(String id);
         void onFailure(Exception e);
     }
 
