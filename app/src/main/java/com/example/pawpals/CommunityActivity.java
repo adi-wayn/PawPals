@@ -8,30 +8,46 @@ import model.User;
 
 public class CommunityActivity extends AppCompatActivity {
 
-    private final User currentUser = getIntent().getParcelableExtra("currentUser");
+    private User currentUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_community);
 
-        Button membersButton = findViewById(R.id.button10);
+        // נטילת המשתמש מה-Intent
+        currentUser = getIntent().getParcelableExtra("currentUser");
+
+        // כפתור חברים
+        Button membersButton = findViewById(R.id.buttonMembers);
         membersButton.setOnClickListener(v -> {
             Intent intent = new Intent(CommunityActivity.this, CommunitySearchActivity.class);
             intent.putExtra("currentUser", currentUser);
             startActivity(intent);
         });
 
-        Button chatButton = findViewById(R.id.button9);
+        // כפתור צ'אט
+        Button chatButton = findViewById(R.id.buttonChat);
         chatButton.setOnClickListener(v -> {
             Intent intent = new Intent(CommunityActivity.this, ChatActivity.class);
             intent.putExtra("currentUser", currentUser);
             startActivity(intent);
         });
 
-        Button reportButton = findViewById(R.id.button8);
+        // כפתור מערכת דיווח
+        Button reportButton = findViewById(R.id.buttonReportSystem);
         reportButton.setOnClickListener(v -> {
             Intent intent = new Intent(CommunityActivity.this, ReportFormActivity.class);
+            intent.putExtra("currentUser", currentUser);
+            startActivity(intent);
+        });
+
+        // כפתור מפת אזור (חדש)
+        Button areaMapButton = findViewById(R.id.buttonAreaMap);
+        areaMapButton.setOnClickListener(v -> {
+            // כאן אפשר לפתוח Activity חדש שקשור למפה (לדוגמה AreaMapActivity)
+            //יוד לא מימשנוא את כל הפונקציות
+            Intent intent = new Intent(CommunityActivity.this, AreaMapActivity.class);
             intent.putExtra("currentUser", currentUser);
             startActivity(intent);
         });
