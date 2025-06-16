@@ -1,4 +1,4 @@
-package com.example.pawpals.ui;
+package com.example.pawpals;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.rule.ActivityTestRule;

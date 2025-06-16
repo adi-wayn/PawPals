@@ -9,7 +9,7 @@
     android:padding="16dp"
     tools:context=".CommunityActivity">
 
-    <!-- Header (Profile + Community Name) -->
+    <!-- Header -->
     <ImageView
         android:id="@+id/imageViewProfile"
         android:layout_width="48dp"
@@ -33,7 +33,7 @@
         app:layout_constraintEnd_toStartOf="@id/imageViewProfile"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Bulletin Feed -->
+    <!-- RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/feedRecyclerView"
         android:layout_width="0dp"
@@ -45,18 +45,14 @@
         app:layout_constraintTop_toBottomOf="@id/imageViewProfile"
         app:layout_constraintBottom_toTopOf="@id/buttonAreaMap"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        tools:listitem="@layout/item_bulletin_post" />
+        app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- Buttons (same layout and position, just reordered to anchor feed above) -->
-
-    <!-- Area Map -->
+    <!-- שורה ראשונה -->
     <Button
         android:id="@+id/buttonAreaMap"
-        android:layout_width="144dp"
+        android:layout_width="0dp"
         android:layout_height="114dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="8dp"
         android:backgroundTint="@color/white"
         android:text="Area Map"
         android:textColor="@color/black"
@@ -65,16 +61,15 @@
         app:iconPadding="4dp"
         app:iconSize="60dp"
         app:iconTint="@color/black"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toTopOf="@id/buttonMembers"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintEnd_toStartOf="@+id/buttonReportSystem" />
 
-    <!-- Report System -->
     <Button
         android:id="@+id/buttonReportSystem"
-        android:layout_width="144dp"
+        android:layout_width="0dp"
         android:layout_height="114dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginStart="8dp"
         android:backgroundTint="@color/white"
         android:text="Report System"
         android:textColor="@color/black"
@@ -83,15 +78,17 @@
         app:iconPadding="4dp"
         app:iconSize="60dp"
         app:iconTint="@color/black"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toTopOf="@id/buttonChat"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintStart_toEndOf="@+id/buttonAreaMap" />
 
-    <!-- Members -->
+    <!-- שורה שנייה (צמודה לתחתית) -->
     <Button
         android:id="@+id/buttonMembers"
-        android:layout_width="144dp"
+        android:layout_width="0dp"
         android:layout_height="114dp"
-        android:layout_marginStart="16dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="8dp"
         android:backgroundTint="@color/white"
         android:text="Members"
         android:textColor="@color/black"
@@ -100,15 +97,16 @@
         app:iconPadding="4dp"
         app:iconSize="60dp"
         app:iconTint="@color/black"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintEnd_toStartOf="@+id/buttonChat" />
 
-    <!-- Chat -->
     <Button
         android:id="@+id/buttonChat"
-        android:layout_width="144dp"
+        android:layout_width="0dp"
         android:layout_height="114dp"
-        android:layout_marginEnd="16dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
         android:backgroundTint="@color/white"
         android:text="Chat"
         android:textColor="@color/black"
@@ -117,7 +115,8 @@
         app:iconPadding="4dp"
         app:iconSize="60dp"
         app:iconTint="@color/black"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintStart_toEndOf="@+id/buttonMembers" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

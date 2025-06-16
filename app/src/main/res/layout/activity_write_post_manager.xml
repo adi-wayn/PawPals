@@ -19,25 +19,12 @@
             android:gravity="start"
             android:layout_marginBottom="8dp">
 
-
             <RadioButton
                 android:id="@+id/tab_post"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Post" />
-
-            <RadioButton
-                android:id="@+id/tab_complaint"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Complaint" />
-
-            <RadioButton
-                android:id="@+id/tab_help"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Assistance" />
-
+                android:text="Post"
+                android:checked="true"/>
         </RadioGroup>
 
         <!-- קו הפרדה -->

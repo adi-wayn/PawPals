@@ -164,6 +164,40 @@ public class CommunityRepository {
                 .addOnFailureListener(callback::onFailure);
     }
 
+    public void createFeedPost(String communityId, Report report, FirestoreCallback callback) {
+        Map<String, Object> postMap = report.toMap();
+
+        db.collection("communities")
+                .document(communityId)
+                .collection("feed")
+                .add(postMap)
+                .addOnSuccessListener(docRef -> {
+                    Log.d(TAG, "Feed post created under community " + communityId);
+                    callback.onSuccess(docRef.getId());
+                })
+                .addOnFailureListener(e -> {
+                    Log.w(TAG, "Failed to create feed post", e);
+                    callback.onFailure(e);
+                });
+    }
+
+    public void getFeedPosts(String communityId, FirestoreReportsListCallback callback) {
+        db.collection("communities")
+                .document(communityId)
+                .collection("feed")
+                .get()
+                .addOnSuccessListener(query -> {
+                    List<Report> posts = new ArrayList<>();
+                    for (DocumentSnapshot doc : query.getDocuments()) {
+                        posts.add(doc.toObject(Report.class));
+                    }
+                    callback.onSuccess(posts);
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
+
+
     // === ממשקי callback ===
 
     public interface FirestoreCallback {

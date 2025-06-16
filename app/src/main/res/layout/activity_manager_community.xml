@@ -9,7 +9,7 @@
     android:padding="16dp"
     tools:context=".ManagerCommunityActivity">
 
-    <!-- Header: Community name and avatar -->
+    <!-- Header -->
     <ImageView
         android:id="@+id/imageViewProfile"
         android:layout_width="48dp"
@@ -33,7 +33,7 @@
         app:layout_constraintEnd_toStartOf="@id/imageViewProfile"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- RecyclerView for viewing reports -->
+    <!-- RecyclerView: תופס הכל עד לכפתורים -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/reportsRecyclerView"
         android:layout_width="0dp"
@@ -45,16 +45,14 @@
         app:layout_constraintTop_toBottomOf="@id/imageViewProfile"
         app:layout_constraintBottom_toTopOf="@id/buttonAreaMap"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        tools:listitem="@layout/item_bulletin_post" />
+        app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- Button: Area Map -->
+    <!-- שורה 1 -->
     <Button
         android:id="@+id/buttonAreaMap"
-        android:layout_width="144dp"
+        android:layout_width="0dp"
         android:layout_height="114dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="8dp"
         android:backgroundTint="@color/white"
         android:text="area map"
         android:textColor="@color/black"
@@ -63,16 +61,15 @@
         app:iconPadding="4dp"
         app:iconSize="60dp"
         app:iconTint="@color/black"
-        app:layout_constraintBottom_toTopOf="@id/buttonMembers"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/buttonReportSystem"
+        app:layout_constraintEnd_toStartOf="@+id/buttonViewReports" />
 
-    <!-- Button: View Reports (instead of Report System) -->
     <Button
         android:id="@+id/buttonViewReports"
-        android:layout_width="144dp"
+        android:layout_width="0dp"
         android:layout_height="114dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginStart="8dp"
         android:backgroundTint="@color/white"
         android:text="view reports"
         android:textColor="@color/black"
@@ -81,32 +78,35 @@
         app:iconPadding="4dp"
         app:iconSize="60dp"
         app:iconTint="@color/black"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toTopOf="@id/buttonChat"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintStart_toEndOf="@+id/buttonAreaMap" />
 
-    <!-- Button: Members -->
+    <!-- שורה 2 -->
     <Button
-        android:id="@+id/buttonMembers"
-        android:layout_width="144dp"
+        android:id="@+id/buttonReportSystem"
+        android:layout_width="0dp"
         android:layout_height="114dp"
-        android:layout_marginStart="16dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="8dp"
         android:backgroundTint="@color/white"
-        android:text="members"
+        android:text="write post"
         android:textColor="@color/black"
-        app:icon="@drawable/ic_community"
+        app:icon="@drawable/imagetostl_com_whatsapp_image_2025_05_07_at_17_27_17"
         app:iconGravity="textTop"
         app:iconPadding="4dp"
         app:iconSize="60dp"
         app:iconTint="@color/black"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/buttonMembers"
+        app:layout_constraintEnd_toStartOf="@+id/buttonChat" />
 
-    <!-- Button: Chat -->
     <Button
         android:id="@+id/buttonChat"
-        android:layout_width="144dp"
+        android:layout_width="0dp"
         android:layout_height="114dp"
-        android:layout_marginEnd="16dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
         android:backgroundTint="@color/white"
         android:text="chat"
         android:textColor="@color/black"
@@ -115,7 +115,45 @@
         app:iconPadding="4dp"
         app:iconSize="60dp"
         app:iconTint="@color/black"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/buttonCommunitySettings"
+        app:layout_constraintStart_toEndOf="@+id/buttonReportSystem" />
+
+    <!-- שורה 3 - צמוד לתחתית -->
+    <Button
+        android:id="@+id/buttonMembers"
+        android:layout_width="0dp"
+        android:layout_height="114dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="8dp"
+        android:backgroundTint="@color/white"
+        android:text="members"
+        android:textColor="@color/black"
+        app:icon="@drawable/ic_community"
+        app:iconGravity="textTop"
+        app:iconPadding="4dp"
+        app:iconSize="60dp"
+        app:iconTint="@color/black"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toStartOf="@+id/buttonCommunitySettings" />
+
+    <Button
+        android:id="@+id/buttonCommunitySettings"
+        android:layout_width="0dp"
+        android:layout_height="114dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:backgroundTint="@color/white"
+        android:text="settings"
+        android:textColor="@color/black"
+        app:icon="@android:drawable/ic_menu_manage"
+        app:iconGravity="textTop"
+        app:iconPadding="4dp"
+        app:iconSize="60dp"
+        app:iconTint="@color/black"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/buttonMembers" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
