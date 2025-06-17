@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    android:elevation="4dp"
+    android:backgroundTint="#FFFFFF">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="12dp">
+
+        <!-- סוג ההודעה -->
+        <TextView
+            android:id="@+id/text_post_type"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Type: Post"
+            android:textStyle="bold"
+            android:textColor="#6200EE"
+            android:textSize="14sp"
+            android:layout_marginBottom="4dp"/>
+
+        <!-- נושא -->
+        <TextView
+            android:id="@+id/text_post_subject"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Subject"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:textColor="#000000"
+            android:layout_marginBottom="2dp"/>
+
+        <!-- שם השולח -->
+        <TextView
+            android:id="@+id/text_post_sender"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="by Sender Name"
+            android:textStyle="italic"
+            android:textColor="#555555"
+            android:textSize="13sp"
+            android:layout_marginBottom="6dp"/>
+
+        <!-- גוף ההודעה -->
+        <TextView
+            android:id="@+id/text_post_message"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Message content goes here..."
+            android:textSize="14sp"
+            android:textColor="#333333"
+            android:lineSpacingExtra="4dp" />
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

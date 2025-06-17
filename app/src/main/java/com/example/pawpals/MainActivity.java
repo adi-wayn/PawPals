@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import androidx.activity.EdgeToEdge;
@@ -27,6 +28,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         currentUser = getIntent().getParcelableExtra("currentUser");
+        User user = getIntent().getParcelableExtra("currentUser");
+        Log.d("MainActivity", "user = " + user);
+        Log.d("MainActivity", "user community = " + user.getCommunityName());
+        Log.d("MainActivity", "user type = " + user.getClass().getSimpleName());
+
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
