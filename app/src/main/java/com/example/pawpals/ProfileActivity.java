@@ -38,7 +38,7 @@ public class ProfileActivity extends AppCompatActivity {
             TextView dogName = dogCard.findViewById(R.id.dog_name);
             TextView dogBreed = dogCard.findViewById(R.id.dog_breed);
 
-            dogImage.setImageResource(dog.getImageResId());
+            //dogImage.setImageResource(dog.getImageResId());
             dogName.setText(dog.getName());
             dogBreed.setText(dog.getBreed());
 

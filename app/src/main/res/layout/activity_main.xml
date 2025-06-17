@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -16,8 +17,6 @@
         app:layoutDescription="@xml/motion_scene">
 
         <!-- MapView -->
-
-        <!-- PawPals Logo - small and subtle above the menu -->
         <com.google.android.gms.maps.MapView
             android:id="@+id/mapView"
             android:layout_width="0dp"
@@ -29,6 +28,7 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_bias="0.0" />
 
+        <!-- PawPals Logo -->
         <ImageView
             android:id="@+id/logoTop"
             android:layout_width="48dp"
@@ -40,7 +40,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- Hamburger button -->
+        <!-- Hamburger Menu -->
         <ImageButton
             android:id="@+id/imageButton"
             android:layout_width="48dp"
@@ -48,7 +48,7 @@
             android:background="@drawable/bg_rounded_white"
             android:layout_marginStart="80dp"
             android:layout_marginTop="24dp"
-            android:contentDescription="Menu"
+            android:contentDescription="Open Menu"
             app:srcCompat="@drawable/baseline_menu_24"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -78,7 +78,7 @@
                     android:layout_gravity="center_horizontal"
                     android:layout_marginBottom="8dp" />
 
-                <!-- Visible/Invisible toggle button -->
+                <!-- Toggle -->
                 <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="64dp"
@@ -118,7 +118,7 @@
                     </LinearLayout>
                 </FrameLayout>
 
-                <!-- Community info -->
+                <!-- Community Info -->
                 <LinearLayout
                     android:id="@+id/communityInfo"
                     android:layout_width="match_parent"
@@ -144,7 +144,7 @@
                         android:layout_marginTop="4dp" />
                 </LinearLayout>
 
-                <!-- Action buttons -->
+                <!-- Action Buttons -->
                 <LinearLayout
                     android:id="@+id/actionButtons"
                     android:layout_width="match_parent"
@@ -168,7 +168,8 @@
                         <ImageView
                             android:layout_width="32dp"
                             android:layout_height="32dp"
-                            android:src="@drawable/ic_report" />
+                            android:src="@drawable/ic_report"
+                            android:contentDescription="New Report Icon" />
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -192,7 +193,8 @@
                         <ImageView
                             android:layout_width="32dp"
                             android:layout_height="32dp"
-                            android:src="@drawable/ic_community" />
+                            android:src="@drawable/ic_community"
+                            android:contentDescription="Community Page Icon" />
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -203,6 +205,7 @@
                     </LinearLayout>
 
                     <LinearLayout
+                        android:id="@+id/viewReportsButton"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
@@ -215,7 +218,8 @@
                         <ImageView
                             android:layout_width="32dp"
                             android:layout_height="32dp"
-                            android:src="@drawable/ic_view_reports" />
+                            android:src="@drawable/ic_view_reports"
+                            android:contentDescription="View Reports Icon" />
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -226,7 +230,7 @@
                     </LinearLayout>
                 </LinearLayout>
 
-                <!-- Reports button -->
+                <!-- Reports Button -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/communityButton"
                     style="@style/Widget.PawPals.Button"
@@ -235,11 +239,8 @@
                     android:text="Reports"
                     android:padding="14dp"
                     android:layout_marginTop="24dp" />
-
             </LinearLayout>
-
         </androidx.constraintlayout.widget.ConstraintLayout>
-
     </androidx.constraintlayout.motion.widget.MotionLayout>
 
     <!-- Drawer MotionLayout -->

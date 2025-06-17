@@ -7,28 +7,28 @@ import java.util.ArrayList;
 
 public class Community implements Parcelable {
     private String name;
-    private CommunityManager Manager;
-    public ArrayList<User> Members;
-    public ArrayList<Report> Reports;
+    private CommunityManager manager;
+    private ArrayList<User> members;
+    private ArrayList<Report> reports;
 
     public Community(String name) {
         this.name = name;
-        this.Members = new ArrayList<>();
-        this.Reports = new ArrayList<>();
+        this.members = new ArrayList<>();
+        this.reports = new ArrayList<>();
     }
 
     public Community(String name, CommunityManager manager) {
         this.name = name;
-        this.Manager = manager;
-        this.Members = new ArrayList<>();
-        this.Reports = new ArrayList<>();
+        this.manager = manager;
+        this.members = new ArrayList<>();
+        this.reports = new ArrayList<>();
     }
 
     protected Community(Parcel in) {
         name = in.readString();
-        Manager = in.readParcelable(CommunityManager.class.getClassLoader());
-        Members = in.createTypedArrayList(User.CREATOR);
-        Reports = in.createTypedArrayList(Report.CREATOR);
+        manager = in.readParcelable(CommunityManager.class.getClassLoader());
+        members = in.createTypedArrayList(User.CREATOR);
+        reports = in.createTypedArrayList(Report.CREATOR);
     }
 
     public static final Creator<Community> CREATOR = new Creator<Community>() {
@@ -48,34 +48,46 @@ public class Community implements Parcelable {
     }
 
     public CommunityManager getManager() {
-        return Manager;
+        return manager;
     }
 
     public void setManager(CommunityManager manager) {
-        this.Manager = manager;
+        this.manager = manager;
+    }
+
+    public ArrayList<User> getMembers() {
+        return members;
+    }
+
+    public void setMembers(ArrayList<User> members) {
+        this.members = members;
     }
 
     public ArrayList<Report> getReports() {
-        return Reports;
+        return reports;
     }
 
-    public ArrayList<Report> getReportByType(String s) {
-        ArrayList<Report> reportByType = new ArrayList<>();
-        for (Report temp : Reports) {
-            if (temp.type.equals(s)) {
-                reportByType.add(temp);
+    public void setReports(ArrayList<Report> reports) {
+        this.reports = reports;
+    }
+
+    public ArrayList<Report> getReportByType(String type) {
+        ArrayList<Report> result = new ArrayList<>();
+        for (Report r : reports) {
+            if (r.type.equals(type)) {
+                result.add(r);
             }
         }
-        return reportByType;
+        return result;
+    }
+
+    public void addReport(Report r) {
+        this.reports.add(r);
     }
 
     @Override
     public String toString() {
         return name;
-    }
-
-    public void addReport(Report r) {
-        this.Reports.add(r);
     }
 
     @Override
@@ -86,8 +98,8 @@ public class Community implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(name);
-        dest.writeParcelable(Manager, flags);
-        dest.writeTypedList(Members);
-        dest.writeTypedList(Reports);
+        dest.writeParcelable(manager, flags);
+        dest.writeTypedList(members);
+        dest.writeTypedList(reports);
     }
 }

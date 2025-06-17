@@ -12,11 +12,9 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import model.Community;
 import model.CommunityManager;
-import model.Report;
 import model.User;
 import model.firebase.CommunityRepository;
 import model.firebase.UserRepository;
@@ -96,11 +94,11 @@ public class RegistrationDetailsActivity extends AppCompatActivity {
     private void saveUser(String name, String communityName, boolean isManager) {
         UserRepository userRepository = new UserRepository();
         Community community = new Community(communityName);
-        User user = new User(name, community);
-        user.setManager(isManager);
+        User user = new User(name, communityName);
+        user.setIsManager(isManager);
 
         if (user.isManager()){
-            CommunityManager communityManager = new CommunityManager(name, community);
+            CommunityManager communityManager = new CommunityManager(name, communityName);
             community.setManager(communityManager);
             user = communityManager; // אם המשתמש הוא מנהל קהילה, נשתמש ב-CommunityManager
         }

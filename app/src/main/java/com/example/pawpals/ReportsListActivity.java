@@ -56,7 +56,7 @@ public class ReportsListActivity extends AppCompatActivity {
     }
 
     private void loadReportsFromFirebase() {
-        String communityName = currentUser.getCommunity().getName();
+        String communityName = currentUser.getCommunityName();
 
         communityRepo.getCommunityIdByName(communityName, new CommunityRepository.FirestoreIdCallback() {
             @Override
