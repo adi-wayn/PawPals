@@ -17,7 +17,8 @@ import androidx.core.view.WindowInsetsCompat;
 import model.User;
 
 public class MainActivity extends AppCompatActivity {
-
+    private com.google.android.gms.maps.MapView mapView;
+    private com.google.android.gms.maps.GoogleMap googleMap;
     private float initialTouchY = 0;
     private float lastProgress = 0f;
     private boolean isDragging = false;
@@ -33,8 +34,25 @@ public class MainActivity extends AppCompatActivity {
         Log.d("MainActivity", "user community = " + user.getCommunityName());
         Log.d("MainActivity", "user type = " + user.getClass().getSimpleName());
 
+        Log.d("API_KEY_TEST", getString(R.string.maps_api_key));
+
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
+
+        mapView = findViewById(R.id.mapView);
+        mapView.onCreate(savedInstanceState);
+        mapView.getMapAsync(map -> {
+            googleMap = map;
+
+            // תצורת UI של המפה
+            googleMap.getUiSettings().setZoomControlsEnabled(true);
+            googleMap.getUiSettings().setMyLocationButtonEnabled(true);
+
+            // מיקום פתיחה – לדוגמה: תל אביב
+            com.google.android.gms.maps.model.LatLng telAviv = new com.google.android.gms.maps.model.LatLng(32.0853, 34.7818);
+            googleMap.moveCamera(com.google.android.gms.maps.CameraUpdateFactory.newLatLngZoom(telAviv, 13f));
+        });
+
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.rootLayout), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -175,4 +193,35 @@ public class MainActivity extends AppCompatActivity {
             }, 300); // עיכוב של 300 מילישניות
         });
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (mapView != null) mapView.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        if (mapView != null) mapView.onPause();
+        super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (mapView != null) mapView.onDestroy();
+        super.onDestroy();
+    }
+
+    @Override
+    public void onLowMemory() {
+        super.onLowMemory();
+        if (mapView != null) mapView.onLowMemory();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (mapView != null) mapView.onSaveInstanceState(outState);
+    }
+
 }

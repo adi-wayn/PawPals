@@ -20,10 +20,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.example.pawpals" />
+                  <option name="mobileSdkAppId" value="1:665052621537:android:ba32feaa508823030d25a0" />
+                  <option name="projectId" value="pawpals-042ac4e1" />
+                  <option name="projectNumber" value="665052621537" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />
