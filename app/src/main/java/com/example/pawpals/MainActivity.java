@@ -106,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
         communityCard.setOnClickListener(v -> {
             if (currentUser.isManager()) {
                 // If the user is a manager, go to the community management screen
-                Intent intent = new Intent(MainActivity.this, CommunityManagementActivity.class);
+                Intent intent = new Intent(MainActivity.this,ManagerCommunityActivity .class);
                 intent.putExtra("currentUser", currentUser);
                 startActivity(intent);
             } else {
