@@ -9,6 +9,7 @@
     android:background="#FFFDF7"
     tools:context=".MainActivity">
 
+
     <!-- Main content MotionLayout (bottom sheet, map, UI) -->
     <androidx.constraintlayout.motion.widget.MotionLayout
         android:id="@+id/main"
