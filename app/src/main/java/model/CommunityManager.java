@@ -7,7 +7,7 @@ import java.util.Map;
 
 public class CommunityManager extends User implements Parcelable {
 
-    public CommunityManager(String name, Community community) {
+    public CommunityManager(String name, String community) {
         super(name, community);
         this.isManager = true;
     }

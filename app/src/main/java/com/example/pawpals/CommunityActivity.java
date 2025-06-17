@@ -24,10 +24,11 @@ public class CommunityActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_community);
-
+        // נטילת המשתמש מה-Intent
+        currentUser = getIntent().getParcelableExtra("currentUser");
         CommunityRepository communityRepo = new CommunityRepository();
 
-        communityRepo.getCommunityIdByName(currentUser.getCommunity().getName(), new CommunityRepository.FirestoreIdCallback() {
+        communityRepo.getCommunityIdByName(currentUser.getCommunityName(), new CommunityRepository.FirestoreIdCallback() {
             @Override
             public void onSuccess(String communityId) {
                 communityRepo.getFeedPosts(communityId, new CommunityRepository.FirestoreReportsListCallback() {
@@ -51,9 +52,6 @@ public class CommunityActivity extends AppCompatActivity {
                 Toast.makeText(CommunityActivity.this, "Community not found: " + e.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
-
-        // נטילת המשתמש מה-Intent
-        currentUser = getIntent().getParcelableExtra("currentUser");
 
         // כפתור חברים
         Button membersButton = findViewById(R.id.buttonMembers);

@@ -18,11 +18,11 @@ public class ReportFormActivity extends AppCompatActivity {
     private RadioGroup typeTabs;
     private EditText inputSenderName, inputSubject, inputText;
     private Button buttonSubmit;
-    private final User currentUser = getIntent().getParcelableExtra("currentUser");
-
+    private User currentUser;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        currentUser = getIntent().getParcelableExtra("currentUser");
         setContentView(R.layout.activity_report_form);
 
         // Connect UI elements
@@ -49,7 +49,7 @@ public class ReportFormActivity extends AppCompatActivity {
 
             // שמור במסד הנתונים תחת הקהילה
             CommunityRepository repo = new CommunityRepository();
-            repo.getCommunityIdByName(currentUser.getCommunity().getName(), new CommunityRepository.FirestoreIdCallback() {
+            repo.getCommunityIdByName(currentUser.getCommunityName(), new CommunityRepository.FirestoreIdCallback() {
                 @Override
                 public void onSuccess(String communityId) {
                     repo.createReport(communityId, report, new CommunityRepository.FirestoreCallback() {

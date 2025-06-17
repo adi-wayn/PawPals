@@ -2,6 +2,7 @@ package com.example.pawpals;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -23,11 +24,15 @@ public class ManagerCommunityActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // קבלת המשתמש מה-Intent
+        currentUser = getIntent().getParcelableExtra("currentUser");
         setContentView(R.layout.activity_manager_community);
+        Log.d("CommunityActivity", "user = " + currentUser);
+        Log.d("CommunityActivity", "communityName = " + currentUser.getCommunityName());
+
 
         CommunityRepository communityRepo = new CommunityRepository();
-
-        communityRepo.getCommunityIdByName(currentUser.getCommunity().getName(), new CommunityRepository.FirestoreIdCallback() {
+        communityRepo.getCommunityIdByName(currentUser.getCommunityName(), new CommunityRepository.FirestoreIdCallback() {
             @Override
             public void onSuccess(String communityId) {
                 communityRepo.getFeedPosts(communityId, new CommunityRepository.FirestoreReportsListCallback() {
@@ -51,9 +56,6 @@ public class ManagerCommunityActivity extends AppCompatActivity {
                 Toast.makeText(ManagerCommunityActivity.this, "Community not found: " + e.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
-
-        // קבלת המשתמש מה-Intent
-        currentUser = getIntent().getParcelableExtra("currentUser");
 
         // כפתור חברים
         Button membersButton = findViewById(R.id.buttonMembers);

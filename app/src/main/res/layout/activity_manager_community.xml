@@ -35,7 +35,7 @@
 
     <!-- RecyclerView: תופס הכל עד לכפתורים -->
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/reportsRecyclerView"
+        android:id="@+id/feedRecyclerView"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:padding="4dp"

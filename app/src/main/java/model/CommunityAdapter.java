@@ -5,9 +5,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.example.pawpals.R;
-
+import java.util.ArrayList;
 import java.util.List;
 
 public class CommunityAdapter extends RecyclerView.Adapter<CommunityAdapter.ViewHolder> {
@@ -15,11 +14,11 @@ public class CommunityAdapter extends RecyclerView.Adapter<CommunityAdapter.View
     private List<User> users;
 
     public CommunityAdapter(List<User> users) {
-        this.users = users;
+        this.users = (users != null) ? users : new ArrayList<>();
     }
 
     public void updateData(List<User> newUsers) {
-        users = newUsers;
+        users = (newUsers != null) ? newUsers : new ArrayList<>();
         notifyDataSetChanged();
     }
 
@@ -33,12 +32,14 @@ public class CommunityAdapter extends RecyclerView.Adapter<CommunityAdapter.View
     public void onBindViewHolder(CommunityAdapter.ViewHolder holder, int position) {
         User user = users.get(position);
         holder.nameText.setText(user.getUserName());
-        holder.infoText.setText("Dogs: " + user.dogs.size());
+
+        int dogCount = (user.getDogs() != null) ? user.getDogs().size() : 0;
+        holder.infoText.setText("Dogs: " + dogCount);
     }
 
     @Override
     public int getItemCount() {
-        return users.size();
+        return (users != null) ? users.size() : 0;
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {

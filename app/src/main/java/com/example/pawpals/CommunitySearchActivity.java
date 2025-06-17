@@ -31,12 +31,11 @@ public class CommunitySearchActivity extends AppCompatActivity {
         filterChipGroup = findViewById(R.id.filterChipGroup);
         recyclerView = findViewById(R.id.recyclerView);
 
-        //allProfiles = loadDummyProfiles();
+        allProfiles = new ArrayList<>(); // תיקון קריטי למניעת null
         adapter = new CommunityAdapter(allProfiles);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
 
-        // SearchView handling
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -51,7 +50,6 @@ public class CommunitySearchActivity extends AppCompatActivity {
             }
         });
 
-        // Chip filtering
         filterChipGroup.setOnCheckedStateChangeListener((group, checkedIds) -> {
             filterProfiles(searchView.getQuery().toString());
         });
@@ -62,19 +60,22 @@ public class CommunitySearchActivity extends AppCompatActivity {
         List<User> filtered = new ArrayList<>();
 
         for (User user : allProfiles) {
-            boolean matchesText = user.getUserName().toLowerCase(Locale.ROOT).contains(lowerQuery);
+            if (user == null || user.getUserName() == null) continue;
 
+            boolean matchesText = user.getUserName().toLowerCase(Locale.ROOT).contains(lowerQuery);
             boolean matchesFilter = true;
             List<Integer> chipIds = filterChipGroup.getCheckedChipIds();
 
             for (int chipId : chipIds) {
                 Chip chip = filterChipGroup.findViewById(chipId);
+                if (chip == null) continue;
                 String label = chip.getText().toString().toLowerCase(Locale.ROOT);
 
-                // Simplified demo filters:
-                if (label.contains("2+dogs") && user.getDogs().size() < 2) {
+                int dogCount = (user.getDogs() != null) ? user.getDogs().size() : 0;
+
+                if (label.contains("2+dogs") && dogCount < 2) {
                     matchesFilter = false;
-                } else if (label.contains("dog 1") && user.getDogs().size() != 1) {
+                } else if (label.contains("dog 1") && dogCount != 1) {
                     matchesFilter = false;
                 }
             }
