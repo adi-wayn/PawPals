@@ -15,23 +15,15 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
-
 import model.User;
 
-public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
+public class MainActivity extends AppCompatActivity {
 
     private float initialTouchY = 0;
     private float lastProgress = 0f;
     private boolean isDragging = false;
     private boolean isDrawerOpen = false;
-    private User currentUser;
-    private GoogleMap mMap;
+    private final User currentUser = getIntent().getParcelableExtra("currentUser");
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -39,8 +31,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
-
-        currentUser = getIntent().getParcelableExtra("currentUser");
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.rootLayout), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -54,14 +44,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         View menuButton = findViewById(R.id.imageButton);
         View overlay = drawerMotion.findViewById(R.id.overlay);
 
-        // אתחול המפה
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.mapView);
-        if (mapFragment != null) {
-            mapFragment.getMapAsync(this);
-        }
-
-        // גרירת BottomSheet
+        // Handle Bottom Sheet dragging
         bottomSheet.setOnTouchListener((v, event) -> {
             if (isDrawerOpen) return false;
             switch (event.getAction()) {
@@ -92,39 +75,46 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             return false;
         });
 
-        // פתיחה וסגירת תפריט צד
+        // Handle drawer open/close from hamburger menu
         menuButton.setOnClickListener(v -> {
             if (!isDrawerOpen) {
                 drawerMotion.transitionToState(R.id.open);
                 overlay.setVisibility(View.VISIBLE);
                 isDrawerOpen = true;
+                // Hide hamburger button and collapse bottom sheet
                 menuButton.setVisibility(View.GONE);
                 mainMotion.transitionToStart();
             } else {
                 drawerMotion.transitionToState(R.id.closed);
                 overlay.setVisibility(View.GONE);
                 isDrawerOpen = false;
+                // Restore hamburger button
                 menuButton.setVisibility(View.VISIBLE);
             }
         });
 
+        // Handle drawer close on overlay tap
         overlay.setOnClickListener(v -> {
             drawerMotion.transitionToState(R.id.closed);
             overlay.setVisibility(View.GONE);
             isDrawerOpen = false;
+            // Restore hamburger button
             menuButton.setVisibility(View.VISIBLE);
         });
 
         View communityCard = findViewById(R.id.communityButtonContainer);
         communityCard.setOnClickListener(v -> {
-            Intent intent;
             if (currentUser.isManager()) {
-                intent = new Intent(MainActivity.this, ManagerCommunityActivity.class);
+                // If the user is a manager, go to the community management screen
+                Intent intent = new Intent(MainActivity.this, CommunityManagementActivity.class);
+                intent.putExtra("currentUser", currentUser);
+                startActivity(intent);
             } else {
-                intent = new Intent(MainActivity.this, CommunityActivity.class);
+                // If the user is not a manager, go to the community activity screen
+                Intent intent = new Intent(MainActivity.this, CommunityActivity.class);
+                intent.putExtra("currentUser", currentUser);
+                startActivity(intent);
             }
-            intent.putExtra("currentUser", currentUser);
-            startActivity(intent);
         });
 
         View newReportButton = findViewById(R.id.newReportButtonContainer);
@@ -136,53 +126,49 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         View myProfileButton = findViewById(R.id.myProfileButton);
         myProfileButton.setOnClickListener(v -> {
+            // סגירת התפריט
             drawerMotion.transitionToState(R.id.closed);
             overlay.setVisibility(View.GONE);
             isDrawerOpen = false;
             menuButton.setVisibility(View.VISIBLE);
 
+            // מעבר לעמוד הפרופיל
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
                 Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
                 intent.putExtra("currentUser", currentUser);
                 startActivity(intent);
-            }, 300);
+            }, 300); // עיכוב של 300 מילישניות
         });
 
         View settingsButton = findViewById(R.id.settingsButton);
         settingsButton.setOnClickListener(v -> {
+            // סגירת התפריט הצדדי
             drawerMotion.transitionToState(R.id.closed);
             overlay.setVisibility(View.GONE);
             isDrawerOpen = false;
             menuButton.setVisibility(View.VISIBLE);
 
+            // מעבר לעמוד ההגדרות
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
                 Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
                 intent.putExtra("currentUser", currentUser);
                 startActivity(intent);
-            }, 300);
+            }, 300); // עיכוב של 300 מילישניות כדי לאפשר לאנימציית הסגירה לרוץ
         });
 
         View logoutButton = findViewById(R.id.logoutButton);
         logoutButton.setOnClickListener(v -> {
+            // סגירת התפריט
             drawerMotion.transitionToState(R.id.closed);
             overlay.setVisibility(View.GONE);
             isDrawerOpen = false;
             menuButton.setVisibility(View.VISIBLE);
 
+            // יציאה מהאפליקציה
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
                 Intent intent = new Intent(MainActivity.this, LoginActivity.class);
                 startActivity(intent);
-            }, 300);
+            }, 300); // עיכוב של 300 מילישניות
         });
-    }
-
-    @Override
-    public void onMapReady(GoogleMap googleMap) {
-        mMap = googleMap;
-
-        // תצוגת מיקום גאוגרפי לדוגמה
-        LatLng telAviv = new LatLng(32.0853, 34.7818);
-        mMap.addMarker(new MarkerOptions().position(telAviv).title("תל אביב"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(telAviv, 12));
     }
 }
