@@ -3,23 +3,29 @@ package model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import androidx.annotation.NonNull;
+
+import com.google.firebase.firestore.IgnoreExtraProperties;
+
 import java.util.Map;
 
+@IgnoreExtraProperties
 public class CommunityManager extends User implements Parcelable {
+
+    // נדרש לפיירבייס
+    public CommunityManager() {
+        super();
+        this.isManager = true;
+    }
 
     public CommunityManager(String name, String community) {
         super(name, community);
         this.isManager = true;
     }
 
-    // Constructor לקריאה מ־Parcel
+    // קונסטרקטור של Parcelable
     protected CommunityManager(Parcel in) {
         super(in);
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        super.writeToParcel(dest, flags);
     }
 
     public static final Creator<CommunityManager> CREATOR = new Creator<CommunityManager>() {
@@ -35,9 +41,14 @@ public class CommunityManager extends User implements Parcelable {
     };
 
     @Override
+    public void writeToParcel(@NonNull Parcel dest, int flags) {
+        super.writeToParcel(dest, flags);
+    }
+
+    @Override
     public Map<String, Object> toMap() {
         Map<String, Object> map = super.toMap();
-        // אם תוסיף שדות נוספים, תעדכן גם פה
+        // אם בעתיד תוסיף שדות – תעדכן גם פה
         return map;
     }
 

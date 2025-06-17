@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -27,6 +28,9 @@ public class CommunityActivity extends AppCompatActivity {
         // נטילת המשתמש מה-Intent
         currentUser = getIntent().getParcelableExtra("currentUser");
         CommunityRepository communityRepo = new CommunityRepository();
+
+        Log.d("CommunityActivity", "user = " + currentUser);
+        Log.d("CommunityActivity", "communityName = " + currentUser.getCommunityName());
 
         communityRepo.getCommunityIdByName(currentUser.getCommunityName(), new CommunityRepository.FirestoreIdCallback() {
             @Override

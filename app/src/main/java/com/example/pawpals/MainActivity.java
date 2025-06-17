@@ -1,13 +1,12 @@
 package com.example.pawpals;
-
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.motion.widget.MotionLayout;
@@ -23,12 +22,17 @@ public class MainActivity extends AppCompatActivity {
     private float lastProgress = 0f;
     private boolean isDragging = false;
     private boolean isDrawerOpen = false;
-    private final User currentUser = getIntent().getParcelableExtra("currentUser");
-
+    private User currentUser;
     @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        currentUser = getIntent().getParcelableExtra("currentUser");
+        User user = getIntent().getParcelableExtra("currentUser");
+        Log.d("MainActivity", "user = " + user);
+        Log.d("MainActivity", "user community = " + user.getCommunityName());
+        Log.d("MainActivity", "user type = " + user.getClass().getSimpleName());
+
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
@@ -106,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
         communityCard.setOnClickListener(v -> {
             if (currentUser.isManager()) {
                 // If the user is a manager, go to the community management screen
-                Intent intent = new Intent(MainActivity.this,ManagerCommunityActivity .class);
+                Intent intent = new Intent(MainActivity.this, ManagerCommunityActivity.class);
                 intent.putExtra("currentUser", currentUser);
                 startActivity(intent);
             } else {

@@ -2,6 +2,7 @@ package com.example.pawpals;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -109,6 +110,10 @@ public class RegistrationDetailsActivity extends AppCompatActivity {
             public void onSuccess(String documentId) {
                 Toast.makeText(RegistrationDetailsActivity.this, "Welcome!", Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(RegistrationDetailsActivity.this, MainActivity.class);
+                Log.d("Registration", "Sending user: " + finalUser.getClass().getSimpleName());
+                Log.d("Registration", "user name: " + finalUser.getUserName());
+                Log.d("Registration", "community: " + finalUser.getCommunityName());
+
                 intent.putExtra("currentUser", finalUser);
                 startActivity(intent);
                 finish();

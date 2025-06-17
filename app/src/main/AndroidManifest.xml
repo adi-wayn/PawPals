@@ -78,6 +78,14 @@
         <activity
             android:name=".ManagerCommunityActivity"
             android:exported="false"/>
+
+        <activity
+            android:name=".ReportsListActivity"
+            android:exported="false"/>
+
+        <activity
+            android:name=".WritePostManagerActivity"
+            android:exported="false"/>
     </application>
 
 </manifest>
