@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         // אתחול המפה
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
+                .findFragmentById(R.id.mapView);
         if (mapFragment != null) {
             mapFragment.getMapAsync(this);
         }
