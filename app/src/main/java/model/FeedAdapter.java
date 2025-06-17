@@ -24,7 +24,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.PostViewHolder
     @Override
     public PostViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_bulletin_post, parent, false);
+                .inflate(R.layout.item_post_card, parent, false);
         return new PostViewHolder(itemView);
     }
 

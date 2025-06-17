@@ -49,14 +49,54 @@ public class UserRepository {
                 .document(userId)
                 .get()
                 .addOnSuccessListener(snapshot -> {
-                    if (snapshot.exists()) {
-                        User user = snapshot.toObject(User.class);
+                    if (!snapshot.exists()) {
+                        Log.w(TAG, "User not found for ID: " + userId);
+                        callback.onFailure(new Exception("User not found"));
+                        return;
+                    }
+
+                    // הצג את כל המידע שהגיע מהמסמך
+                    Log.d(TAG, "Raw Firestore snapshot: " + snapshot.getData());
+
+                    Boolean isManager = snapshot.getBoolean("isManager");
+                    String name = snapshot.getString("userName");
+                    String community = snapshot.getString("communityName");
+
+                    Log.d(TAG, String.format("Extracted fields: userName='%s', communityName='%s', isManager=%s", name, community, isManager));
+
+                    User user = null;
+
+                    if (name != null && community != null) {
+                        // טעינה ידנית בטוחה
+                        if (Boolean.TRUE.equals(isManager)) {
+                            user = new CommunityManager(name, community);
+                            Log.d(TAG, "Created CommunityManager manually: " + user);
+                        } else {
+                            user = new User(name, community);
+                            Log.d(TAG, "Created regular User manually: " + user);
+                        }
+                    } else {
+                        // fallback ל־toObject() אם השדות לא נקלטו ידנית
+                        if (Boolean.TRUE.equals(isManager)) {
+                            user = snapshot.toObject(CommunityManager.class);
+                            Log.w(TAG, "Used toObject fallback (CommunityManager): " + user);
+                        } else {
+                            user = snapshot.toObject(User.class);
+                            Log.w(TAG, "Used toObject fallback (User): " + user);
+                        }
+                    }
+
+                    if (user != null) {
                         callback.onSuccess(user);
                     } else {
-                        callback.onFailure(new Exception("User not found"));
+                        Log.e(TAG, "Failed to construct User object (null result)");
+                        callback.onFailure(new Exception("Failed to parse user data"));
                     }
                 })
-                .addOnFailureListener(callback::onFailure);
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Firestore access failure", e);
+                    callback.onFailure(e);
+                });
     }
 
     // קבלת כל המשתמשים
@@ -76,7 +116,7 @@ public class UserRepository {
     // קבלת כל המנהלים
     public void getAllManagers(FirestoreUsersListCallback callback) {
         db.collection("users")
-                .whereEqualTo("isManager", "true")
+                .whereEqualTo("isManager", true)
                 .get()
                 .addOnSuccessListener(query -> {
                     List<User> managers = new ArrayList<>();
@@ -91,7 +131,7 @@ public class UserRepository {
     // קבלת משתמשים לפי קהילה
     public void getUsersByCommunity(String communityName, FirestoreUsersListCallback callback) {
         db.collection("users")
-                .whereEqualTo("community", communityName)
+                .whereEqualTo("communityName", communityName)
                 .get()
                 .addOnSuccessListener(query -> {
                     List<User> members = new ArrayList<>();

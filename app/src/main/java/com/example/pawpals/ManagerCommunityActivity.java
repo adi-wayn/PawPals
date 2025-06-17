@@ -27,11 +27,11 @@ public class ManagerCommunityActivity extends AppCompatActivity {
         // קבלת המשתמש מה-Intent
         currentUser = getIntent().getParcelableExtra("currentUser");
         setContentView(R.layout.activity_manager_community);
-        Log.d("CommunityActivity", "user = " + currentUser);
-        Log.d("CommunityActivity", "communityName = " + currentUser.getCommunityName());
-
 
         CommunityRepository communityRepo = new CommunityRepository();
+
+        Log.d("ManagerCommunityActivity", "Looking for community with name: " + currentUser.getCommunityName());
+
         communityRepo.getCommunityIdByName(currentUser.getCommunityName(), new CommunityRepository.FirestoreIdCallback() {
             @Override
             public void onSuccess(String communityId) {
@@ -76,7 +76,7 @@ public class ManagerCommunityActivity extends AppCompatActivity {
         // כפתור מערכת דיווח
         Button reportButton = findViewById(R.id.buttonReportSystem);
         reportButton.setOnClickListener(v -> {
-            Intent intent = new Intent(ManagerCommunityActivity.this, ReportFormActivity.class);
+            Intent intent = new Intent(ManagerCommunityActivity.this, WritePostManagerActivity.class);
             intent.putExtra("currentUser", currentUser);
             startActivity(intent);
         });

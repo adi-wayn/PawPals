@@ -6,6 +6,7 @@ import android.os.Parcelable;
 import androidx.annotation.NonNull;
 
 import com.google.firebase.firestore.IgnoreExtraProperties;
+import com.google.firebase.firestore.PropertyName;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,10 +15,13 @@ import java.util.Map;
 
 @IgnoreExtraProperties
 public class User implements Parcelable {
-    protected String userName;
-    protected String communityName;
-    protected ArrayList<Dog> dogs;
-    protected boolean isManager;
+    public String userName;
+
+    public String communityName;
+
+    public ArrayList<Dog> dogs;
+
+    public boolean isManager;
 
     public User() {
         // נדרש לפיירבייס
@@ -49,45 +53,53 @@ public class User implements Parcelable {
         }
     };
 
+    @PropertyName("userName")
     public String getUserName() {
-        return this.userName;
+        return userName;
     }
 
+    @PropertyName("userName")
     public void setUserName(String userName) {
         this.userName = userName;
     }
 
+    @PropertyName("communityName")
     public String getCommunityName() {
         return communityName;
     }
 
+    @PropertyName("communityName")
     public void setCommunityName(String communityName) {
         this.communityName = communityName;
     }
 
+    @PropertyName("dogs")
     public ArrayList<Dog> getDogs() {
         return dogs;
     }
 
+    @PropertyName("dogs")
     public void setDogs(ArrayList<Dog> dogs) {
         this.dogs = dogs;
     }
 
+    @PropertyName("isManager")
     public boolean isManager() {
         return isManager;
     }
 
+    @PropertyName("isManager")
     public void setIsManager(boolean manager) {
         this.isManager = manager;
     }
 
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>();
-        map.put("userName", this.userName);
-        map.put("communityName", this.communityName);
-        map.put("isManager", this.isManager);
+        map.put("userName", userName);
+        map.put("communityName", communityName);
+        map.put("isManager", isManager);
 
-        if (this.dogs != null && !this.dogs.isEmpty()) {
+        if (dogs != null && !dogs.isEmpty()) {
             List<Map<String, Object>> dogsList = new ArrayList<>();
             for (Dog dog : dogs) {
                 dogsList.add(dog.toMap());
@@ -99,15 +111,15 @@ public class User implements Parcelable {
     }
 
     @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
         dest.writeString(userName);
         dest.writeString(communityName);
         dest.writeTypedList(dogs);
         dest.writeByte((byte) (isManager ? 1 : 0));
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
     }
 }
