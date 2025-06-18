@@ -1,6 +1,8 @@
 package com.example.pawpals;
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -10,15 +12,20 @@ import android.view.View;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.motion.widget.MotionLayout;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.google.android.gms.maps.MapView;
+
 import model.User;
+import model.maps.MapController;
 
 public class MainActivity extends AppCompatActivity {
-    private com.google.android.gms.maps.MapView mapView;
-    private com.google.android.gms.maps.GoogleMap googleMap;
+    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
+    private MapController mapController;
     private float initialTouchY = 0;
     private float lastProgress = 0f;
     private boolean isDragging = false;
@@ -29,30 +36,18 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         currentUser = getIntent().getParcelableExtra("currentUser");
-        User user = getIntent().getParcelableExtra("currentUser");
-        Log.d("MainActivity", "user = " + user);
-        Log.d("MainActivity", "user community = " + user.getCommunityName());
-        Log.d("MainActivity", "user type = " + user.getClass().getSimpleName());
-
-        Log.d("API_KEY_TEST", getString(R.string.maps_api_key));
 
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
-        mapView = findViewById(R.id.mapView);
-        mapView.onCreate(savedInstanceState);
-        mapView.getMapAsync(map -> {
-            googleMap = map;
+        MapView mapView = findViewById(R.id.mapView);
+        mapController = new MapController(mapView,this);
 
-            // תצורת UI של המפה
-            googleMap.getUiSettings().setZoomControlsEnabled(true);
-            googleMap.getUiSettings().setMyLocationButtonEnabled(true);
-
-            // מיקום פתיחה – לדוגמה: תל אביב
-            com.google.android.gms.maps.model.LatLng telAviv = new com.google.android.gms.maps.model.LatLng(32.0853, 34.7818);
-            googleMap.moveCamera(com.google.android.gms.maps.CameraUpdateFactory.newLatLngZoom(telAviv, 13f));
-        });
-
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
+        } else {
+            mapController.initializeMap(savedInstanceState);
+        }
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.rootLayout), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -197,31 +192,32 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (mapView != null) mapView.onResume();
+        if (mapController != null) mapController.onResume();
     }
 
     @Override
     protected void onPause() {
-        if (mapView != null) mapView.onPause();
+        if (mapController != null) mapController.onPause();
         super.onPause();
     }
 
     @Override
     protected void onDestroy() {
-        if (mapView != null) mapView.onDestroy();
+        if (mapController != null) mapController.onDestroy();
         super.onDestroy();
     }
 
     @Override
     public void onLowMemory() {
         super.onLowMemory();
-        if (mapView != null) mapView.onLowMemory();
+        if (mapController != null) mapController.onLowMemory();
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        if (mapView != null) mapView.onSaveInstanceState(outState);
+        if (mapController != null) mapController.onSaveInstanceState(outState);
     }
+
 
 }
