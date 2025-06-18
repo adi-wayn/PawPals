@@ -12,6 +12,7 @@ import android.util.Log;
 
 import androidx.core.app.ActivityCompat;
 
+import com.example.pawpals.R;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.*;
@@ -40,6 +41,8 @@ public class MapController {
 
             googleMap.getUiSettings().setZoomControlsEnabled(true);
             googleMap.getUiSettings().setMyLocationButtonEnabled(true);
+
+            Log.d("MapController", "key " + context.getString(R.string.maps_api_key));
 
             if (hasLocationPermission()) {
                 googleMap.setMyLocationEnabled(true);
