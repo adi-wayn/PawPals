@@ -19,6 +19,8 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.gms.maps.MapView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import model.User;
 import model.maps.MapController;
@@ -41,7 +43,28 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         MapView mapView = findViewById(R.id.mapView);
-        mapController = new MapController(mapView,this);
+
+        // שליפת מזהה משתמש נוכחי מ־FirebaseAuth
+        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+
+        if (firebaseUser != null) {
+            String currentUserId = firebaseUser.getUid();
+            mapController = new MapController(mapView, this, currentUserId);
+
+            // בקשת הרשאה והפעלת המפה
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        LOCATION_PERMISSION_REQUEST_CODE);
+            } else {
+                mapController.initializeMap(savedInstanceState);
+            }
+        } else {
+            Log.e("MainActivity", "FirebaseAuth.getCurrentUser() returned null. Cannot initialize map.");
+            // אפשר להחזיר למסך התחברות או להציג שגיאה
+        }
+
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);

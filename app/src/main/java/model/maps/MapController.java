@@ -16,18 +16,30 @@ import com.example.pawpals.R;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.*;
-import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.*;
+
+import java.util.Map;
+
+import model.User;
+import model.firebase.LocationRepository;
+import model.firebase.UserRepository;
 
 public class MapController {
     private final Context context;
-    private final FusedLocationProviderClient locationClient;
     private final MapView mapView;
+    private final FusedLocationProviderClient locationClient;
+    private final LocationRepository locationRepo = new LocationRepository();
+    private final UserRepository userRepo = new UserRepository();
+
     private GoogleMap googleMap;
     private boolean isMapReady = false;
+    private String currentUserId;
+    private User currentUser;
 
-    public MapController(MapView mapView, Context context) {
+    public MapController(MapView mapView, Context context, String currentUserId) {
         this.mapView = mapView;
         this.context = context;
+        this.currentUserId = currentUserId;
         this.locationClient = LocationServices.getFusedLocationProviderClient(context);
     }
 
@@ -44,30 +56,74 @@ public class MapController {
 
             Log.d("MapController", "key " + context.getString(R.string.maps_api_key));
 
-            if (hasLocationPermission()) {
-                googleMap.setMyLocationEnabled(true);
-
-                // נחכה מעט לאחר onMapReady
-                new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                    locationClient.getLastLocation()
-                            .addOnSuccessListener(location -> {
-                                if (location != null) {
-                                    LatLng userLatLng = new LatLng(location.getLatitude(), location.getLongitude());
-                                    Log.d("MapController", "Real location: " + userLatLng.latitude + ", " + userLatLng.longitude);
-                                    googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLatLng, 13f));
-                                } else {
-                                    Log.w("MapController", "Location is null. Falling back to Tel Aviv.");
-                                    moveToTelAviv();
-                                }
-                            })
-                            .addOnFailureListener(e -> {
-                                Log.e("MapController", "Failed to get location: " + e.getMessage());
-                                moveToTelAviv();
-                            });
-                }, 500); // המתנה קצרה לטעינת map tiles
-            } else {
+            if (!hasLocationPermission()) {
                 Log.w("MapController", "No location permission granted. Showing Tel Aviv.");
                 moveToTelAviv();
+                return;
+            }
+
+            googleMap.setMyLocationEnabled(true);
+
+            // שלב 1: שלוף פרטי משתמש
+            userRepo.getUserById(currentUserId, new UserRepository.FirestoreUserCallback() {
+                @Override
+                public void onSuccess(User user) {
+                    currentUser = user;
+
+                    // שלב 2: קבלת מיקום נוכחי
+                    new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                        locationClient.getLastLocation()
+                                .addOnSuccessListener(location -> {
+                                    if (location != null) {
+                                        LatLng userLatLng = new LatLng(location.getLatitude(), location.getLongitude());
+                                        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLatLng, 13f));
+                                        Log.d("MapController", "User location: " + userLatLng);
+
+                                        // שמירת מיקום ב־Firestore
+                                        locationRepo.updateUserLocation(currentUserId, userLatLng.latitude, userLatLng.longitude);
+
+                                        // הצגת משתמשים מהקהילה
+                                        loadCommunityMembersLocations(user.getCommunityName());
+                                    } else {
+                                        Log.w("MapController", "Location is null. Falling back to Tel Aviv.");
+                                        moveToTelAviv();
+                                    }
+                                })
+                                .addOnFailureListener(e -> {
+                                    Log.e("MapController", "Failed to get location: " + e.getMessage());
+                                    moveToTelAviv();
+                                });
+                    }, 500);
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                    Log.e("MapController", "Failed to get user data: " + e.getMessage());
+                    moveToTelAviv();
+                }
+            });
+        });
+    }
+
+    private void loadCommunityMembersLocations(String communityName) {
+        locationRepo.getUserLocationsByCommunity(communityName, new LocationRepository.FirestoreLocationsCallback() {
+            @Override
+            public void onSuccess(Map<String, LatLng> userLocations) {
+                for (Map.Entry<String, LatLng> entry : userLocations.entrySet()) {
+                    String userId = entry.getKey();
+                    LatLng latLng = entry.getValue();
+
+                    if (userId.equals(currentUserId)) continue; // לא להוסיף marker של עצמי
+
+                    googleMap.addMarker(new MarkerOptions()
+                            .position(latLng)
+                            .title("משתמש מהקהילה"));
+                }
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Log.e("MapController", "Failed to load community locations: " + e.getMessage());
             }
         });
     }
