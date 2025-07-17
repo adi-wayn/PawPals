@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import android.util.Pair;
 
 import androidx.core.app.ActivityCompat;
 
@@ -64,7 +65,7 @@ public class MapController {
 
             googleMap.setMyLocationEnabled(true);
 
-            // שלב 1: שלוף פרטי משתמש
+            // שלב 1: שליפת פרטי המשתמש הנוכחי
             userRepo.getUserById(currentUserId, new UserRepository.FirestoreUserCallback() {
                 @Override
                 public void onSuccess(User user) {
@@ -79,10 +80,10 @@ public class MapController {
                                         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userLatLng, 13f));
                                         Log.d("MapController", "User location: " + userLatLng);
 
-                                        // שמירת מיקום ב־Firestore
+                                        // שמירת מיקום
                                         locationRepo.updateUserLocation(currentUserId, userLatLng.latitude, userLatLng.longitude);
 
-                                        // הצגת משתמשים מהקהילה
+                                        // שליפת מיקומי המשתמשים בקהילה
                                         loadCommunityMembersLocations(user.getCommunityName());
                                     } else {
                                         Log.w("MapController", "Location is null. Falling back to Tel Aviv.");
@@ -105,25 +106,27 @@ public class MapController {
         });
     }
 
+    // שליפת מיקומי משתמשים מהקהילה עם שמות והצגתם במפה
     private void loadCommunityMembersLocations(String communityName) {
-        locationRepo.getUserLocationsByCommunity(communityName, new LocationRepository.FirestoreLocationsCallback() {
+        locationRepo.getUserLocationsWithNamesByCommunity(communityName, new LocationRepository.FirestoreUserLocationsWithNamesCallback() {
             @Override
-            public void onSuccess(Map<String, LatLng> userLocations) {
-                for (Map.Entry<String, LatLng> entry : userLocations.entrySet()) {
+            public void onSuccess(Map<String, Pair<LatLng, String>> userLocationsWithNames) {
+                for (Map.Entry<String, Pair<LatLng, String>> entry : userLocationsWithNames.entrySet()) {
                     String userId = entry.getKey();
-                    LatLng latLng = entry.getValue();
+                    //if (userId.equals(currentUserId)) continue;
 
-                    if (userId.equals(currentUserId)) continue; // לא להוסיף marker של עצמי
+                    LatLng position = entry.getValue().first;
+                    String userName = entry.getValue().second;
 
                     googleMap.addMarker(new MarkerOptions()
-                            .position(latLng)
-                            .title("משתמש מהקהילה"));
+                            .position(position)
+                            .title(userName));
                 }
             }
 
             @Override
             public void onFailure(Exception e) {
-                Log.e("MapController", "Failed to load community locations: " + e.getMessage());
+                Log.e("MapController", "Failed to load user markers: " + e.getMessage());
             }
         });
     }

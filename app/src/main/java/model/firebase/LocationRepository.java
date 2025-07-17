@@ -1,6 +1,7 @@
 package model.firebase;
 
 import android.util.Log;
+import android.util.Pair;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.firestore.*;
@@ -24,7 +25,7 @@ public class LocationRepository {
                 .addOnFailureListener(e -> Log.e(TAG, "Failed to update location", e));
     }
 
-    // שליפת מיקומים של כל המשתמשים
+    // שליפת מיקומים של כל המשתמשים (ללא קשר לקהילה)
     public void getAllUserLocations(FirestoreLocationsCallback callback) {
         db.collection("locations")
                 .get()
@@ -42,18 +43,20 @@ public class LocationRepository {
                 .addOnFailureListener(callback::onFailure);
     }
 
-    // שליפת מיקומים לפי קהילה
-    public void getUserLocationsByCommunity(String communityName, FirestoreLocationsCallback callback) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-        // שלב 1: שליפת כל המשתמשים בקהילה
+    // שליפת מיקומים + שמות משתמשים לפי קהילה
+    public void getUserLocationsWithNamesByCommunity(String communityName, FirestoreUserLocationsWithNamesCallback callback) {
         db.collection("users")
                 .whereEqualTo("communityName", communityName)
                 .get()
                 .addOnSuccessListener(userQuery -> {
                     List<String> userIds = new ArrayList<>();
+                    Map<String, String> userNamesMap = new HashMap<>();
+
                     for (DocumentSnapshot userDoc : userQuery.getDocuments()) {
-                        userIds.add(userDoc.getId());
+                        String uid = userDoc.getId();
+                        String name = userDoc.getString("userName");
+                        userIds.add(uid);
+                        userNamesMap.put(uid, name != null ? name : "אנונימי");
                     }
 
                     if (userIds.isEmpty()) {
@@ -61,13 +64,9 @@ public class LocationRepository {
                         return;
                     }
 
-                    // שלב 2: פיצול מזהים לקבוצות של 10
                     List<List<String>> batches = splitIntoBatches(userIds, 10);
-                    Map<String, LatLng> allLocations = new HashMap<>();
-                    int totalBatches = batches.size();
-
-                    // מעקב אחרי כמות הקריאות שנותרו
-                    final int[] remaining = {totalBatches};
+                    Map<String, Pair<LatLng, String>> resultMap = new HashMap<>();
+                    final int[] remaining = {batches.size()};
                     final boolean[] failed = {false};
 
                     for (List<String> batch : batches) {
@@ -75,17 +74,20 @@ public class LocationRepository {
                                 .whereIn(FieldPath.documentId(), batch)
                                 .get()
                                 .addOnSuccessListener(locationQuery -> {
-                                    for (DocumentSnapshot locDoc : locationQuery.getDocuments()) {
-                                        Double lat = locDoc.getDouble("latitude");
-                                        Double lng = locDoc.getDouble("longitude");
+                                    for (DocumentSnapshot doc : locationQuery.getDocuments()) {
+                                        Double lat = doc.getDouble("latitude");
+                                        Double lng = doc.getDouble("longitude");
                                         if (lat != null && lng != null) {
-                                            allLocations.put(locDoc.getId(), new LatLng(lat, lng));
+                                            String uid = doc.getId();
+                                            LatLng loc = new LatLng(lat, lng);
+                                            String name = userNamesMap.get(uid);
+                                            resultMap.put(uid, new Pair<>(loc, name));
                                         }
                                     }
 
                                     remaining[0]--;
                                     if (remaining[0] == 0 && !failed[0]) {
-                                        callback.onSuccess(allLocations);
+                                        callback.onSuccess(resultMap);
                                     }
                                 })
                                 .addOnFailureListener(e -> {
@@ -100,6 +102,7 @@ public class LocationRepository {
                 .addOnFailureListener(callback::onFailure);
     }
 
+    // פונקציית עזר לפיצול רשימות לקבוצות של 10
     private List<List<String>> splitIntoBatches(List<String> fullList, int batchSize) {
         List<List<String>> batches = new ArrayList<>();
         for (int i = 0; i < fullList.size(); i += batchSize) {
@@ -109,10 +112,15 @@ public class LocationRepository {
         return batches;
     }
 
+    // === ממשקי callback ===
 
-    // Callback interface
     public interface FirestoreLocationsCallback {
         void onSuccess(Map<String, LatLng> userLocations);
+        void onFailure(Exception e);
+    }
+
+    public interface FirestoreUserLocationsWithNamesCallback {
+        void onSuccess(Map<String, Pair<LatLng, String>> userLocationsWithNames);
         void onFailure(Exception e);
     }
 }
