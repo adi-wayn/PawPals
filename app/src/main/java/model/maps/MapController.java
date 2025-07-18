@@ -15,10 +15,19 @@ import androidx.core.app.ActivityCompat;
 
 import com.example.pawpals.R;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.Priority;
 import com.google.android.gms.maps.*;
 import com.google.android.gms.maps.model.*;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import model.User;
@@ -31,11 +40,13 @@ public class MapController {
     private final FusedLocationProviderClient locationClient;
     private final LocationRepository locationRepo = new LocationRepository();
     private final UserRepository userRepo = new UserRepository();
-
     private GoogleMap googleMap;
     private boolean isMapReady = false;
     private String currentUserId;
     private User currentUser;
+    private final Map<String, Marker> userMarkers = new HashMap<>();
+    private LocationCallback locationCallback;
+    private LocationRequest locationRequest;
 
     public MapController(MapView mapView, Context context, String currentUserId) {
         this.mapView = mapView;
@@ -54,6 +65,8 @@ public class MapController {
 
             googleMap.getUiSettings().setZoomControlsEnabled(true);
             googleMap.getUiSettings().setMyLocationButtonEnabled(true);
+
+            startRealTimeLocationUpdates(); // התחלת עדכון מיקום רציף
 
             Log.d("MapController", "key " + context.getString(R.string.maps_api_key));
 
@@ -108,27 +121,74 @@ public class MapController {
 
     // שליפת מיקומי משתמשים מהקהילה עם שמות והצגתם במפה
     private void loadCommunityMembersLocations(String communityName) {
-        locationRepo.getUserLocationsWithNamesByCommunity(communityName, new LocationRepository.FirestoreUserLocationsWithNamesCallback() {
+        locationRepo.listenToCommunityLocations(communityName, currentUserId, userRepo,
+                new LocationRepository.FirestoreLiveLocationCallback() {
+                    @Override
+                    public void onUserLocationUpdated(String userId, String userName, LatLng position) {
+                        if (userMarkers.containsKey(userId)) {
+                            userMarkers.get(userId).setPosition(position);
+                        } else {
+                            Marker marker = googleMap.addMarker(new MarkerOptions()
+                                    .position(position)
+                                    .title(userName));
+                            userMarkers.put(userId, marker);
+                        }
+                    }
+
+                    @Override
+                    public void onUserRemoved(String userId) {
+                        if (userMarkers.containsKey(userId)) {
+                            userMarkers.get(userId).remove();
+                            userMarkers.remove(userId);
+                        }
+                    }
+                });
+    }
+
+    @SuppressLint("MissingPermission")
+    private void startRealTimeLocationUpdates() {
+        // הגדרת הבקשה לעדכוני מיקום (מינימום כל 5 שניות)
+        this.locationRequest = new LocationRequest.Builder(
+                Priority.PRIORITY_HIGH_ACCURACY, // דיוק גבוה
+                5000 // מרווח בקשות: 5 שניות
+        )
+                .setMinUpdateIntervalMillis(3000) // זמן מינימלי בין עדכונים: 3 שניות
+                .build();
+
+        // הגדרת callback לעדכוני מיקום
+        LocationCallback locationCallback = new LocationCallback() {
             @Override
-            public void onSuccess(Map<String, Pair<LatLng, String>> userLocationsWithNames) {
-                for (Map.Entry<String, Pair<LatLng, String>> entry : userLocationsWithNames.entrySet()) {
-                    String userId = entry.getKey();
-                    //if (userId.equals(currentUserId)) continue;
+            public void onLocationResult(LocationResult locationResult) {
+                if (locationResult == null) return;
 
-                    LatLng position = entry.getValue().first;
-                    String userName = entry.getValue().second;
+                Location location = locationResult.getLastLocation();
+                if (location != null) {
+                    double lat = location.getLatitude();
+                    double lng = location.getLongitude();
 
-                    googleMap.addMarker(new MarkerOptions()
-                            .position(position)
-                            .title(userName));
+                    Log.d("MapController", "Realtime user location: " + lat + ", " + lng);
+
+                    // שמירת מיקום ב־Firestore
+                    locationRepo.updateUserLocation(currentUserId, lat, lng);
                 }
             }
+        };
 
-            @Override
-            public void onFailure(Exception e) {
-                Log.e("MapController", "Failed to load user markers: " + e.getMessage());
-            }
-        });
+        // בדיקה שיש הרשאות, ואז התחלת בקשת העדכונים
+        if (hasLocationPermission()) {
+            locationClient.requestLocationUpdates(
+                    locationRequest,
+                    locationCallback,
+                    Looper.getMainLooper()
+            );
+        }
+    }
+
+    private void stopRealTimeLocationUpdates() {
+        if (locationCallback != null) {
+            locationClient.removeLocationUpdates(locationCallback);
+            locationCallback = null;
+        }
     }
 
     private void moveToTelAviv() {
@@ -145,8 +205,21 @@ public class MapController {
 
     // Lifecycle methods
     public void onResume() { mapView.onResume(); }
-    public void onPause() { mapView.onPause(); }
-    public void onDestroy() { mapView.onDestroy(); }
+
+    public void onPause() {
+        if (mapView != null) mapView.onPause();
+        stopRealTimeLocationUpdates(); // הוספה
+    }
+
+    public void onDestroy() {
+        if (mapView != null) mapView.onDestroy();
+        locationRepo.removeLiveLocationListener();
+
+        if (locationCallback != null) {
+            locationClient.removeLocationUpdates(locationCallback);
+        }
+    }
+
     public void onLowMemory() { mapView.onLowMemory(); }
     public void onSaveInstanceState(Bundle outState) {
         mapView.onSaveInstanceState(outState);

@@ -4,6 +4,7 @@ import android.util.Log;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import model.CommunityManager;
@@ -143,7 +144,29 @@ public class UserRepository {
                 .addOnFailureListener(callback::onFailure);
     }
 
+    public void getUserNamesByCommunity(String communityName, FirestoreUserNamesCallback callback) {
+        db.collection("users")
+                .whereEqualTo("communityName", communityName)
+                .get()
+                .addOnSuccessListener(query -> {
+                    Map<String, String> userNames = new HashMap<>();
+                    for (DocumentSnapshot doc : query.getDocuments()) {
+                        String userId = doc.getId();
+                        String name = doc.getString("userName");
+                        if (userId != null && name != null) {
+                            userNames.put(userId, name);
+                        }
+                    }
+                    callback.onSuccess(userNames);
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
     // === ממשקי callback ===
+    public interface FirestoreUserNamesCallback {
+        void onSuccess(Map<String, String> userNamesById);
+        void onFailure(Exception e);
+    }
 
     public interface FirestoreCallback {
         void onSuccess(String documentId);

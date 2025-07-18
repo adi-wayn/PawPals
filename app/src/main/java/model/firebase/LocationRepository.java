@@ -4,19 +4,24 @@ import android.util.Log;
 import android.util.Pair;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.*;
 
 import java.util.*;
 
+import model.User;
+
 public class LocationRepository {
     private static final String TAG = "LocationRepository";
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private ListenerRegistration liveLocationListener;
 
     // שמירת מיקום משתמש
     public void updateUserLocation(String userId, double lat, double lng) {
         Map<String, Object> locationMap = new HashMap<>();
         locationMap.put("latitude", lat);
         locationMap.put("longitude", lng);
+        locationMap.put("lastSeen", FieldValue.serverTimestamp()); // זמן נוכחי מהשרת
 
         db.collection("locations")
                 .document(userId)
@@ -77,7 +82,12 @@ public class LocationRepository {
                                     for (DocumentSnapshot doc : locationQuery.getDocuments()) {
                                         Double lat = doc.getDouble("latitude");
                                         Double lng = doc.getDouble("longitude");
-                                        if (lat != null && lng != null) {
+                                        Timestamp lastSeen = doc.getTimestamp("lastSeen");
+
+                                        // סינון לפי זמן: רק אם המשתמש נראה ב־5 דקות האחרונות
+                                        if (lat != null && lng != null && lastSeen != null &&
+                                                lastSeen.toDate().after(new Date(System.currentTimeMillis() - 5 * 60 * 1000))) {
+
                                             String uid = doc.getId();
                                             LatLng loc = new LatLng(lat, lng);
                                             String name = userNamesMap.get(uid);
@@ -112,7 +122,69 @@ public class LocationRepository {
         return batches;
     }
 
+    public void listenToCommunityLocations(String communityName, String currentUserId, UserRepository userRepo, FirestoreLiveLocationCallback callback) {
+        userRepo.getUserNamesByCommunity(communityName, new UserRepository.FirestoreUserNamesCallback() {
+            @Override
+            public void onSuccess(Map<String, String> userNames) {
+                List<String> userIds = new ArrayList<>(userNames.keySet());
+
+                if (liveLocationListener != null) {
+                    liveLocationListener.remove();
+                }
+
+                liveLocationListener = db.collection("locations")
+                        .addSnapshotListener((snapshots, e) -> {
+                            if (e != null || snapshots == null) {
+                                Log.e(TAG, "Live location listener error", e);
+                                return;
+                            }
+
+                            long fiveMinutesAgo = System.currentTimeMillis() - (5 * 60 * 1000);
+
+                            for (DocumentChange change : snapshots.getDocumentChanges()) {
+                                DocumentSnapshot doc = change.getDocument();
+                                String uid = doc.getId();
+
+                                if (!userIds.contains(uid) || uid.equals(currentUserId)) continue;
+
+                                Double lat = doc.getDouble("latitude");
+                                Double lng = doc.getDouble("longitude");
+                                Timestamp lastSeen = doc.getTimestamp("lastSeen");
+
+                                if (change.getType() == DocumentChange.Type.REMOVED || lastSeen == null ||
+                                        lastSeen.toDate().before(new Date(fiveMinutesAgo))) {
+                                    callback.onUserRemoved(uid);
+                                    continue;
+                                }
+
+                                if (lat != null && lng != null) {
+                                    LatLng position = new LatLng(lat, lng);
+                                    String name = userNames.getOrDefault(uid, "אנונימי");
+                                    callback.onUserLocationUpdated(uid, name, position);
+                                }
+                            }
+                        });
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Log.e(TAG, "Failed to get user names by community", e);
+            }
+        });
+    }
+
+    public void removeLiveLocationListener() {
+        if (liveLocationListener != null) {
+            liveLocationListener.remove();
+            liveLocationListener = null;
+        }
+    }
+
     // === ממשקי callback ===
+    public interface FirestoreLiveLocationCallback {
+        void onUserLocationUpdated(String userId, String userName, LatLng position);
+        void onUserRemoved(String userId);
+    }
 
     public interface FirestoreLocationsCallback {
         void onSuccess(Map<String, LatLng> userLocations);
