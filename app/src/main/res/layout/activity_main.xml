@@ -157,20 +157,20 @@
 
                     <!-- Activity Stats -->
                     <TextView
-                        android:id="@+id/activeDogsStat"
+                        android:id="@+id/activeUsersStat"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Fetching dog activity..."
+                        android:text="Active users nearby: 0"
                         android:textSize="14sp"
                         android:textColor="#1F3B3D"
                         android:layout_marginTop="16dp" />
 
                     <!-- Community Awards -->
                     <TextView
-                        android:id="@+id/communityAwards"
+                        android:id="@+id/totalDogs"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Loading community awards..."
+                        android:text="Total dogs in community:"
                         android:textSize="14sp"
                         android:textColor="#5D4037"
                         android:layout_marginTop="12dp" />
@@ -241,7 +241,7 @@
                         android:id="@+id/statusBar"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="You are part of: community_name"
+                        android:text="You are part of the community: community_name"
                         android:textSize="14sp"
                         android:textColor="#555555"
                         android:layout_marginTop="12dp"

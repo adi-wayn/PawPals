@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import android.util.Pair;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
@@ -21,11 +22,20 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import java.util.List;
+import java.util.Map;
+
 import model.User;
+import model.firebase.AuthHelper;
+import model.firebase.CommunityRepository;
+import model.firebase.LocationRepository;
+import model.firebase.UserRepository;
 import model.maps.MapController;
+import model.Report;
 
 public class MainActivity extends AppCompatActivity {
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
@@ -45,11 +55,79 @@ public class MainActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
-        MapView mapView = findViewById(R.id.mapView);
+        AuthHelper authHelper = new AuthHelper();
 
         // שליפת מזהה משתמש נוכחי מ־FirebaseAuth
-        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        FirebaseUser firebaseUser = authHelper.getCurrentUser();
 
+        if (firebaseUser != null) {
+            String userId = firebaseUser.getUid();
+
+            UserRepository userRepo = new UserRepository();
+            userRepo.getUserById(userId, new UserRepository.FirestoreUserCallback() {
+                @Override
+                public void onSuccess(User user) {
+                    TextView greetingText = findViewById(R.id.greetingText);
+                    TextView statusBar = findViewById(R.id.statusBar);
+
+                    greetingText.setText("Hello, " + user.getUserName() + "!");
+                    statusBar.setText("You are part of the community: " + user.getCommunityName());
+
+                    TextView communityStats = findViewById(R.id.communityStats);
+                    TextView activeUsersStat = findViewById(R.id.activeUsersStat);
+                    TextView totalDogs = findViewById(R.id.totalDogs);
+
+                    String communityName = user.getCommunityName();
+
+
+                    LocationRepository locationRepo = new LocationRepository();
+                    locationRepo.getUserLocationsWithNamesByCommunity(communityName, new LocationRepository.FirestoreUserLocationsWithNamesCallback() {
+                        @Override
+                        public void onSuccess(Map<String, Pair<LatLng, String>> userLocationsWithNames) {
+                            int count = userLocationsWithNames.size();
+                            activeUsersStat.setText("Active users nearby: " + count);
+                        }
+
+                        @Override
+                        public void onFailure(Exception e) {
+                            Log.e("MainActivity", "Error fetching active users", e);
+                        }
+                    });
+
+                    // מספר משתמשים בקהילה
+                    userRepo.getUsersByCommunity(communityName, new UserRepository.FirestoreUsersListCallback() {
+                        @Override
+                        public void onSuccess(List<User> users) {
+                            communityStats.setText("Community members: " + users.size());
+
+                            // סכימת כמות הכלבים
+                            int dogs_count = 0;
+                            for (User u : users) {
+                                if (u.getDogs() != null) {
+                                    dogs_count += u.getDogs().size();
+                                }
+                            }
+                            totalDogs.setText("Total dogs in community: " + dogs_count);
+                        }
+
+                        @Override
+                        public void onFailure(Exception e) {
+                            Log.e("MainActivity", "Error fetching users in community", e);
+                        }
+                    });
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                    Log.e("MainActivity", "Failed to fetch user info", e);
+                }
+            });
+        } else {
+            Log.w("MainActivity", "No logged-in Firebase user");
+        }
+
+
+        MapView mapView = findViewById(R.id.mapView);
 
         if (firebaseUser != null) {
             String currentUserId = firebaseUser.getUid();
