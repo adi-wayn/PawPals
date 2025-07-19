@@ -97,10 +97,10 @@
                     <FrameLayout
                         android:id="@+id/visibilityToggle"
                         android:layout_width="match_parent"
-                        android:layout_height="64dp"
-                        android:layout_marginBottom="16dp"
+                        android:layout_height="56dp"
+                        android:layout_marginBottom="61dp"
                         android:background="@drawable/bg_toggle_container"
-                        android:padding="8dp"
+                        android:padding="6dp"
                         android:elevation="8dp">
 
                         <LinearLayout

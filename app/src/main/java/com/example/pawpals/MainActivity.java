@@ -41,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         currentUser = getIntent().getParcelableExtra("currentUser");
 
+
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
@@ -48,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
 
         // שליפת מזהה משתמש נוכחי מ־FirebaseAuth
         FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+
 
         if (firebaseUser != null) {
             String currentUserId = firebaseUser.getUid();
