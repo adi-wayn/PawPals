@@ -180,7 +180,38 @@ public class LocationRepository {
         }
     }
 
+    // שליפת קהילות בטווח גיאוגרפי מסוים (לדוגמה: רדיוס של 5 ק"מ ממיקום נוכחי)
+    public void getNearbyCommunities(double userLat, double userLng, double radiusInMeters, FirestoreNearbyCommunitiesCallback callback) {
+        db.collection("communities")
+                .get()
+                .addOnSuccessListener(query -> {
+                    List<String> nearbyCommunities = new ArrayList<>();
+
+                    for (DocumentSnapshot doc : query.getDocuments()) {
+                        Double lat = doc.getDouble("latitude");
+                        Double lng = doc.getDouble("longitude");
+
+                        if (lat != null && lng != null) {
+                            float[] results = new float[1];
+                            android.location.Location.distanceBetween(userLat, userLng, lat, lng, results);
+                            float distance = results[0];
+                            if (distance <= radiusInMeters) {
+                                nearbyCommunities.add(doc.getId());
+                            }
+                        }
+                    }
+
+                    callback.onSuccess(nearbyCommunities);
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
     // === ממשקי callback ===
+    public interface FirestoreNearbyCommunitiesCallback {
+        void onSuccess(List<String> nearbyCommunityIds);
+        void onFailure(Exception e);
+    }
+
     public interface FirestoreLiveLocationCallback {
         void onUserLocationUpdated(String userId, String userName, LatLng position);
         void onUserRemoved(String userId);

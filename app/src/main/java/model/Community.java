@@ -10,15 +10,22 @@ public class Community implements Parcelable {
     private CommunityManager manager;
     private ArrayList<User> members;
     private ArrayList<Report> reports;
+    private double latitude;
+    private double longitude;
 
-    public Community(String name) {
+
+    public Community(String name, double latitude, double longitude) {
         this.name = name;
+        this.latitude = latitude;
+        this.longitude = longitude;
         this.members = new ArrayList<>();
         this.reports = new ArrayList<>();
     }
 
-    public Community(String name, CommunityManager manager) {
+    public Community(String name, double latitude, double longitude, CommunityManager manager) {
         this.name = name;
+        this.latitude = latitude;
+        this.longitude = longitude;
         this.manager = manager;
         this.members = new ArrayList<>();
         this.reports = new ArrayList<>();
@@ -29,6 +36,8 @@ public class Community implements Parcelable {
         manager = in.readParcelable(CommunityManager.class.getClassLoader());
         members = in.createTypedArrayList(User.CREATOR);
         reports = in.createTypedArrayList(Report.CREATOR);
+        latitude = in.readDouble();
+        longitude = in.readDouble();
     }
 
     public static final Creator<Community> CREATOR = new Creator<Community>() {
@@ -85,6 +94,22 @@ public class Community implements Parcelable {
         this.reports.add(r);
     }
 
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
+    }
+
     @Override
     public String toString() {
         return name;
@@ -101,5 +126,7 @@ public class Community implements Parcelable {
         dest.writeParcelable(manager, flags);
         dest.writeTypedList(members);
         dest.writeTypedList(reports);
+        dest.writeDouble(latitude);
+        dest.writeDouble(longitude);
     }
 }

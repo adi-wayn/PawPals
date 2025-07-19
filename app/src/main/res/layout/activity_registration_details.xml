@@ -29,14 +29,25 @@
             android:background="@drawable/bg_input"
             android:layout_marginBottom="16dp" />
 
+        <!-- Spinner לבחירת קהילה קרובה -->
+        <Spinner
+            android:id="@+id/spinner_communities"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="12dp"
+            android:background="@drawable/bg_input"
+            android:layout_marginBottom="16dp" />
+
+        <!-- EditText להקלדת שם קהילה חדשה (מוסתר כברירת מחדל) -->
         <EditText
             android:id="@+id/input_community"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Community Name"
+            android:hint="New Community Name"
             android:padding="12dp"
             android:background="@drawable/bg_input"
-            android:layout_marginBottom="16dp" />
+            android:layout_marginBottom="16dp"
+            android:visibility="gone" />
 
         <CheckBox
             android:id="@+id/checkbox_create_community"

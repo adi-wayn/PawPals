@@ -19,11 +19,13 @@ public class CommunityRepository {
     }
 
     // יצירת קהילה חדשה
-    public void createCommunity(String communityName, String managerUserId, List<Report> reports, FirestoreCallback callback) {
+    public void createCommunity(String communityName, String managerUserId,double latitude, double longitude, List<Report> reports, FirestoreCallback callback) {
         Map<String, Object> communityData = new HashMap<>();
         communityData.put("name", communityName);
         communityData.put("managerId", managerUserId);
         communityData.put("reports", reports);
+        communityData.put("latitude", latitude); // חדש
+        communityData.put("longitude", longitude); // חדש
 
         db.collection("communities")
                 .document(communityName)
