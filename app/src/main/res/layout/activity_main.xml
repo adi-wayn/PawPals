@@ -23,7 +23,7 @@
             android:layout_width="0dp"
             android:layout_height="0dp"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toTopOf="@+id/bottomSheet"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
@@ -54,193 +54,202 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <!-- Bottom Sheet -->
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/bottomSheet"
+        <androidx.cardview.widget.CardView
+            android:id="@+id/bottomSheetCard"
             android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:background="@drawable/bg_sheet"
-            android:padding="16dp"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="24dp"
+            app:cardElevation="8dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
 
-            <LinearLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/bottomSheet"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:animateLayoutChanges="true"
-                app:layout_constraintTop_toTopOf="parent">
+                android:background="@drawable/bg_sheet"
+                android:layout_marginBottom="16dp"
+                android:padding="16dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
 
-                <View
-                    android:layout_width="36dp"
-                    android:layout_height="4dp"
-                    android:background="@drawable/bg_handle"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_marginBottom="8dp" />
-
-                <!-- Toggle -->
-                <FrameLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="64dp"
-                    android:layout_marginTop="24dp"
-                    android:background="@drawable/bg_toggle_container"
-                    android:padding="8dp"
-                    android:elevation="8dp">
-
-                    <LinearLayout
-                        android:id="@+id/customToggleSwitch"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:orientation="horizontal"
-                        android:background="@drawable/bg_toggle_selector"
-                        android:gravity="center"
-                        android:paddingHorizontal="16dp">
-
-                        <TextView
-                            android:id="@+id/labelInvisible"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="Invisible"
-                            android:textColor="#F44336"
-                            android:gravity="center"
-                            android:textSize="16sp" />
-
-                        <TextView
-                            android:id="@+id/labelVisible"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="Visible"
-                            android:textColor="#4CAF50"
-                            android:gravity="center"
-                            android:textSize="16sp" />
-                    </LinearLayout>
-                </FrameLayout>
-
-                <!-- Community Info -->
                 <LinearLayout
-                    android:id="@+id/communityInfo"
+                    android:id="@+id/bottomContent"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:layout_marginTop="24dp"
-                    android:gravity="center_horizontal">
+                    android:gravity="center_horizontal"
+                    android:animateLayoutChanges="true"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent">
 
+                    <View
+                        android:layout_width="36dp"
+                        android:layout_height="4dp"
+                        android:background="@drawable/bg_handle"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginBottom="8dp" />
+
+                    <!-- Toggle -->
+                    <FrameLayout
+                        android:id="@+id/visibilityToggle"
+                        android:layout_width="match_parent"
+                        android:layout_height="64dp"
+                        android:layout_marginBottom="16dp"
+                        android:background="@drawable/bg_toggle_container"
+                        android:padding="8dp"
+                        android:elevation="8dp">
+
+                        <LinearLayout
+                            android:id="@+id/customToggleSwitch"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="horizontal"
+                            android:background="@drawable/bg_toggle_selector"
+                            android:gravity="center"
+                            android:paddingHorizontal="16dp">
+
+                            <TextView
+                                android:id="@+id/labelInvisible"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Invisible"
+                                android:textColor="#F44336"
+                                android:gravity="center"
+                                android:textSize="14sp" />
+
+                            <TextView
+                                android:id="@+id/labelVisible"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Visible"
+                                android:textColor="#4CAF50"
+                                android:gravity="center"
+                                android:textSize="14sp" />
+                        </LinearLayout>
+                    </FrameLayout>
+
+                    <!-- Greeting Text -->
                     <TextView
+                        android:id="@+id/greetingText"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="42 users connected in your area"
+                        android:text="Hello, User!"
                         android:textStyle="bold"
                         android:textSize="18sp"
-                        android:textColor="#1F3B3D" />
+                        android:textColor="#1F3B3D"
+                        android:layout_marginBottom="4dp" />
 
+                    <!-- שאר התוכן -->
                     <TextView
+                        android:id="@+id/communityStats"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Welcome to the Ramat Gan dog community!"
+                        android:text="Loading community stats..."
                         android:textSize="14sp"
                         android:textColor="#777777"
-                        android:layout_marginTop="4dp" />
+                        android:layout_marginBottom="8dp" />
+
+                    <!-- Activity Stats -->
+                    <TextView
+                        android:id="@+id/activeDogsStat"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Fetching dog activity..."
+                        android:textSize="14sp"
+                        android:textColor="#1F3B3D"
+                        android:layout_marginTop="16dp" />
+
+                    <!-- Community Awards -->
+                    <TextView
+                        android:id="@+id/communityAwards"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Loading community awards..."
+                        android:textSize="14sp"
+                        android:textColor="#5D4037"
+                        android:layout_marginTop="12dp" />
+
+                    <!-- Action Buttons -->
+                    <LinearLayout
+                        android:id="@+id/actionButtons"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center"
+                        android:layout_marginTop="24dp"
+                        android:weightSum="2">
+
+                        <LinearLayout
+                            android:id="@+id/newReportButtonContainer"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:background="@drawable/bg_card"
+                            android:padding="12dp"
+                            android:layout_margin="4dp">
+
+                            <ImageView
+                                android:layout_width="32dp"
+                                android:layout_height="32dp"
+                                android:src="@drawable/ic_report"
+                                android:contentDescription="New Report Icon" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="New Report"
+                                android:textSize="14sp"
+                                android:layout_marginTop="4dp" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/communityButtonContainer"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:background="@drawable/bg_card"
+                            android:padding="12dp"
+                            android:layout_margin="4dp">
+
+                            <ImageView
+                                android:layout_width="32dp"
+                                android:layout_height="32dp"
+                                android:src="@drawable/ic_community"
+                                android:contentDescription="Community Page Icon" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Community Page"
+                                android:textSize="14sp"
+                                android:layout_marginTop="4dp" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- Status Bar -->
+                    <TextView
+                        android:id="@+id/statusBar"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="You are part of: community_name"
+                        android:textSize="14sp"
+                        android:textColor="#555555"
+                        android:layout_marginTop="12dp"
+                        android:layout_marginBottom="12dp" />
+
                 </LinearLayout>
-
-                <!-- Action Buttons -->
-                <LinearLayout
-                    android:id="@+id/actionButtons"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center"
-                    android:layout_marginTop="24dp"
-                    android:weightSum="3">
-
-                    <LinearLayout
-                        android:id="@+id/newReportButtonContainer"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:gravity="center"
-                        android:background="@drawable/bg_card"
-                        android:padding="12dp"
-                        android:layout_margin="4dp">
-
-                        <ImageView
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
-                            android:src="@drawable/ic_report"
-                            android:contentDescription="New Report Icon" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="New Report"
-                            android:textSize="14sp"
-                            android:layout_marginTop="4dp" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:id="@+id/communityButtonContainer"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:gravity="center"
-                        android:background="@drawable/bg_card"
-                        android:padding="12dp"
-                        android:layout_margin="4dp">
-
-                        <ImageView
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
-                            android:src="@drawable/ic_community"
-                            android:contentDescription="Community Page Icon" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Community Page"
-                            android:textSize="14sp"
-                            android:layout_marginTop="4dp" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:id="@+id/viewReportsButton"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:gravity="center"
-                        android:background="@drawable/bg_card"
-                        android:padding="12dp"
-                        android:layout_margin="4dp">
-
-                        <ImageView
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
-                            android:src="@drawable/ic_view_reports"
-                            android:contentDescription="View Reports Icon" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="View Reports"
-                            android:textSize="14sp"
-                            android:layout_marginTop="4dp" />
-                    </LinearLayout>
-                </LinearLayout>
-
-                <!-- Reports Button -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/communityButton"
-                    style="@style/Widget.PawPals.Button"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Reports"
-                    android:padding="14dp"
-                    android:layout_marginTop="24dp" />
-            </LinearLayout>
-        </androidx.constraintlayout.widget.ConstraintLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.cardview.widget.CardView>
     </androidx.constraintlayout.motion.widget.MotionLayout>
 
     <!-- Drawer MotionLayout -->

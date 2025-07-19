@@ -2,32 +2,29 @@
 <MotionScene xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:motion="http://schemas.android.com/apk/res-auto">
 
-    <!-- This MotionScene will now handle only the bottom sheet -->
-
     <ConstraintSet android:id="@+id/start">
         <Constraint
-            android:id="@id/bottomSheet"
+            android:id="@id/bottomSheetCard"
             android:layout_width="match_parent"
             android:layout_height="120dp"
             motion:layout_constraintBottom_toBottomOf="parent" />
 
-        <Constraint android:id="@id/communityInfo" android:visibility="gone" />
-        <Constraint android:id="@id/actionButtons" android:visibility="gone" />
-        <Constraint android:id="@id/communityButton" android:visibility="gone" />
+        <Constraint android:id="@id/actionButtons"
+            android:visibility="gone" />
     </ConstraintSet>
 
     <ConstraintSet android:id="@+id/end">
         <Constraint
-            android:id="@id/bottomSheet"
+            android:id="@id/bottomSheetCard"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             motion:layout_constraintTop_toTopOf="parent"
             motion:layout_constraintBottom_toBottomOf="parent"
-            motion:layout_constraintHeight_percent="0.9" />
+            android:layout_marginTop="80dp" />
 
-        <Constraint android:id="@id/communityInfo" android:visibility="visible" />
-        <Constraint android:id="@id/actionButtons" android:visibility="visible" />
-        <Constraint android:id="@id/communityButton" android:visibility="visible" />
+        <Constraint
+            android:id="@id/actionButtons"
+            android:visibility="visible" />
     </ConstraintSet>
 
     <Transition
@@ -35,7 +32,7 @@
         motion:constraintSetEnd="@id/end"
         motion:duration="500">
         <OnSwipe
-            motion:touchAnchorId="@id/bottomSheet"
+            motion:touchAnchorId="@id/bottomSheetCard"
             motion:touchAnchorSide="top"
             motion:dragDirection="dragUp" />
     </Transition>

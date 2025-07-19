@@ -47,6 +47,7 @@ public class MapController {
     private final Map<String, Marker> userMarkers = new HashMap<>();
     private LocationCallback locationCallback;
     private LocationRequest locationRequest;
+    private boolean isVisibleToOthers = true;
 
     public MapController(MapView mapView, Context context, String currentUserId) {
         this.mapView = mapView;
@@ -169,7 +170,9 @@ public class MapController {
                     Log.d("MapController", "Realtime user location: " + lat + ", " + lng);
 
                     // שמירת מיקום ב־Firestore
-                    locationRepo.updateUserLocation(currentUserId, lat, lng);
+                    if (isVisibleToOthers) {
+                        locationRepo.updateUserLocation(currentUserId, lat, lng);
+                    }
                 }
             }
         };
@@ -201,6 +204,10 @@ public class MapController {
     private boolean hasLocationPermission() {
         return ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
                 ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    public void setVisibleToOthers(boolean visible) {
+        this.isVisibleToOthers = visible;
     }
 
     // Lifecycle methods

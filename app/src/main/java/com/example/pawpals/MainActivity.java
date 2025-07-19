@@ -9,6 +9,8 @@ import android.os.Looper;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.TextView;
+
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.motion.widget.MotionLayout;
@@ -71,6 +73,25 @@ public class MainActivity extends AppCompatActivity {
         } else {
             mapController.initializeMap(savedInstanceState);
         }
+
+        TextView labelInvisible = findViewById(R.id.labelInvisible);
+        TextView labelVisible = findViewById(R.id.labelVisible);
+
+        // מצב התחלה: משתמש נראה
+        labelVisible.setAlpha(1f);
+        labelInvisible.setAlpha(0.5f);
+
+        labelInvisible.setOnClickListener(v -> {
+            mapController.setVisibleToOthers(false);
+            labelInvisible.setAlpha(1f);
+            labelVisible.setAlpha(0.5f);
+        });
+
+        labelVisible.setOnClickListener(v -> {
+            mapController.setVisibleToOthers(true);
+            labelVisible.setAlpha(1f);
+            labelInvisible.setAlpha(0.5f);
+        });
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.rootLayout), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -241,6 +262,5 @@ public class MainActivity extends AppCompatActivity {
         super.onSaveInstanceState(outState);
         if (mapController != null) mapController.onSaveInstanceState(outState);
     }
-
 
 }
