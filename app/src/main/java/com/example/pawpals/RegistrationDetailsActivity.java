@@ -35,13 +35,15 @@ public class RegistrationDetailsActivity extends AppCompatActivity {
     private EditText inputName, inputCommunity;
     private CheckBox checkboxCreateCommunity;
     private MaterialButton buttonContinue;
+    private Spinner spinnerCommunities;
+
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
-    private final String userId = FirebaseAuth.getInstance().getCurrentUser().getUid(); // המשתמש הנוכחי
+    private final String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
     private FusedLocationProviderClient locationClient;
     private LocationRepository locationRepo;
     private double currentLat = 0;
     private double currentLng = 0;
-    private Spinner spinnerCommunities;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,51 +56,76 @@ public class RegistrationDetailsActivity extends AppCompatActivity {
         buttonContinue = findViewById(R.id.button_continue);
         spinnerCommunities = findViewById(R.id.spinner_communities);
 
-        buttonContinue.setOnClickListener(v -> handleRegistrationDetails());
-
         locationClient = LocationServices.getFusedLocationProviderClient(this);
         locationRepo = new LocationRepository();
 
-        // בקשת מיקום נוכחי
+        buttonContinue.setOnClickListener(v -> handleRegistrationDetails());
+
+        checkboxCreateCommunity.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            inputCommunity.setVisibility(isChecked ? View.VISIBLE : View.GONE);
+            spinnerCommunities.setVisibility(isChecked ? View.GONE : View.VISIBLE);
+        });
+
+        // בקשת הרשאות וטעינת מיקום
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            locationClient.getLastLocation().addOnSuccessListener(location -> {
-                if (location != null) {
-                    currentLat = location.getLatitude();
-                    currentLng = location.getLongitude();
-                    Log.d("Registration", "User location: " + currentLat + ", " + currentLng);
-                }
-
-                locationRepo.getNearbyCommunities(currentLat, currentLng, 5000, new LocationRepository.FirestoreNearbyCommunitiesCallback() {
-                    @Override
-                    public void onSuccess(List<String> nearbyCommunityIds) {
-                        ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                                RegistrationDetailsActivity.this,
-                                android.R.layout.simple_spinner_item,
-                                nearbyCommunityIds
-                        );
-                        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                        spinnerCommunities.setAdapter(adapter);
-                    }
-
-                    @Override
-                    public void onFailure(Exception e) {
-                        Toast.makeText(RegistrationDetailsActivity.this, "Failed to load nearby communities", Toast.LENGTH_SHORT).show();
-                    }
-                });
-            });
+            fetchLocationAndLoadCommunities();
         } else {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1001);
         }
+    }
 
-        checkboxCreateCommunity.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (isChecked) {
-                inputCommunity.setVisibility(View.VISIBLE);
-                spinnerCommunities.setVisibility(View.GONE);
+    // מקבל מיקום נוכחי וטוען קהילות קרובות
+    private void fetchLocationAndLoadCommunities() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // אם אין הרשאה – לא ננסה לגשת למיקום
+            Toast.makeText(this, "Location permission not granted", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        locationClient.getLastLocation().addOnSuccessListener(location -> {
+            if (location != null) {
+                currentLat = location.getLatitude();
+                currentLng = location.getLongitude();
+                Log.d("Registration", "Location: " + currentLat + ", " + currentLng);
+                loadNearbyCommunities();
             } else {
-                inputCommunity.setVisibility(View.GONE);
-                spinnerCommunities.setVisibility(View.VISIBLE);
+                Toast.makeText(this, "Unable to get location. Try again.", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    // טוען קהילות קרובות ל־Spinner
+    private void loadNearbyCommunities() {
+        locationRepo.getNearbyCommunities(currentLat, currentLng, 5000, new LocationRepository.FirestoreNearbyCommunitiesCallback() {
+            @Override
+            public void onSuccess(List<String> nearbyCommunityIds) {
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                        RegistrationDetailsActivity.this,
+                        android.R.layout.simple_spinner_item,
+                        nearbyCommunityIds
+                );
+                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                spinnerCommunities.setAdapter(adapter);
+                spinnerCommunities.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Toast.makeText(RegistrationDetailsActivity.this, "Failed to load nearby communities", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    // טיפול באישור הרשאות
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 1001 && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            fetchLocationAndLoadCommunities();
+        } else {
+            Toast.makeText(this, "Location permission denied", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void handleRegistrationDetails() {
@@ -117,35 +144,14 @@ public class RegistrationDetailsActivity extends AppCompatActivity {
                 Toast.makeText(this, "Please enter a community name to create", Toast.LENGTH_SHORT).show();
                 return;
             }
-
-            // בדיקה רגילה אם הקהילה כבר קיימת
             checkCommunityExistence(name, communityName, true);
-
         } else {
-            // אם המשתמש מצטרף לקהילה קיימת – נשתמש בשם מה־Spinner
             if (spinnerCommunities.getSelectedItem() == null) {
                 Toast.makeText(this, "Please select a community", Toast.LENGTH_SHORT).show();
                 return;
             }
-
             communityName = spinnerCommunities.getSelectedItem().toString();
-
-            // נבדוק האם הקהילה הקרובה באמת קיימת בסביבה
-            locationRepo.getNearbyCommunities(currentLat, currentLng, 5000, new LocationRepository.FirestoreNearbyCommunitiesCallback() {
-                @Override
-                public void onSuccess(List<String> nearbyCommunityIds) {
-                    if (nearbyCommunityIds.contains(communityName)) {
-                        checkCommunityExistence(name, communityName, false);
-                    } else {
-                        Toast.makeText(RegistrationDetailsActivity.this, "Community is not near your current location", Toast.LENGTH_SHORT).show();
-                    }
-                }
-
-                @Override
-                public void onFailure(Exception e) {
-                    Toast.makeText(RegistrationDetailsActivity.this, "Failed to check nearby communities", Toast.LENGTH_SHORT).show();
-                }
-            });
+            checkCommunityExistence(name, communityName, false);
         }
     }
 
@@ -154,12 +160,11 @@ public class RegistrationDetailsActivity extends AppCompatActivity {
                 .document(communityName)
                 .get()
                 .addOnSuccessListener(snapshot -> {
-                    boolean communityExists = snapshot.exists();
-
-                    if (communityExists && wantsToCreate) {
+                    boolean exists = snapshot.exists();
+                    if (exists && wantsToCreate) {
                         Toast.makeText(this, "Community already exists!", Toast.LENGTH_SHORT).show();
-                    } else if (!communityExists && !wantsToCreate) {
-                        Toast.makeText(this, "Community doesn't exist yet. Please check 'create' to create it.", Toast.LENGTH_SHORT).show();
+                    } else if (!exists && !wantsToCreate) {
+                        Toast.makeText(this, "Community doesn't exist. Please check 'create' to create it.", Toast.LENGTH_SHORT).show();
                     } else {
                         saveUserAndCommunity(name, communityName, wantsToCreate);
                     }
@@ -182,7 +187,7 @@ public class RegistrationDetailsActivity extends AppCompatActivity {
                     new CommunityRepository.FirestoreCallback() {
                         @Override
                         public void onSuccess(String id) {
-                            saveUser(name, communityName, isManager);
+                            saveUser(name, communityName, true);
                         }
 
                         @Override
@@ -199,33 +204,22 @@ public class RegistrationDetailsActivity extends AppCompatActivity {
     private void saveUser(String name, String communityName, boolean isManager) {
         UserRepository userRepository = new UserRepository();
 
-        // נבנה את הקהילה עם מיקום
-        Community community;
-        if (isManager) {
-            CommunityManager communityManager = new CommunityManager(name, communityName);
-            community = new Community(communityName, currentLat, currentLng, communityManager);
-        } else {
-            community = new Community(communityName, currentLat, currentLng);
-        }
+        Community community = isManager
+                ? new Community(communityName, currentLat, currentLng, new CommunityManager(name, communityName))
+                : new Community(communityName, currentLat, currentLng);
 
-        // נבנה את המשתמש
         User user = isManager
                 ? new CommunityManager(name, communityName)
                 : new User(name, communityName);
 
         user.setIsManager(isManager);
 
-        // שלב שמירה
         User finalUser = user;
-        userRepository.createUserProfile(userId, user, new UserRepository.FirestoreCallback() {
+        userRepository.createUserProfile(userId, finalUser, new UserRepository.FirestoreCallback() {
             @Override
             public void onSuccess(String documentId) {
                 Toast.makeText(RegistrationDetailsActivity.this, "Welcome!", Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(RegistrationDetailsActivity.this, MainActivity.class);
-                Log.d("Registration", "Sending user: " + finalUser.getClass().getSimpleName());
-                Log.d("Registration", "user name: " + finalUser.getUserName());
-                Log.d("Registration", "community: " + finalUser.getCommunityName());
-
                 intent.putExtra("currentUser", finalUser);
                 startActivity(intent);
                 finish();
