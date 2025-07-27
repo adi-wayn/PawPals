@@ -321,6 +321,9 @@ public class MainActivity extends AppCompatActivity {
                             String type = result.getData().getStringExtra("selectedType");
                             if (type != null) {
                                 mapController.enterReportMode(type);
+                                // קריסת הגלילה כך שהמפה תהיה גלויה כולה
+                                MotionLayout mainMotion = findViewById(R.id.main);
+                                mainMotion.transitionToStart();
                             }
                         }
                     });

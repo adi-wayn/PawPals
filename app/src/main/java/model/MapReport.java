@@ -3,6 +3,9 @@ package model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.google.firebase.Timestamp;
+
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,7 +19,7 @@ public class MapReport implements Parcelable {
     private String senderName;
     private double latitude;
     private double longitude;
-    private long timestamp;
+    private Timestamp timestamp;
 
     /**
      * Default constructor required for calls to DataSnapshot.getValue(MapReport.class)
@@ -34,7 +37,7 @@ public class MapReport implements Parcelable {
      * @param longitude  Longitude coordinate of the report location.
      * @param timestamp  Time of report creation in milliseconds since epoch.
      */
-    public MapReport(String type, String senderName, double latitude, double longitude, long timestamp) {
+    public MapReport(String type, String senderName, double latitude, double longitude, Timestamp timestamp) {
         this.type = type;
         this.senderName = senderName;
         this.latitude = latitude;
@@ -42,12 +45,17 @@ public class MapReport implements Parcelable {
         this.timestamp = timestamp;
     }
 
+    // קונסטרקטור נוח לקבלת מילישניות והמרתן ל-Timestamp
+    public MapReport(String type, String senderName, double latitude, double longitude, long timestampMillis) {
+        this(type, senderName, latitude, longitude, new Timestamp(new Date(timestampMillis)));
+    }
     protected MapReport(Parcel in) {
         type = in.readString();
         senderName = in.readString();
         latitude = in.readDouble();
         longitude = in.readDouble();
-        timestamp = in.readLong();
+        long tsMillis = in.readLong();
+        this.timestamp = new Timestamp(new Date(tsMillis));
     }
 
     public static final Creator<MapReport> CREATOR = new Creator<MapReport>() {
@@ -78,9 +86,7 @@ public class MapReport implements Parcelable {
         return longitude;
     }
 
-    public long getTimestamp() {
-        return timestamp;
-    }
+    public Timestamp getTimestamp() { return timestamp; }
 
     /**
      * Serializes this report into a map structure for Firestore.
@@ -108,6 +114,6 @@ public class MapReport implements Parcelable {
         parcel.writeString(senderName);
         parcel.writeDouble(latitude);
         parcel.writeDouble(longitude);
-        parcel.writeLong(timestamp);
+        parcel.writeLong(timestamp != null ? timestamp.toDate().getTime() : 0L);
     }
 }

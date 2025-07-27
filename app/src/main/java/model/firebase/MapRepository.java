@@ -249,8 +249,18 @@ public class MapRepository {
                 String senderName = (String) data.get("senderName");
                 Double lat = (Double) data.get("latitude");
                 Double lng = (Double) data.get("longitude");
-                Timestamp ts = (Timestamp) data.get("timestamp");
-                long tsMillis = ts != null ? ts.toDate().getTime() : 0L;
+
+                // שליפת timestamp בצורה בטוחה
+                Object tsObj = data.get("timestamp");
+                long tsMillis = 0L;
+                if (tsObj instanceof Timestamp) {
+                    tsMillis = ((Timestamp) tsObj).toDate().getTime();
+                } else if (tsObj instanceof Long) {
+                    tsMillis = (Long) tsObj;
+                } else if (tsObj instanceof Double) {
+                    tsMillis = ((Double) tsObj).longValue();
+                }
+
                 MapReport report = new MapReport(
                         type,
                         senderName,

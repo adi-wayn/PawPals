@@ -284,16 +284,22 @@ public class MapController {
             // fallback במקרה שהאייקון לא נמצא
             return BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET);
         }
-        vectorDrawable.setBounds(0, 0,
-                vectorDrawable.getIntrinsicWidth(),
-                vectorDrawable.getIntrinsicHeight());
-        Bitmap bitmap = Bitmap.createBitmap(
-                vectorDrawable.getIntrinsicWidth(),
-                vectorDrawable.getIntrinsicHeight(),
-                Bitmap.Config.ARGB_8888);
+        // ציור הוקטור לביטמפ
+        int width = vectorDrawable.getIntrinsicWidth();
+        int height = vectorDrawable.getIntrinsicHeight();
+        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
+        vectorDrawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
         vectorDrawable.draw(canvas);
-        return BitmapDescriptorFactory.fromBitmap(bitmap);
+
+        // שינוי קנה המידה
+        float scale = 0.1f;
+        Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap,
+                Math.round(width * scale),
+                Math.round(height * scale),
+                true);
+
+        return BitmapDescriptorFactory.fromBitmap(scaledBitmap);
     }
 
     // Lifecycle methods
