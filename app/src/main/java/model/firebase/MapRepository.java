@@ -235,7 +235,7 @@ public class MapRepository {
         CollectionReference ref = db.collection("communities")
                 .document(communityName)
                 .collection("mapReports");
-        liveLocationListener = ref.addSnapshotListener((snapshots, e) -> {
+        mapReportsListener = ref.addSnapshotListener((snapshots, e) -> {
             if (e != null || snapshots == null) {
                 Log.e(TAG, "listenToMapReports error", e);
                 return;

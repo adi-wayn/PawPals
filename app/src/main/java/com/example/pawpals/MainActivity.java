@@ -13,6 +13,8 @@ import android.view.View;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.motion.widget.MotionLayout;
 import androidx.core.app.ActivityCompat;
@@ -261,9 +263,7 @@ public class MainActivity extends AppCompatActivity {
 
         View newReportButton = findViewById(R.id.newReportButtonContainer);
         newReportButton.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, ReportMapActivity.class);
-            intent.putExtra("currentUser", currentUser);
-            startActivity(intent);
+            openReportMapPicker(); // יפתח את הפעילות עם startActivityForResult
         });
 
         View myProfileButton = findViewById(R.id.myProfileButton);
@@ -314,20 +314,20 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private final ActivityResultLauncher<Intent> mapReportPickerLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
+                    result -> {
+                        if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                            String type = result.getData().getStringExtra("selectedType");
+                            if (type != null) {
+                                mapController.enterReportMode(type);
+                            }
+                        }
+                    });
+
     private void openReportMapPicker() {
         Intent intent = new Intent(this, ReportMapActivity.class);
-        startActivityForResult(intent, REQUEST_MAP_REPORT);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_MAP_REPORT && resultCode == RESULT_OK) {
-            String type = data.getStringExtra("selectedType");
-            if (type != null) {
-                mapController.enterReportMode(type);
-            }
-        }
+        mapReportPickerLauncher.launch(intent);
     }
 
     @Override
