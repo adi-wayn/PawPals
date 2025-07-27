@@ -268,8 +268,8 @@ public class MapRepository {
                         lng != null ? lng : 0.0,
                         tsMillis
                 );
-                // Expire reports older than 15 minutes
-                boolean expired = tsMillis > 0 && (now - tsMillis) > (15 * 60 * 1000);
+                // Expire reports older than 30 minutes
+                boolean expired = tsMillis > 0 && (now - tsMillis) > (30 * 60 * 1000);
                 if (expired) {
                     doc.getReference().delete();
                     listener.onReportRemoved(id);
@@ -289,6 +289,16 @@ public class MapRepository {
             mapReportsListener.remove();
             mapReportsListener = null;
         }
+    }
+
+    public void deleteMapReport(String communityName, String reportId, FirestoreCallback callback) {
+        db.collection("communities")
+                .document(communityName)
+                .collection("mapReports")
+                .document(reportId)
+                .delete()
+                .addOnSuccessListener(aVoid -> callback.onSuccess(reportId))
+                .addOnFailureListener(callback::onFailure);
     }
 
     // === ממשקי callback ===

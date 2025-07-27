@@ -2,6 +2,7 @@ package model.maps;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -106,6 +107,40 @@ public class MapController {
 
                                         // טעינת דיווחים קיימים במפה
                                         loadMapReports(user.getCommunityName());
+
+                                        googleMap.setOnMarkerClickListener(marker -> {
+                                            // בדיקה האם זה מרקר של דיווח מפה
+                                            String reportId = null;
+                                            for (Map.Entry<String, Marker> entry : mapReportMarkers.entrySet()) {
+                                                if (entry.getValue().equals(marker)) {
+                                                    reportId = entry.getKey();
+                                                    break;
+                                                }
+                                            }
+                                            // אם נמצא דיווח ואם המשתמש הוא מנהל – הצג דיאלוג מחיקה
+                                            if (reportId != null && currentUser != null && currentUser.isManager()) {
+                                                final String reportIdFinal = reportId;
+                                                new AlertDialog.Builder(context)
+                                                        .setTitle("Delete Report")
+                                                        .setMessage("Do you want to delete this map report?")
+                                                        .setPositiveButton("Delete", (dialog, which) -> {
+                                                            mapRepo.deleteMapReport(currentUser.getCommunityName(), reportIdFinal,
+                                                                    new MapRepository.FirestoreCallback() {
+                                                                        @Override public void onSuccess(String id) {
+                                                                            Toast.makeText(context, "Report deleted", Toast.LENGTH_SHORT).show();
+                                                                        }
+                                                                        @Override public void onFailure(Exception e) {
+                                                                            Toast.makeText(context, "Failed to delete: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                                                                        }
+                                                                    });
+                                                        })
+                                                        .setNegativeButton("Cancel", null)
+                                                        .show();
+                                            }
+                                            // החזר false אם תרצה שהקליק יציג גם את חלון המידע (snippet). החזר true כדי לבלוע את האירוע.
+                                            return false;
+                                        });
+
                                     } else {
                                         Log.w("MapController", "Location is null. Falling back to Tel Aviv.");
                                         moveToTelAviv();
@@ -226,6 +261,7 @@ public class MapController {
                 Marker marker = googleMap.addMarker(new MarkerOptions()
                         .position(pos)
                         .title(report.getType())
+                        .snippet("Reported by: " + report.getSenderName())
                         .icon(getMarkerIcon(report.getType())));
                 mapReportMarkers.put(id, marker);
             }
