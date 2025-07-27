@@ -9,7 +9,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
-import android.util.Pair;
+import android.widget.Toast;
 
 import androidx.core.app.ActivityCompat;
 
@@ -22,23 +22,20 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.Priority;
 import com.google.android.gms.maps.*;
 import com.google.android.gms.maps.model.*;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.ListenerRegistration;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
+import model.MapReport;
 import model.User;
-import model.firebase.LocationRepository;
+import model.firebase.MapRepository;
 import model.firebase.UserRepository;
 
 public class MapController {
     private final Context context;
     private final MapView mapView;
     private final FusedLocationProviderClient locationClient;
-    private final LocationRepository locationRepo = new LocationRepository();
+    private final MapRepository mapRepo = new MapRepository();
     private final UserRepository userRepo = new UserRepository();
     private GoogleMap googleMap;
     private boolean isMapReady = false;
@@ -48,6 +45,9 @@ public class MapController {
     private LocationCallback locationCallback;
     private LocationRequest locationRequest;
     private boolean isVisibleToOthers = true;
+    private boolean reportMode = false;
+    private String reportType;
+    private Map<String, Marker> mapReportMarkers = new HashMap<>();
 
     public MapController(MapView mapView, Context context, String currentUserId) {
         this.mapView = mapView;
@@ -95,7 +95,7 @@ public class MapController {
                                         Log.d("MapController", "User location: " + userLatLng);
 
                                         // שמירת מיקום
-                                        locationRepo.updateUserLocation(currentUserId, userLatLng.latitude, userLatLng.longitude);
+                                        mapRepo.updateUserLocation(currentUserId, userLatLng.latitude, userLatLng.longitude);
 
                                         // שליפת מיקומי המשתמשים בקהילה
                                         loadCommunityMembersLocations(user.getCommunityName());
@@ -122,8 +122,8 @@ public class MapController {
 
     // שליפת מיקומי משתמשים מהקהילה עם שמות והצגתם במפה
     private void loadCommunityMembersLocations(String communityName) {
-        locationRepo.listenToCommunityLocations(communityName, currentUserId, userRepo,
-                new LocationRepository.FirestoreLiveLocationCallback() {
+        mapRepo.listenToCommunityLocations(communityName, currentUserId, userRepo,
+                new MapRepository.FirestoreLiveLocationCallback() {
                     @Override
                     public void onUserLocationUpdated(String userId, String userName, LatLng position) {
                         if (userMarkers.containsKey(userId)) {
@@ -171,7 +171,7 @@ public class MapController {
 
                     // שמירת מיקום ב־Firestore
                     if (isVisibleToOthers) {
-                        locationRepo.updateUserLocation(currentUserId, lat, lng);
+                        mapRepo.updateUserLocation(currentUserId, lat, lng);
                     }
                 }
             }
@@ -210,6 +210,56 @@ public class MapController {
         this.isVisibleToOthers = visible;
     }
 
+    // ב־initializeMap נטען גם את הדיווחים הקיימים
+    private void loadMapReports(String communityName) {
+        mapRepo.listenToMapReports(communityName, new MapRepository.MapReportsListener() {
+            @Override
+            public void onReportAdded(String id, MapReport report) {
+                LatLng pos = new LatLng(report.getLatitude(), report.getLongitude());
+                Marker marker = googleMap.addMarker(new MarkerOptions()
+                        .position(pos)
+                        .title(report.getType())
+                        .icon(getMarkerIcon(report.getType())));
+                mapReportMarkers.put(id, marker);
+            }
+            @Override
+            public void onReportRemoved(String id) {
+                Marker m = mapReportMarkers.remove(id);
+                if (m != null) m.remove();
+            }
+        });
+    }
+
+    // להיכנס למצב בחירת נקודה על המפה
+    public void enterReportMode(String type) {
+        this.reportMode = true;
+        this.reportType = type;
+        Toast.makeText(context, "Tap on the map to place a \"" + type + "\" report", Toast.LENGTH_LONG).show();
+        googleMap.setOnMapClickListener(latLng -> {
+            if (!reportMode) return;
+            // יצירת דיווח
+            MapReport newReport = new MapReport(reportType, currentUser.getUserName(),
+                    latLng.latitude, latLng.longitude, System.currentTimeMillis());
+            mapRepo.createMapReport(currentUser.getCommunityName(), newReport, new MapRepository.FirestoreCallback() {
+                @Override public void onSuccess(String docId) {
+                    // אפשר להראות Toast או להוסיף את הסמן כאן
+                    reportMode = false;
+                    googleMap.setOnMapClickListener(null);
+                }
+                @Override public void onFailure(Exception e) {
+                    reportMode = false;
+                    googleMap.setOnMapClickListener(null);
+                    Toast.makeText(context, "Failed to save report: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                }
+            });
+        });
+    }
+
+    private BitmapDescriptor getMarkerIcon(String type) {
+        // צבעים שונים לכל סוג – כפי שהראיתי קודם
+    }
+
+
     // Lifecycle methods
     public void onResume() { mapView.onResume(); }
 
@@ -220,7 +270,7 @@ public class MapController {
 
     public void onDestroy() {
         if (mapView != null) mapView.onDestroy();
-        locationRepo.removeLiveLocationListener();
+        mapRepo.removeLiveLocationListener();
 
         if (locationCallback != null) {
             locationClient.removeLocationUpdates(locationCallback);

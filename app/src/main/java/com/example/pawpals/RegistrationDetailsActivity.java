@@ -27,7 +27,7 @@ import model.Community;
 import model.CommunityManager;
 import model.User;
 import model.firebase.CommunityRepository;
-import model.firebase.LocationRepository;
+import model.firebase.MapRepository;
 import model.firebase.UserRepository;
 
 public class RegistrationDetailsActivity extends AppCompatActivity {
@@ -41,7 +41,7 @@ public class RegistrationDetailsActivity extends AppCompatActivity {
     private final String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
     private FusedLocationProviderClient locationClient;
-    private LocationRepository locationRepo;
+    private MapRepository mapRepo;
     private double currentLat = 0;
     private double currentLng = 0;
 
@@ -57,7 +57,7 @@ public class RegistrationDetailsActivity extends AppCompatActivity {
         spinnerCommunities = findViewById(R.id.spinner_communities);
 
         locationClient = LocationServices.getFusedLocationProviderClient(this);
-        locationRepo = new LocationRepository();
+        mapRepo = new MapRepository();
 
         buttonContinue.setOnClickListener(v -> handleRegistrationDetails());
 
@@ -97,7 +97,7 @@ public class RegistrationDetailsActivity extends AppCompatActivity {
 
     // טוען קהילות קרובות ל־Spinner
     private void loadNearbyCommunities() {
-        locationRepo.getNearbyCommunities(currentLat, currentLng, 5000, new LocationRepository.FirestoreNearbyCommunitiesCallback() {
+        mapRepo.getNearbyCommunities(currentLat, currentLng, 5000, new MapRepository.FirestoreNearbyCommunitiesCallback() {
             @Override
             public void onSuccess(List<String> nearbyCommunityIds) {
                 ArrayAdapter<String> adapter = new ArrayAdapter<>(

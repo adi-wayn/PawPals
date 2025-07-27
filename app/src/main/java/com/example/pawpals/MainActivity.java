@@ -32,7 +32,7 @@ import java.util.Map;
 import model.User;
 import model.firebase.AuthHelper;
 import model.firebase.CommunityRepository;
-import model.firebase.LocationRepository;
+import model.firebase.MapRepository;
 import model.firebase.UserRepository;
 import model.maps.MapController;
 import model.Report;
@@ -40,6 +40,7 @@ import model.Report;
 public class MainActivity extends AppCompatActivity {
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
     private MapController mapController;
+    private static final int REQUEST_MAP_REPORT = 2001;
     private float initialTouchY = 0;
     private float lastProgress = 0f;
     private boolean isDragging = false;
@@ -80,8 +81,8 @@ public class MainActivity extends AppCompatActivity {
                     String communityName = user.getCommunityName();
 
 
-                    LocationRepository locationRepo = new LocationRepository();
-                    locationRepo.getUserLocationsWithNamesByCommunity(communityName, new LocationRepository.FirestoreUserLocationsWithNamesCallback() {
+                    MapRepository locationRepo = new MapRepository();
+                    locationRepo.getUserLocationsWithNamesByCommunity(communityName, new MapRepository.FirestoreUserLocationsWithNamesCallback() {
                         @Override
                         public void onSuccess(Map<String, Pair<LatLng, String>> userLocationsWithNames) {
                             int count = userLocationsWithNames.size();
@@ -311,6 +312,22 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }, 300); // עיכוב של 300 מילישניות
         });
+    }
+
+    private void openReportMapPicker() {
+        Intent intent = new Intent(this, ReportMapActivity.class);
+        startActivityForResult(intent, REQUEST_MAP_REPORT);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_MAP_REPORT && resultCode == RESULT_OK) {
+            String type = data.getStringExtra("selectedType");
+            if (type != null) {
+                mapController.enterReportMode(type);
+            }
+        }
     }
 
     @Override

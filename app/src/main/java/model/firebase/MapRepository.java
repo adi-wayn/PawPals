@@ -9,10 +9,10 @@ import com.google.firebase.firestore.*;
 
 import java.util.*;
 
-import model.User;
+import model.MapReport;
 
-public class LocationRepository {
-    private static final String TAG = "LocationRepository";
+public class MapRepository {
+    private static final String TAG = "MapRepository";
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private ListenerRegistration liveLocationListener;
 
@@ -206,7 +206,89 @@ public class LocationRepository {
                 .addOnFailureListener(callback::onFailure);
     }
 
+    public void createMapReport(String communityName, MapReport report, FirestoreCallback callback) {
+        db.collection("communities")
+                .document(communityName)
+                .collection("mapReports")
+                .add(report.toMap())
+                .addOnSuccessListener(docRef -> {
+                    Log.d(TAG, "Map report created under community " + communityName);
+                    callback.onSuccess(docRef.getId());
+                })
+                .addOnFailureListener(e -> {
+                    Log.w(TAG, "Failed to create map report", e);
+                    callback.onFailure(e);
+                });
+    }
+
+    public void listenToMapReports(String communityName, MapReportsListener listener) {
+        // Remove existing listener to avoid multiple subscriptions
+        if (liveLocationListener != null) {
+            liveLocationListener.remove();
+            liveLocationListener = null;
+        }
+        CollectionReference ref = db.collection("communities")
+                .document(communityName)
+                .collection("mapReports");
+        liveLocationListener = ref.addSnapshotListener((snapshots, e) -> {
+            if (e != null || snapshots == null) {
+                Log.e(TAG, "listenToMapReports error", e);
+                return;
+            }
+            long now = System.currentTimeMillis();
+            for (DocumentChange change : snapshots.getDocumentChanges()) {
+                DocumentSnapshot doc = change.getDocument();
+                String id = doc.getId();
+                Map<String, Object> data = doc.getData();
+                String type = (String) data.get("type");
+                String senderName = (String) data.get("senderName");
+                Double lat = (Double) data.get("latitude");
+                Double lng = (Double) data.get("longitude");
+                Timestamp ts = (Timestamp) data.get("timestamp");
+                long tsMillis = ts != null ? ts.toDate().getTime() : 0L;
+                MapReport report = new MapReport(
+                        type,
+                        senderName,
+                        lat != null ? lat : 0.0,
+                        lng != null ? lng : 0.0,
+                        tsMillis
+                );
+                // Expire reports older than 15 minutes
+                boolean expired = tsMillis > 0 && (now - tsMillis) > (15 * 60 * 1000);
+                if (expired) {
+                    doc.getReference().delete();
+                    listener.onReportRemoved(id);
+                    continue;
+                }
+                if (change.getType() == DocumentChange.Type.REMOVED) {
+                    listener.onReportRemoved(id);
+                } else {
+                    listener.onReportAdded(id, report);
+                }
+            }
+        });
+    }
+
+    public void removeMapReportsListener() {
+        if (liveLocationListener != null) {
+            liveLocationListener.remove();
+            liveLocationListener = null;
+        }
+    }
+
     // === ממשקי callback ===
+    public interface MapReportsListener {
+        void onReportAdded(String reportId, MapReport report);
+
+        void onReportRemoved(String reportId);
+    }
+
+    public interface FirestoreCallback {
+        void onSuccess(String documentId);
+
+        void onFailure(Exception e);
+    }
+
     public interface FirestoreNearbyCommunitiesCallback {
         void onSuccess(List<String> nearbyCommunityIds);
         void onFailure(Exception e);
