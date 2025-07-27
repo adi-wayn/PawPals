@@ -14,7 +14,10 @@ import model.MapReport;
 public class MapRepository {
     private static final String TAG = "MapRepository";
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
+    // מאזין למיקומי משתמשים
     private ListenerRegistration liveLocationListener;
+    // מאזין לדיווחי מפה
+    private ListenerRegistration mapReportsListener;
 
     // שמירת מיקום משתמש
     public void updateUserLocation(String userId, double lat, double lng) {
@@ -128,8 +131,10 @@ public class MapRepository {
             public void onSuccess(Map<String, String> userNames) {
                 List<String> userIds = new ArrayList<>(userNames.keySet());
 
+                // הסרה של מאזין קיים למיקומי משתמשים בלבד
                 if (liveLocationListener != null) {
                     liveLocationListener.remove();
+                    liveLocationListener = null;
                 }
 
                 liveLocationListener = db.collection("locations")
@@ -159,7 +164,7 @@ public class MapRepository {
 
                                 if (lat != null && lng != null) {
                                     LatLng position = new LatLng(lat, lng);
-                                    String name = userNames.getOrDefault(uid, "אנונימי");
+                                    String name = userNames.getOrDefault(uid, "anonymous");
                                     callback.onUserLocationUpdated(uid, name, position);
                                 }
                             }
@@ -222,10 +227,10 @@ public class MapRepository {
     }
 
     public void listenToMapReports(String communityName, MapReportsListener listener) {
-        // Remove existing listener to avoid multiple subscriptions
-        if (liveLocationListener != null) {
-            liveLocationListener.remove();
-            liveLocationListener = null;
+        // הסר מאזין קיים לדיווחי מפה בלבד
+        if (mapReportsListener != null) {
+            mapReportsListener.remove();
+            mapReportsListener = null;
         }
         CollectionReference ref = db.collection("communities")
                 .document(communityName)
@@ -270,9 +275,9 @@ public class MapRepository {
     }
 
     public void removeMapReportsListener() {
-        if (liveLocationListener != null) {
-            liveLocationListener.remove();
-            liveLocationListener = null;
+        if (mapReportsListener != null) {
+            mapReportsListener.remove();
+            mapReportsListener = null;
         }
     }
 

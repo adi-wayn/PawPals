@@ -4,6 +4,9 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
@@ -12,6 +15,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.example.pawpals.R;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -99,6 +103,9 @@ public class MapController {
 
                                         // שליפת מיקומי המשתמשים בקהילה
                                         loadCommunityMembersLocations(user.getCommunityName());
+
+                                        // טעינת דיווחים קיימים במפה
+                                        loadMapReports(user.getCommunityName());
                                     } else {
                                         Log.w("MapController", "Location is null. Falling back to Tel Aviv.");
                                         moveToTelAviv();
@@ -256,9 +263,38 @@ public class MapController {
     }
 
     private BitmapDescriptor getMarkerIcon(String type) {
-        // צבעים שונים לכל סוג – כפי שהראיתי קודם
+        switch (type) {
+            case "Dog Patrol":      // פקח כלבים
+                return bitmapDescriptorFromVector(context, R.drawable.ic_inspector);
+            case "Trash Bin":       // פח אשפה
+                return bitmapDescriptorFromVector(context, R.drawable.trash_bin);
+            case "Danger":          // סכנה
+                return bitmapDescriptorFromVector(context, R.drawable.ic_danger);
+            case "Help":            // בקשת סיוע
+                return bitmapDescriptorFromVector(context, R.drawable.ic_help);
+            default:
+                // צבע סגול כברירת מחדל
+                return BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET);
+        }
     }
 
+    private BitmapDescriptor bitmapDescriptorFromVector(Context ctx, int vectorResId) {
+        Drawable vectorDrawable = ContextCompat.getDrawable(ctx, vectorResId);
+        if (vectorDrawable == null) {
+            // fallback במקרה שהאייקון לא נמצא
+            return BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_VIOLET);
+        }
+        vectorDrawable.setBounds(0, 0,
+                vectorDrawable.getIntrinsicWidth(),
+                vectorDrawable.getIntrinsicHeight());
+        Bitmap bitmap = Bitmap.createBitmap(
+                vectorDrawable.getIntrinsicWidth(),
+                vectorDrawable.getIntrinsicHeight(),
+                Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        vectorDrawable.draw(canvas);
+        return BitmapDescriptorFactory.fromBitmap(bitmap);
+    }
 
     // Lifecycle methods
     public void onResume() { mapView.onResume(); }
@@ -271,6 +307,7 @@ public class MapController {
     public void onDestroy() {
         if (mapView != null) mapView.onDestroy();
         mapRepo.removeLiveLocationListener();
+        mapRepo.removeMapReportsListener();
 
         if (locationCallback != null) {
             locationClient.removeLocationUpdates(locationCallback);
