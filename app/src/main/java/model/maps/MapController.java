@@ -329,7 +329,7 @@ public class MapController {
         vectorDrawable.draw(canvas);
 
         // שינוי קנה המידה
-        float scale = 0.1f;
+        float scale = 0.05f;
         Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap,
                 Math.round(width * scale),
                 Math.round(height * scale),
