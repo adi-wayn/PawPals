@@ -77,11 +77,12 @@
             android:layout_marginBottom="16dp"/>
 
         <!-- כפתור שליחה -->
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/button_submit"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Submit Report"
+            style="@style/Widget.PawPals.Button"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="16dp"
             android:drawableStart="@drawable/ic_heart"

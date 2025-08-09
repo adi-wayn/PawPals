@@ -22,7 +22,7 @@
         app:layout_constraintEnd_toEndOf="parent" />
 
     <!-- שורה עליונה -->
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/button_inspector"
         android:layout_width="138dp"
         android:layout_height="114dp"
@@ -35,11 +35,12 @@
         app:iconGravity="top"
         app:iconSize="60dp"
         app:iconTint="@null"
+        style="@style/Widget.PawPals.Button"
         app:layout_constraintTop_toBottomOf="@id/textView"
         app:layout_constraintEnd_toStartOf="@id/button_bin"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/button_bin"
         android:layout_width="138dp"
         android:layout_height="114dp"
@@ -51,12 +52,13 @@
         app:iconGravity="top"
         app:iconSize="60dp"
         app:iconTint="@null"
+        style="@style/Widget.PawPals.Button"
         app:layout_constraintTop_toBottomOf="@id/textView"
         app:layout_constraintStart_toEndOf="@id/button_inspector"
         app:layout_constraintEnd_toEndOf="parent" />
 
     <!-- שורה תחתונה -->
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/button_danger"
         android:layout_width="138dp"
         android:layout_height="114dp"
@@ -69,11 +71,12 @@
         app:iconGravity="top"
         app:iconSize="60dp"
         app:iconTint="@null"
+        style="@style/Widget.PawPals.Button"
         app:layout_constraintTop_toBottomOf="@id/button_inspector"
         app:layout_constraintEnd_toStartOf="@id/button_help"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/button_help"
         android:layout_width="138dp"
         android:layout_height="114dp"
@@ -85,6 +88,7 @@
         app:iconGravity="top"
         app:iconSize="60dp"
         app:iconTint="@null"
+        style="@style/Widget.PawPals.Button"
         app:layout_constraintTop_toBottomOf="@id/button_bin"
         app:layout_constraintStart_toEndOf="@id/button_danger"
         app:layout_constraintEnd_toEndOf="parent" />

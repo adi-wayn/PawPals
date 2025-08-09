@@ -1,0 +1,10 @@
+<resources>
+    <!-- מכסה כל הפניה ישנה לתמה בשם PawPals -->
+    <style name="PawPals" parent="Theme.PawPals" />
+
+    <!-- מכסה כל הפניה ישנה ל-Shape בלי סיומת -->
+    <style name="Shape" parent="ShapeAppearance.Material3.Corner.None">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">16dp</item>
+    </style>
+</resources>
