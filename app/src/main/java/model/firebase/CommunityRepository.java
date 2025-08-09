@@ -198,9 +198,37 @@ public class CommunityRepository {
                 .addOnFailureListener(callback::onFailure);
     }
 
+    public void getCommunityCenterAndRadiusByName(String communityName, CommunityGeoCallback cb) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("communities")
+                .whereEqualTo("name", communityName)
+                .limit(1)
+                .get()
+                .addOnSuccessListener(qs -> {
+                    if (!qs.isEmpty()) {
+                        DocumentSnapshot doc = qs.getDocuments().get(0);
+                        Double lat = doc.getDouble("centerLat");
+                        Double lng = doc.getDouble("centerLng");
+                        Long radius = doc.getLong("radiusMeters");
+                        if (lat != null && lng != null) {
+                            cb.onSuccess(lat, lng, radius != null ? radius.intValue() : 1500);
+                        } else {
+                            cb.onFailure(new IllegalStateException("Missing centerLat/centerLng"));
+                        }
+                    } else {
+                        cb.onFailure(new IllegalStateException("Community not found"));
+                    }
+                })
+                .addOnFailureListener(cb::onFailure);
+    }
 
 
     // === ממשקי callback ===
+
+    public interface CommunityGeoCallback {
+        void onSuccess(double lat, double lng, int radiusMeters);
+        void onFailure(Exception e);
+    }
 
     public interface FirestoreCallback {
         void onSuccess(String documentId);

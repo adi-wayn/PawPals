@@ -81,14 +81,13 @@ public class CommunityActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-//        // כפתור מפת אזור (חדש)
-//        Button areaMapButton = findViewById(R.id.buttonAreaMap);
-//        areaMapButton.setOnClickListener(v -> {
-//            // כאן אפשר לפתוח Activity חדש שקשור למפה (לדוגמה AreaMapActivity)
-//            //יוד לא מימשנוא את כל הפונקציות
-//            Intent intent = new Intent(CommunityActivity.this, AreaMapActivity.class);
-//            intent.putExtra("currentUser", currentUser);
-//            startActivity(intent);
-//        });
+        // כפתור מפת אזור (חדש)
+        Button areaMapButton = findViewById(R.id.buttonAreaMap);
+        areaMapButton.setOnClickListener(v -> {
+            Intent intent = new Intent(CommunityActivity.this, MainActivity.class);
+            intent.putExtra("EXTRA_FOCUS_COMMUNITY_NAME", currentUser.getCommunityName());
+            intent.putExtra("EXTRA_FOCUS_RADIUS", 1500); // ברירת מחדל
+            startActivity(intent);
+        });
     }
 }

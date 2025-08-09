@@ -89,14 +89,15 @@ public class ManagerCommunityActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-//        // כפתור מפת אזור
-//        Button areaMapButton = findViewById(R.id.buttonAreaMap);
-//        areaMapButton.setOnClickListener(v -> {
-//            Intent intent = new Intent(ManagerCommunityActivity.this, AreaMapActivity.class);
-//            intent.putExtra("currentUser", currentUser);
-//            startActivity(intent);
-//        });
-//
+        // כפתור מפת אזור (חדש)
+        Button areaMapButton = findViewById(R.id.buttonAreaMap);
+        areaMapButton.setOnClickListener(v -> {
+            Intent intent = new Intent(ManagerCommunityActivity.this, MainActivity.class);
+            intent.putExtra("EXTRA_FOCUS_COMMUNITY_NAME", currentUser.getCommunityName());
+            intent.putExtra("EXTRA_FOCUS_RADIUS", 1500); // ברירת מחדל
+            startActivity(intent);
+        });
+
 //        // כפתור הגדרות קהילה (חדש)
 //        Button settingsButton = findViewById(R.id.buttonCommunitySettings);
 //        settingsButton.setOnClickListener(v -> {

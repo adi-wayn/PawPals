@@ -37,6 +37,10 @@ import model.firebase.MapRepository;
 import model.firebase.UserRepository;
 
 public class MapController {
+    private LatLng pendingFocusCenter = null;
+    private Integer pendingFocusRadius = null;
+    private Circle focusCircle = null;
+
     private final Context context;
     private final MapView mapView;
     private final FusedLocationProviderClient locationClient;
@@ -83,6 +87,13 @@ public class MapController {
             }
 
             googleMap.setMyLocationEnabled(true);
+
+            // אם המתנו למיקוד – נבצע עכשיו
+            if (pendingFocusCenter != null && pendingFocusRadius != null) {
+                focusOnArea(pendingFocusCenter.latitude, pendingFocusCenter.longitude, pendingFocusRadius);
+                pendingFocusCenter = null;
+                pendingFocusRadius = null;
+            }
 
             // שלב 1: שליפת פרטי המשתמש הנוכחי
             userRepo.getUserById(currentUserId, new UserRepository.FirestoreUserCallback() {
@@ -336,6 +347,36 @@ public class MapController {
                 true);
 
         return BitmapDescriptorFactory.fromBitmap(scaledBitmap);
+    }
+
+    public void focusOnArea(double lat, double lng, int radiusMeters) {
+        LatLng center = new LatLng(lat, lng);
+        if (!isMapReady || googleMap == null) {
+            // נשמור לפעולה כשמפה תהיה מוכנה
+            pendingFocusCenter = center;
+            pendingFocusRadius = radiusMeters;
+            return;
+        }
+        // הזזת מצלמה
+        float zoom = zoomForRadius(radiusMeters);
+        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(center, zoom));
+
+        // ציור/רענון עיגול
+        if (focusCircle != null) focusCircle.remove();
+        focusCircle = googleMap.addCircle(new CircleOptions()
+                .center(center)
+                .radius(radiusMeters)
+                .strokeWidth(2f)
+                .strokeColor(0xFF6C63FF)   // קו סגול
+                .fillColor(0x336C63FF));   // מילוי שקוף (כ~20%)
+    }
+
+    private float zoomForRadius(int radiusMeters) {
+        double scale = radiusMeters / 500.0; // בערך 500 מ' למסך בזום 15
+        float zoom = (float)(15 - (Math.log(scale) / Math.log(2)));
+        if (zoom < 2f) zoom = 2f;
+        if (zoom > 21f) zoom = 21f;
+        return zoom;
     }
 
     // Lifecycle methods

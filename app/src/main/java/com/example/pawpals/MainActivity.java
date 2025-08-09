@@ -40,6 +40,8 @@ import model.maps.MapController;
 import model.Report;
 
 public class MainActivity extends AppCompatActivity {
+    public static final String EXTRA_FOCUS_COMMUNITY_NAME = "EXTRA_FOCUS_COMMUNITY_NAME";
+    public static final String EXTRA_FOCUS_RADIUS = "EXTRA_FOCUS_RADIUS";
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
     private MapController mapController;
     private static final int REQUEST_MAP_REPORT = 2001;
@@ -155,6 +157,27 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
         } else {
             mapController.initializeMap(savedInstanceState);
+        }
+
+        // --- Handle "Area Map" focusing ---
+        String focusCommunity = getIntent().getStringExtra(EXTRA_FOCUS_COMMUNITY_NAME);
+        int focusRadius = getIntent().getIntExtra(EXTRA_FOCUS_RADIUS, 1500);
+
+        if (focusCommunity != null && !focusCommunity.isEmpty()) {
+            // שלוף מרכז ורדיוס לפי שם קהילה
+            CommunityRepository communityRepo = new CommunityRepository();
+            communityRepo.getCommunityCenterAndRadiusByName(focusCommunity,
+                    new CommunityRepository.CommunityGeoCallback() {
+                        @Override
+                        public void onSuccess(double lat, double lng, int radiusMeters) {
+                            int r = (focusRadius > 0) ? focusRadius : radiusMeters;
+                            mapController.focusOnArea(lat, lng, r);
+                        }
+                        @Override
+                        public void onFailure(Exception e) {
+                            Log.e("MainActivity", "Failed to get community center: " + e.getMessage());
+                        }
+                    });
         }
 
         TextView labelInvisible = findViewById(R.id.labelInvisible);
