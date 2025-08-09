@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.content.Intent;
 import android.util.Log;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.List;
@@ -29,8 +30,8 @@ public class CommunityActivity extends AppCompatActivity {
         currentUser = getIntent().getParcelableExtra("currentUser");
         CommunityRepository communityRepo = new CommunityRepository();
 
-        Log.d("CommunityActivity", "user = " + currentUser);
-        Log.d("CommunityActivity", "communityName = " + currentUser.getCommunityName());
+        TextView textViewCommunityName = findViewById(R.id.textViewCommunityName);
+        textViewCommunityName.setText(currentUser.getCommunityName());
 
         communityRepo.getCommunityIdByName(currentUser.getCommunityName(), new CommunityRepository.FirestoreIdCallback() {
             @Override

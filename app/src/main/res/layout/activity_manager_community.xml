@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FAF7FF"
+    android:background="@color/app_background"
     android:padding="16dp"
     tools:context=".ManagerCommunityActivity">
 
@@ -49,7 +49,7 @@
         tools:listitem="@layout/item_post_card"/>
 
     <!-- שורה 1 -->
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/buttonAreaMap"
         android:layout_width="0dp"
         android:layout_height="114dp"
@@ -62,11 +62,13 @@
         app:iconPadding="4dp"
         app:iconSize="60dp"
         app:iconTint="@color/black"
+        app:backgroundTint="@color/white"
+        style="@style/Widget.PawPals.Button"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toTopOf="@id/buttonReportSystem"
         app:layout_constraintEnd_toStartOf="@+id/buttonViewReports" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/buttonViewReports"
         android:layout_width="0dp"
         android:layout_height="114dp"
@@ -79,12 +81,14 @@
         app:iconPadding="4dp"
         app:iconSize="60dp"
         app:iconTint="@color/black"
+        app:backgroundTint="@color/white"
+        style="@style/Widget.PawPals.Button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toTopOf="@id/buttonChat"
         app:layout_constraintStart_toEndOf="@+id/buttonAreaMap" />
 
     <!-- שורה 2 -->
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/buttonReportSystem"
         android:layout_width="0dp"
         android:layout_height="114dp"
@@ -98,11 +102,13 @@
         app:iconPadding="4dp"
         app:iconSize="60dp"
         app:iconTint="@color/black"
+        app:backgroundTint="@color/white"
+        style="@style/Widget.PawPals.Button"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toTopOf="@id/buttonMembers"
         app:layout_constraintEnd_toStartOf="@+id/buttonChat" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/buttonChat"
         android:layout_width="0dp"
         android:layout_height="114dp"
@@ -116,12 +122,14 @@
         app:iconPadding="4dp"
         app:iconSize="60dp"
         app:iconTint="@color/black"
+        app:backgroundTint="@color/white"
+        style="@style/Widget.PawPals.Button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toTopOf="@id/buttonCommunitySettings"
         app:layout_constraintStart_toEndOf="@+id/buttonReportSystem" />
 
     <!-- שורה 3 - צמוד לתחתית -->
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/buttonMembers"
         android:layout_width="0dp"
         android:layout_height="114dp"
@@ -135,11 +143,13 @@
         app:iconPadding="4dp"
         app:iconSize="60dp"
         app:iconTint="@color/black"
+        app:backgroundTint="@color/white"
+        style="@style/Widget.PawPals.Button"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/buttonCommunitySettings" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/buttonCommunitySettings"
         android:layout_width="0dp"
         android:layout_height="114dp"
@@ -153,6 +163,8 @@
         app:iconPadding="4dp"
         app:iconSize="60dp"
         app:iconTint="@color/black"
+        app:backgroundTint="@color/white"
+        style="@style/Widget.PawPals.Button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@+id/buttonMembers" />

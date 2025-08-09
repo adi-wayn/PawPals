@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -27,10 +28,10 @@ public class ManagerCommunityActivity extends AppCompatActivity {
         // קבלת המשתמש מה-Intent
         currentUser = getIntent().getParcelableExtra("currentUser");
         setContentView(R.layout.activity_manager_community);
-
         CommunityRepository communityRepo = new CommunityRepository();
 
-        Log.d("ManagerCommunityActivity", "Looking for community with name: " + currentUser.getCommunityName());
+        TextView textViewCommunityName = findViewById(R.id.textViewCommunityName);
+        textViewCommunityName.setText(currentUser.getCommunityName());
 
         communityRepo.getCommunityIdByName(currentUser.getCommunityName(), new CommunityRepository.FirestoreIdCallback() {
             @Override
