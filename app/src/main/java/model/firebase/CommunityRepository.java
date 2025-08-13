@@ -13,7 +13,6 @@ import model.Report;
 public class CommunityRepository {
     private static final String TAG = "CommunityRepository";
     private final FirebaseFirestore db;
-
     public CommunityRepository() {
         db = FirebaseFirestore.getInstance();
     }
