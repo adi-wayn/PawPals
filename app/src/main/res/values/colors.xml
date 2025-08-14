@@ -4,4 +4,7 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="light_gray">#DDDDDD</color>
+    <color name="bubble_incoming">#F1F1F1</color>   <!-- אפור בהיר -->
+    <color name="bubble_outgoing">#3A7AFE</color>   <!-- כחול -->
+
 </resources>
