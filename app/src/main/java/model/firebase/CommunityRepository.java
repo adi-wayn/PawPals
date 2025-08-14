@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import model.Community;
+import model.Message;
 import model.Report;
 
 public class CommunityRepository {
@@ -131,6 +132,22 @@ public class CommunityRepository {
                     callback.onFailure(e);
                 });
     }
+    public void createMessage(String communityId, Message message, FirestoreCallback callback) {
+        Map<String, Object> MessageMap = message.toMap();
+
+        db.collection("communities")
+                .document(communityId)
+                .collection("messages")
+                .add(MessageMap)
+                .addOnSuccessListener(docRef -> {
+                    Log.d(TAG, "Message created under community " + communityId);
+                    callback.onSuccess(docRef.getId());
+                })
+                .addOnFailureListener(e -> {
+                    Log.w(TAG, "Failed to create message", e);
+                    callback.onFailure(e);
+                });
+    }
 
     // שליפה של כל הדיווחים של קהילה
     public void getReportsByCommunity(String communityId, FirestoreReportsListCallback callback) {
@@ -181,6 +198,48 @@ public class CommunityRepository {
                     callback.onFailure(e);
                 });
     }
+    // שליפה חד-פעמית של הודעות מהצ'אט של קהילה (communities/{communityId}/chat)
+    public void getChatMessagesOnce(String communityId, FirestoreMessagesListCallback callback) {
+        if (communityId == null || communityId.isEmpty()) {
+            callback.onFailure(new IllegalArgumentException("communityId is empty"));
+            return;
+        }
+        db.collection("communities")
+                .document(communityId)
+                .collection("messages")
+                .orderBy("timestamp", com.google.firebase.firestore.Query.Direction.ASCENDING)
+                .get()
+                .addOnSuccessListener(qs -> {
+                    List<model.Message> list = new ArrayList<>();
+                    for (DocumentSnapshot doc : qs.getDocuments()) {
+                        model.Message m = doc.toObject(model.Message.class);
+                        if (m != null) list.add(m);
+                    }
+                    callback.onSuccess(list);
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
+    // האזנה בזמן אמת לצ'אט של קהילה (communities/{communityId}/chat)
+    public com.google.firebase.firestore.ListenerRegistration listenToChatStream(
+            String communityId,
+            FirestoreMessagesChangeCallback callback
+    ) {
+        if (communityId == null || communityId.isEmpty()) {
+            callback.onError(new IllegalArgumentException("communityId is empty"));
+            return null;
+        }
+        return db.collection("communities")
+                .document(communityId)
+                .collection("messages")
+                .orderBy("timestamp", com.google.firebase.firestore.Query.Direction.ASCENDING)
+                .addSnapshotListener((snap, e) -> {
+                    if (e != null) { callback.onError(e); return; }
+                    if (snap == null) return;
+                    callback.onChanges(snap.getDocumentChanges());
+                });
+    }
+
 
     public void getFeedPosts(String communityId, FirestoreReportsListCallback callback) {
         db.collection("communities")
@@ -220,8 +279,84 @@ public class CommunityRepository {
                 })
                 .addOnFailureListener(cb::onFailure);
     }
+    // שליחת הודעה לקהילה
+    public void sendMessage(String communityId, model.Message message, FirestoreCallback callback) {
+        if (communityId == null || communityId.isEmpty()) {
+            callback.onFailure(new IllegalArgumentException("communityId is empty"));
+            return;
+        }
+        // אופציונלי: נשמור גם chatId בתוך ההודעה (נוח לשאילתות/דיבוג)
+        message.setChatId(communityId);
 
+        db.collection("communities")
+                .document(communityId)
+                .collection("messages")
+                .add(message)
+                .addOnSuccessListener(ref -> callback.onSuccess(ref.getId()))
+                .addOnFailureListener(callback::onFailure);
 
+    }
+
+    // שליפה חד־פעמית של כל ההודעות לפי קהילה (מסודר לפי זמן)
+    public void getMessagesOnce(String communityId, FirestoreMessagesListCallback callback) {
+        if (communityId == null || communityId.isEmpty()) {
+            callback.onFailure(new IllegalArgumentException("communityId is empty"));
+            return;
+        }
+
+        db.collection("communities")
+                .document(communityId)
+                .collection("messages")
+                .orderBy("timestamp", com.google.firebase.firestore.Query.Direction.ASCENDING)
+                .get()
+                .addOnSuccessListener(qs -> {
+                    List<model.Message> list = new ArrayList<>();
+                    for (DocumentSnapshot doc : qs.getDocuments()) {
+                        model.Message m = doc.toObject(model.Message.class);
+                        if (m != null) list.add(m);
+                    }
+                    callback.onSuccess(list);
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+    // האזנה בזמן אמת לשינויים בצ'אט של קהילה
+// מחזיר ListenerRegistration כדי שתוכלי להסיר ב-onStop()
+    public com.google.firebase.firestore.ListenerRegistration listenToMessagesStream(
+            String communityId,
+            FirestoreMessagesChangeCallback callback
+    ) {
+        if (communityId == null || communityId.isEmpty()) {
+            callback.onError(new IllegalArgumentException("communityId is empty"));
+            return null;
+        }
+
+        return db.collection("communities")
+                .document(communityId)
+                .collection("messages")
+                .orderBy("timestamp", com.google.firebase.firestore.Query.Direction.ASCENDING)
+                .addSnapshotListener((snap, e) -> {
+                    if (e != null) {
+                        callback.onError(e);
+                        return;
+                    }
+                    if (snap == null) return;
+
+                    // מעבירים רק שינויים אינקרמנטליים (ADD/MODIFY/REMOVE)
+                    List<com.google.firebase.firestore.DocumentChange> changes = snap.getDocumentChanges();
+                    callback.onChanges(changes);
+                });
+    }
+
+    // ===================== CHAT callbacks =====================
+    public interface FirestoreMessagesListCallback {
+        void onSuccess(List<model.Message> messages);
+        void onFailure(Exception e);
+    }
+
+    public interface FirestoreMessagesChangeCallback {
+        void onChanges(List<com.google.firebase.firestore.DocumentChange> changes);
+        void onError(Exception e);
+    }
     // === ממשקי callback ===
 
     public interface CommunityGeoCallback {

@@ -15,28 +15,30 @@ public class Message implements Parcelable {
     // מזהה ההודעה (אופציונלי - אפשר לשמור בו את document id אם תרצי)
     public @Nullable String id;
 
-    // אם יש לכם צ'אטים/חדרים (שכונות וכו'), זה שימושי לסינון
-    public @Nullable String chatId;
-
+    // מזהה צאטים לפי קהילה - כל צאט שייך לקהילה
+    public String chatId;
+//ה ID של המשתמש ששלח את ההודעה
     public String senderId;
+    //שם של המשתמש ששלח את ההודעה
     public String senderName;
+    //מתי נשלחה ההודעה
     public String text;
 
     // זמן שרת (ימולא אוטומטית ע"י Firestore אם לא תשלחי ערך)
     @ServerTimestamp
     public @Nullable Date timestamp;
 
-    // === Constructors ===
     public Message() {} // דרוש לפיירבייס
 
-    public Message(String senderId, String senderName, String text) {
+    public Message(String chatId,String senderId, String senderName, String text) {
+        this.chatId=chatId;
         this.senderId = senderId;
         this.senderName = senderName;
         this.text = text;
     }
 
     public Message(@Nullable String id,
-                   @Nullable String chatId,
+                   String chatId,
                    String senderId,
                    String senderName,
                    String text,
@@ -49,27 +51,25 @@ public class Message implements Parcelable {
         this.timestamp = timestamp;
     }
 
-    // === Getters (לנוחות ה-Adapter) ===
     public @Nullable String getId() { return id; }
-    public @Nullable String getChatId() { return chatId; }
+    public String getChatId() { return chatId; }
     public String getSenderId() { return senderId; }
     public String getSenderName() { return senderName; }
     public String getText() { return text; }
     public @Nullable Date getTimestamp() { return timestamp; }
 
-    // === Setters (אם תרצי לעבוד ב-POJO מלא) ===
     public void setId(@Nullable String id) { this.id = id; }
-    public void setChatId(@Nullable String chatId) { this.chatId = chatId; }
+    public void setChatId( String chatId) { this.chatId = chatId; }
     public void setSenderId(String senderId) { this.senderId = senderId; }
     public void setSenderName(String senderName) { this.senderName = senderName; }
     public void setText(String text) { this.text = text; }
     public void setTimestamp(@Nullable Date timestamp) { this.timestamp = timestamp; }
 
-    // === Firestore serialization (ידני) ===
+    // Firestore serialization
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>();
         if (id != null)      map.put("id", id);
-        if (chatId != null)  map.put("chatId", chatId);
+        map.put("chatId", chatId);
         map.put("senderId", senderId);
         map.put("senderName", senderName);   // בלי רווח בשם המפתח
         map.put("text", text);
