@@ -211,6 +211,8 @@ public class MainActivity extends AppCompatActivity {
         View menuButton = findViewById(R.id.imageButton);
         View overlay = drawerMotion.findViewById(R.id.overlay);
 
+        drawerMotion.setState(R.id.closed, -1, -1);
+
         drawerMotion.setTransitionListener(new MotionLayout.TransitionListener() {
             @Override public void onTransitionCompleted(MotionLayout ml, int currentId) {
                 if (currentId == R.id.closed) {
@@ -259,10 +261,12 @@ public class MainActivity extends AppCompatActivity {
         menuButton.setOnClickListener(v -> {
             if (drawerMotion.getVisibility() != View.VISIBLE) {
                 drawerMotion.setVisibility(View.VISIBLE);
+                drawerMotion.setState(R.id.closed, -1, -1); // ודא שהתחלנו מסגור
+                drawerMotion.post(() -> drawerMotion.transitionToState(R.id.open));
+                return;
             }
             // אם סגור – פתח; אם פתוח – סגור
-            int state = drawerMotion.getCurrentState();
-            if (state == R.id.open) {
+            if (drawerMotion.getCurrentState() == R.id.open) {
                 drawerMotion.transitionToState(R.id.closed);
             } else {
                 drawerMotion.transitionToState(R.id.open);
