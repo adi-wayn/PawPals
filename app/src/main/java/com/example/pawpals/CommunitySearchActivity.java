@@ -1,5 +1,6 @@
 package com.example.pawpals;
 
+import android.content.Intent; // ⬅️ חדש
 import android.os.Bundle;
 import android.widget.SearchView;
 import android.widget.Toast;
@@ -95,6 +96,9 @@ public class CommunitySearchActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(adapter);
+
+        // ⬅️ האזנה לקליקים על המשתמשים (ניווט לעמוד הפרופיל)
+        adapter.setOnUserClickListener(this::navigateToProfile);
     }
 
     private void setupSearchAndChips() {
@@ -177,8 +181,7 @@ public class CommunitySearchActivity extends AppCompatActivity {
             } else if (id == R.id.chipOneDog && dogCount != 1) {
                 return false;
             } else if (id == R.id.chipHasPuppies) {
-                // TODO: currently no logic is defined for "my friends".
-                // Keep as pass-through or implement once you have a friends relation.
+                // TODO: implement when "friends" relation exists
             }
         }
         return true;
@@ -188,5 +191,16 @@ public class CommunitySearchActivity extends AppCompatActivity {
         if (progressBar == null) return;
         progressBar.setVisibility(show ? View.VISIBLE : View.GONE);
         progressBar.setIndeterminate(show);
+    }
+
+    // ⬅️ מתודה לניווט לפרופיל
+    private void navigateToProfile(@Nullable User user) {
+        if (user == null) {
+            Toast.makeText(this, "Unknown profile.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        Intent intent = new Intent(this, ProfileActivity.class);
+        intent.putExtra("currentUser", user); // Requires User implements Parcelable
+        startActivity(intent);
     }
 }
