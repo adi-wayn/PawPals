@@ -115,58 +115,86 @@ public class ChatActivity extends AppCompatActivity {
     private void loadMessagesAndListen() {
         if (TextUtils.isEmpty(communityId)) return;
 
-        repo.getMessagesOnce(communityId, new CommunityRepository.FirestoreMessagesListCallback() {
-            @Override public void onSuccess(List<Message> list) {
-                messages.clear();
-                messages.addAll(list);
-                adapter.notifyDataSetChanged();
-                recyclerView.scrollToPosition(Math.max(0, adapter.getItemCount() - 1));
+        // ודאי שה-LayoutManager לא הפוך ומגולל לתחתית
+        RecyclerView.LayoutManager layoutManager = recyclerView.getLayoutManager();
+        if (layoutManager instanceof LinearLayoutManager) {
+            LinearLayoutManager lm = (LinearLayoutManager) layoutManager;
+            lm.setReverseLayout(false); // ישן למעלה, חדש למטה
+            lm.setStackFromEnd(true);   // גלילה לסוף
+        }
 
-                // סטרים חי (ADD / MODIFY / REMOVE)
-                registration = repo.listenToMessagesStream(
-                        communityId,
-                        new CommunityRepository.FirestoreMessagesChangeCallback() {
-                            @Override public void onChanges(List<DocumentChange> changes) {
-                                for (DocumentChange dc : changes) {
-                                    Message m = dc.getDocument().toObject(Message.class);
-                                    switch (dc.getType()) {
-                                        case ADDED:
-                                            messages.add(m);
-                                            adapter.notifyItemInserted(messages.size() - 1);
-                                            recyclerView.scrollToPosition(
-                                                    Math.max(0, adapter.getItemCount() - 1));
-                                            break;
-                                        case MODIFIED:
-                                            int idxM = dc.getNewIndex();
-                                            if (idxM >= 0 && idxM < messages.size()) {
-                                                messages.set(idxM, m);
-                                                adapter.notifyItemChanged(idxM);
-                                            }
-                                            break;
-                                        case REMOVED:
-                                            int idxR = dc.getOldIndex();
-                                            if (idxR >= 0 && idxR < messages.size()) {
-                                                messages.remove(idxR);
-                                                adapter.notifyItemRemoved(idxR);
-                                            }
-                                            break;
+        // אם יש Listener קיים ממסך קודם - נסיר ליתר ביטחון
+        if (registration != null) {
+            registration.remove();
+            registration = null;
+        }
+
+        // במקום preload + listener, נשתמש רק בליסנר.
+        // אם את חייבת להשאיר preload, השאירי אותו - אבל ה-firstBatch הזה יבטיח שלא יהיו כפילויות.
+        final boolean[] firstBatch = { true };
+
+        registration = repo.listenToMessagesStream(
+                communityId,
+                new CommunityRepository.FirestoreMessagesChangeCallback() {
+                    @Override
+                    public void onChanges(List<DocumentChange> changes) {
+                        if (changes == null || changes.isEmpty()) return;
+
+                        // בסנפשוט הראשון Firestore שולח את כל ההודעות כ-ADDED.
+                        // כדי לא לקבל כפילויות אחרי preload, ננקה פעם אחת בתחילת הליסנר.
+                        if (firstBatch[0]) {
+                            messages.clear();
+                            firstBatch[0] = false;
+                        }
+
+                        for (DocumentChange dc : changes) {
+                            Message m = dc.getDocument().toObject(Message.class);
+                            switch (dc.getType()) {
+                                case ADDED:
+                                    // השאילתה ב-Repository היא orderBy("timestamp", ASCENDING),
+                                    // לכן ההוספה תשמור על סדר ישן→חדש.
+                                    messages.add(m);
+                                    adapter.notifyItemInserted(messages.size() - 1);
+                                    recyclerView.scrollToPosition(Math.max(0, adapter.getItemCount() - 1));
+                                    break;
+
+                                case MODIFIED:
+                                    // עדכון פריט קיים לפי מיקום חדש מהסנפשוט
+                                    int idxM = dc.getNewIndex();
+                                    if (idxM >= 0 && idxM < messages.size()) {
+                                        messages.set(idxM, m);
+                                        adapter.notifyItemChanged(idxM);
+                                    } else {
+                                        // גיבוי: אם האינדקס לא חוקי, נאתר לפי תוכן/נוסיף לסוף
+                                        // (אפשר לשפר אם תשמרי docId בתוך Message)
+                                        messages.add(m);
+                                        adapter.notifyItemInserted(messages.size() - 1);
                                     }
-                                }
-                            }
+                                    break;
 
-                            @Override public void onError(Exception e) {
-                                Toast.makeText(ChatActivity.this,
-                                        "Stream error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                case REMOVED:
+                                    int idxR = dc.getOldIndex();
+                                    if (idxR >= 0 && idxR < messages.size()) {
+                                        messages.remove(idxR);
+                                        adapter.notifyItemRemoved(idxR);
+                                    } else {
+                                        // גיבוי: אם לא מצאנו, ננסה להסיר לפי התאמה טקסטואלית/לא לבצע כלום
+                                        // (מומלץ בעתיד לשמור docId ב-Message כדי להסיר במדויק)
+                                    }
+                                    break;
                             }
-                        });
-            }
+                        }
+                    }
 
-            @Override public void onFailure(Exception e) {
-                Toast.makeText(ChatActivity.this,
-                        "Load failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
+                    @Override
+                    public void onError(Exception e) {
+                        Toast.makeText(ChatActivity.this,
+                                "Stream error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                }
+        );
     }
+
 
     /** שולח הודעה חדשה ל-communities/{communityId}/messages דרך createMessage */
     private void sendMessageViaRepo() {
