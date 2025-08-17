@@ -43,7 +43,7 @@ public class ChatActivity extends AppCompatActivity {
 
     // current user / community
     private String currentUserId = "";
-    private String currentUserName = "PawPal";
+    private String currentUserName ;
     private @Nullable String communityId = null;      // ייקבע אחרי חיפוש לפי שם
     private @Nullable User currentUser = null;        // מתקבל ב-Intent (Parcelable)
 
@@ -51,9 +51,9 @@ public class ChatActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_community_chat);
-
         // --- 1) קבלת המשתמש ושם הקהילה מה-Intent ---
         currentUser = getIntent().getParcelableExtra("currentUser");
+        currentUserName=currentUser.getUserName();
         if (currentUser == null || TextUtils.isEmpty(currentUser.getCommunityName())) {
             Toast.makeText(this, "Missing user or community name", Toast.LENGTH_SHORT).show();
             finish();
