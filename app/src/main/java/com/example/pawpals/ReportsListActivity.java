@@ -71,6 +71,11 @@ public class ReportsListActivity extends AppCompatActivity {
                         adapter = new ReportsAdapter(filteredReports, communityId, ReportsListActivity.this);
                         reportsRecyclerView.setAdapter(adapter);
 
+                        // Keep allReports in sync when an item is removed from the filtered list
+                        adapter.setOnReportRemovedListener(report -> {
+                            allReports.remove(report);
+                        });
+
                         filterReports(""); // הצג הכל
                     }
 

@@ -141,10 +141,23 @@ public class CommunityRepository {
                 .addOnSuccessListener(query -> {
                     List<Report> reports = new ArrayList<>();
                     for (DocumentSnapshot doc : query.getDocuments()) {
-                        reports.add(doc.toObject(Report.class));
+                        Report r = doc.toObject(Report.class);
+                        if (r != null) r.setId(doc.getId());   // <<< חשוב
+                        reports.add(r);
                     }
                     callback.onSuccess(reports);
                 })
+                .addOnFailureListener(callback::onFailure);
+    }
+
+    // מחיקת דיווח לפי id
+    public void deleteReport(String communityId, String reportId, FirestoreCallback callback) {
+        db.collection("communities")
+                .document(communityId)
+                .collection("reports")
+                .document(reportId)
+                .delete()
+                .addOnSuccessListener(aVoid -> callback.onSuccess(reportId))
                 .addOnFailureListener(callback::onFailure);
     }
 

@@ -1,5 +1,7 @@
+// model/ReportsAdapter.java
 package model;
 
+import androidx.recyclerview.widget.RecyclerView;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,22 +12,26 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.pawpals.R;
 
 import java.util.List;
 
-import model.Report;
 import model.firebase.CommunityRepository;
 
 public class ReportsAdapter extends RecyclerView.Adapter<ReportsAdapter.ReportViewHolder> {
 
-    private List<Report> reportList;
+    public interface OnReportRemovedListener {
+        void onReportRemoved(Report report);
+    }
+
+    private final List<Report> reportList; // this is your filtered list
+    private final String communityId;
+    private final Context context;
+    private final CommunityRepository repo;
     private int expandedPosition = -1;
-    private String communityId;
-    private Context context;
-    private CommunityRepository repo;
+
+    private OnReportRemovedListener removedListener;
 
     public ReportsAdapter(List<Report> reportList, String communityId, Context context) {
         this.reportList = reportList;
@@ -34,11 +40,15 @@ public class ReportsAdapter extends RecyclerView.Adapter<ReportsAdapter.ReportVi
         this.repo = new CommunityRepository();
     }
 
+    public void setOnReportRemovedListener(OnReportRemovedListener l) {
+        this.removedListener = l;
+    }
+
     @NonNull
     @Override
     public ReportViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_bulletin_post, parent, false); // ודא ששם הקובץ נכון
+                .inflate(R.layout.item_bulletin_post, parent, false);
         return new ReportViewHolder(itemView);
     }
 
@@ -50,50 +60,90 @@ public class ReportsAdapter extends RecyclerView.Adapter<ReportsAdapter.ReportVi
         holder.textPostType.setText(report.getType());
         holder.textPostSubject.setText(report.getSubject());
 
-        // תוכן מקוצר = שורה ראשונה או שתיים בלבד (או כל הגבלה אחרת)
-        String shortText = report.getText().length() > 80
-                ? report.getText().substring(0, 80) + "..."
-                : report.getText();
+        String text = report.getText() != null ? report.getText() : "";
+        String shortText = text.length() > 80 ? text.substring(0, 80) + "..." : text;
 
         holder.textPostMessage.setText(shortText);
-        holder.textPostMessageFull.setText(report.getText());
+        holder.textPostMessageFull.setText(text);
 
-        // האם פתוח?
         boolean isExpanded = position == expandedPosition;
         holder.textPostMessageFull.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
         holder.actionButtonsLayout.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
 
-        // לחיצה על כלל האייטם – פותחת את הכפתורים
+        // פתיחה/סגירה של הכרטיס (expand/collapse)
         holder.itemView.setOnClickListener(v -> {
-            expandedPosition = (isExpanded ? -1 : position);
-            notifyDataSetChanged();
+            int pos = holder.getAdapterPosition();
+            if (pos == RecyclerView.NO_POSITION) return;
+
+            int oldExpanded = expandedPosition;
+            expandedPosition = (position == expandedPosition) ? -1 : pos;
+
+            // רענון מינימלי: סגור הישן ופתח החדש
+            if (oldExpanded != -1) notifyItemChanged(oldExpanded);
+            if (expandedPosition != -1) notifyItemChanged(expandedPosition);
         });
 
-        // לחיצה על הטקסט המקוצר – פותחת או סוגרת את המלא
+        // הצגת הטקסט המלא/מקוצר
         holder.textPostMessage.setOnClickListener(v -> {
             boolean currentlyVisible = holder.textPostMessageFull.getVisibility() == View.VISIBLE;
             holder.textPostMessageFull.setVisibility(currentlyVisible ? View.GONE : View.VISIBLE);
         });
 
-        // כפתור אישור (לוגיקת דוגמה)
+        // APPROVE
         holder.buttonApprove.setOnClickListener(v -> {
-            if (report.getType().equalsIgnoreCase("post")) {
-                repo.createFeedPost(communityId, report, new CommunityRepository.FirestoreCallback() {
-                    @Override
-                    public void onSuccess(String documentId) {
-                        Toast.makeText(context, "Post approved and added to bulletin.", Toast.LENGTH_SHORT).show();
-                    }
+            int adapterPos = holder.getAdapterPosition();
+            if (adapterPos == RecyclerView.NO_POSITION) return;
 
-                    @Override
-                    public void onFailure(Exception e) {
+            if ("post".equalsIgnoreCase(report.getType())) {
+                repo.createFeedPost(communityId, report, new CommunityRepository.FirestoreCallback() {
+                    @Override public void onSuccess(String id) {
+                        Toast.makeText(context, "Post approved and added to bulletin.", Toast.LENGTH_SHORT).show();
+                        removeAt(adapterPos, report);
+                    }
+                    @Override public void onFailure(Exception e) {
                         Toast.makeText(context, "Failed to add to bulletin: " + e.getMessage(), Toast.LENGTH_LONG).show();
                     }
                 });
             } else {
-                Toast.makeText(context, "Report approved (not a post).", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "Report approved.", Toast.LENGTH_SHORT).show();
+                removeAt(adapterPos, report);
             }
         });
 
+        // REJECT
+        holder.buttonReject.setOnClickListener(v -> {
+            int adapterPos = holder.getAdapterPosition();
+            if (adapterPos == RecyclerView.NO_POSITION) return;
+
+            String reportId = report.getId();
+            if (reportId == null || reportId.isEmpty()) {
+                Toast.makeText(context, "Missing report id. Cannot delete.", Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            repo.deleteReport(communityId, reportId, new CommunityRepository.FirestoreCallback() {
+                @Override public void onSuccess(String ignored) {
+                    Toast.makeText(context, "Report rejected and deleted.", Toast.LENGTH_SHORT).show();
+                    removeAt(adapterPos, report); // מסיר מה־RecyclerView ומעדכן את הרשימות
+                }
+                @Override public void onFailure(Exception e) {
+                    Toast.makeText(context, "Failed to delete report: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                }
+            });
+        });
+    }
+
+    private void removeAt(int position, Report report) {
+        if (position < 0 || position >= reportList.size()) return;
+        reportList.remove(position);
+        notifyItemRemoved(position);
+        notifyItemRangeChanged(position, reportList.size() - position);
+        if (removedListener != null) {
+            removedListener.onReportRemoved(report);
+        }
+        // collapse if needed
+        if (expandedPosition == position) expandedPosition = -1;
+        else if (expandedPosition > position) expandedPosition--; // keep expansion index consistent
     }
 
     @Override
