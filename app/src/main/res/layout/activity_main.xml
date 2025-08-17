@@ -6,6 +6,7 @@
     android:id="@+id/rootLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layoutDirection="locale"
     android:background="#FFFDF7"
     tools:context=".MainActivity">
 
@@ -272,7 +273,7 @@
 
         <LinearLayout
             android:id="@+id/sideDrawer"
-            android:layout_width="280dp"
+            android:layout_width="@dimen/drawer_width"
             android:layout_height="match_parent"
             android:orientation="vertical"
             android:background="@android:color/white"
