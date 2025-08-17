@@ -83,7 +83,7 @@ public class Community implements Parcelable {
     public ArrayList<Report> getReportByType(String type) {
         ArrayList<Report> result = new ArrayList<>();
         for (Report r : reports) {
-            if (r.type.equals(type)) {
+            if (r.getType().equals(type)) {
                 result.add(r);
             }
         }

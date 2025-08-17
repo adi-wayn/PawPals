@@ -94,19 +94,41 @@ public class ReportsAdapter extends RecyclerView.Adapter<ReportsAdapter.ReportVi
             int adapterPos = holder.getAdapterPosition();
             if (adapterPos == RecyclerView.NO_POSITION) return;
 
+            String reportId = report.getId();
+            if (reportId == null || reportId.isEmpty()) {
+                Toast.makeText(context, "Missing report id. Cannot approve.", Toast.LENGTH_LONG).show();
+                return;
+            }
+
             if ("post".equalsIgnoreCase(report.getType())) {
+                // 1) הוסף ל-feed  2) מחק מה-reports
                 repo.createFeedPost(communityId, report, new CommunityRepository.FirestoreCallback() {
-                    @Override public void onSuccess(String id) {
-                        Toast.makeText(context, "Post approved and added to bulletin.", Toast.LENGTH_SHORT).show();
-                        removeAt(adapterPos, report);
+                    @Override public void onSuccess(String feedId) {
+                        repo.deleteReport(communityId, reportId, new CommunityRepository.FirestoreCallback() {
+                            @Override public void onSuccess(String ignored) {
+                                Toast.makeText(context, "Post approved, moved to bulletin, and removed from queue.", Toast.LENGTH_SHORT).show();
+                                removeAt(adapterPos, report);
+                            }
+                            @Override public void onFailure(Exception e) {
+                                Toast.makeText(context, "Post added but failed to remove from queue: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                            }
+                        });
                     }
                     @Override public void onFailure(Exception e) {
-                        Toast.makeText(context, "Failed to add to bulletin: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        Toast.makeText(context, "Failed to approve post: " + e.getMessage(), Toast.LENGTH_LONG).show();
                     }
                 });
             } else {
-                Toast.makeText(context, "Report approved.", Toast.LENGTH_SHORT).show();
-                removeAt(adapterPos, report);
+                // לא פוסט – רק מחיקה מהתור
+                repo.deleteReport(communityId, reportId, new CommunityRepository.FirestoreCallback() {
+                    @Override public void onSuccess(String ignored) {
+                        Toast.makeText(context, "Report approved and removed.", Toast.LENGTH_SHORT).show();
+                        removeAt(adapterPos, report);
+                    }
+                    @Override public void onFailure(Exception e) {
+                        Toast.makeText(context, "Failed to delete report: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                });
             }
         });
 
