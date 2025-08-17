@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/root_message_item"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingStart="12dp"
+    android:paddingEnd="12dp"
+    android:paddingTop="6dp"
+    android:paddingBottom="6dp"
+    android:gravity="start"
+    android:layoutDirection="locale">
+
+    <LinearLayout
+        android:id="@+id/message_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- שם השולח -->
+        <TextView
+            android:id="@+id/text_sender_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Bella’s Owner"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/darker_gray"
+            android:layout_marginBottom="2dp"/>
+
+        <!-- בועת ההודעה -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/bubble"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="16dp"
+            app:cardUseCompatPadding="true"
+            app:strokeWidth="0dp"
+            app:cardBackgroundColor="@color/bubble_incoming">
+
+            <TextView
+                android:id="@+id/text_message_body"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hi! Anyone up for a walk in Park A at 18:00?"
+                android:padding="10dp"
+                android:textSize="16sp"
+                android:textColor="@android:color/black"
+                android:maxWidth="280dp"
+                android:autoLink="web"
+                android:linksClickable="true"
+                android:lineSpacingExtra="2dp"
+                android:textIsSelectable="true"/>
+        </com.google.android.material.card.MaterialCardView>
+
+    </LinearLayout>
+</LinearLayout>

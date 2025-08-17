@@ -10,6 +10,7 @@ public class Community implements Parcelable {
     private CommunityManager manager;
     private ArrayList<User> members;
     private ArrayList<Report> reports;
+    private ArrayList<Message> messages;
     private double latitude;
     private double longitude;
 
@@ -18,6 +19,7 @@ public class Community implements Parcelable {
         this.name = name;
         this.latitude = latitude;
         this.longitude = longitude;
+        this.messages = new ArrayList<>();
         this.members = new ArrayList<>();
         this.reports = new ArrayList<>();
     }
@@ -27,6 +29,7 @@ public class Community implements Parcelable {
         this.latitude = latitude;
         this.longitude = longitude;
         this.manager = manager;
+        this.messages = new ArrayList<>();
         this.members = new ArrayList<>();
         this.reports = new ArrayList<>();
     }
@@ -35,6 +38,7 @@ public class Community implements Parcelable {
         name = in.readString();
         manager = in.readParcelable(CommunityManager.class.getClassLoader());
         members = in.createTypedArrayList(User.CREATOR);
+        messages = in.createTypedArrayList(Message.CREATOR);
         reports = in.createTypedArrayList(Report.CREATOR);
         latitude = in.readDouble();
         longitude = in.readDouble();
@@ -74,6 +78,9 @@ public class Community implements Parcelable {
 
     public ArrayList<Report> getReports() {
         return reports;
+    }
+    public ArrayList<Message> getMessages() {
+        return messages;
     }
 
     public void setReports(ArrayList<Report> reports) {
