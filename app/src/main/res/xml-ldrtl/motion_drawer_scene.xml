@@ -26,7 +26,15 @@
     </ConstraintSet>
 
     <Transition
+        android:id="@+id/transition_open_close"
         motion:constraintSetStart="@id/closed"
         motion:constraintSetEnd="@id/open"
-        motion:duration="400" />
+        motion:duration="250">
+
+        <OnSwipe
+            motion:dragDirection="dragLeft"
+            motion:touchRegionId="@id/sideDrawer"
+            motion:touchAnchorId="@id/sideDrawer"
+            motion:touchAnchorSide="left"/>
+    </Transition>
 </MotionScene>
