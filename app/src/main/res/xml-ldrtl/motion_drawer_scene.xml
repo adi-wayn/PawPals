@@ -6,12 +6,13 @@
     <ConstraintSet android:id="@+id/closed">
         <Constraint
             android:id="@id/sideDrawer"
+            android:layout_width="@dimen/drawer_width"
             motion:layout_constraintTop_toTopOf="parent"
             motion:layout_constraintBottom_toBottomOf="parent"
             motion:layout_constraintEnd_toEndOf="parent"
             android:translationX="280dp" />
 
-        <Constraint android:id="@id/overlay" android:visibility="gone" android:alpha="0"/>
+        <Constraint android:id="@id/overlay" android:visibility="gone" />
     </ConstraintSet>
 
     <ConstraintSet android:id="@+id/open">
@@ -22,7 +23,7 @@
             motion:layout_constraintEnd_toEndOf="parent"
             android:translationX="0dp" />
 
-        <Constraint android:id="@id/overlay" android:visibility="visible" android:alpha="1"/>
+        <Constraint android:id="@id/overlay" android:visibility="visible" />
     </ConstraintSet>
 
     <Transition

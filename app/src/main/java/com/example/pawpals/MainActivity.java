@@ -211,9 +211,22 @@ public class MainActivity extends AppCompatActivity {
         View menuButton = findViewById(R.id.imageButton);
         View overlay = drawerMotion.findViewById(R.id.overlay);
 
+        drawerMotion.setTransitionListener(new MotionLayout.TransitionListener() {
+            @Override public void onTransitionCompleted(MotionLayout ml, int currentId) {
+                if (currentId == R.id.closed) {
+                    ml.setVisibility(View.GONE); // שלא יחסום טאצ'ים כשהוא סגור
+                }
+            }
+            @Override public void onTransitionStarted(MotionLayout m, int s, int e) {}
+            @Override public void onTransitionChange(MotionLayout m, int s, int e, float p) {}
+            @Override public void onTransitionTrigger(MotionLayout m, int id, boolean p1, float p2) {}
+        });
+
         // Handle Bottom Sheet dragging
         bottomSheet.setOnTouchListener((v, event) -> {
-            if (isDrawerOpen) return false;
+            if (drawerMotion.getVisibility() == View.VISIBLE && drawerMotion.getCurrentState() == R.id.open) {
+                return false; // אל תגרור את הסדין כשהמגירה פתוחה
+            }
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     initialTouchY = event.getRawY();
@@ -244,30 +257,20 @@ public class MainActivity extends AppCompatActivity {
 
         // Handle drawer open/close from hamburger menu
         menuButton.setOnClickListener(v -> {
-            if (!isDrawerOpen) {
-                drawerMotion.transitionToState(R.id.open);
-                overlay.setVisibility(View.VISIBLE);
-                isDrawerOpen = true;
-                // Hide hamburger button and collapse bottom sheet
-                menuButton.setVisibility(View.GONE);
-                mainMotion.transitionToStart();
-            } else {
+            if (drawerMotion.getVisibility() != View.VISIBLE) {
+                drawerMotion.setVisibility(View.VISIBLE);
+            }
+            // אם סגור – פתח; אם פתוח – סגור
+            int state = drawerMotion.getCurrentState();
+            if (state == R.id.open) {
                 drawerMotion.transitionToState(R.id.closed);
-                overlay.setVisibility(View.GONE);
-                isDrawerOpen = false;
-                // Restore hamburger button
-                menuButton.setVisibility(View.VISIBLE);
+            } else {
+                drawerMotion.transitionToState(R.id.open);
             }
         });
 
         // Handle drawer close on overlay tap
-        overlay.setOnClickListener(v -> {
-            drawerMotion.transitionToState(R.id.closed);
-            overlay.setVisibility(View.GONE);
-            isDrawerOpen = false;
-            // Restore hamburger button
-            menuButton.setVisibility(View.VISIBLE);
-        });
+        overlay.setOnClickListener(v -> drawerMotion.transitionToState(R.id.closed));
 
         View communityCard = findViewById(R.id.communityButtonContainer);
         communityCard.setOnClickListener(v -> {
@@ -293,9 +296,6 @@ public class MainActivity extends AppCompatActivity {
         myProfileButton.setOnClickListener(v -> {
             // סגירת התפריט
             drawerMotion.transitionToState(R.id.closed);
-            overlay.setVisibility(View.GONE);
-            isDrawerOpen = false;
-            menuButton.setVisibility(View.VISIBLE);
 
             // מעבר לעמוד הפרופיל
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
@@ -309,9 +309,6 @@ public class MainActivity extends AppCompatActivity {
         settingsButton.setOnClickListener(v -> {
             // סגירת התפריט הצדדי
             drawerMotion.transitionToState(R.id.closed);
-            overlay.setVisibility(View.GONE);
-            isDrawerOpen = false;
-            menuButton.setVisibility(View.VISIBLE);
 
             // מעבר לעמוד ההגדרות
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
@@ -325,9 +322,6 @@ public class MainActivity extends AppCompatActivity {
         logoutButton.setOnClickListener(v -> {
             // סגירת התפריט
             drawerMotion.transitionToState(R.id.closed);
-            overlay.setVisibility(View.GONE);
-            isDrawerOpen = false;
-            menuButton.setVisibility(View.VISIBLE);
 
             // יציאה מהאפליקציה
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
