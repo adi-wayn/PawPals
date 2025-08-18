@@ -2,34 +2,66 @@
 <MotionScene xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:motion="http://schemas.android.com/apk/res-auto">
 
-    <ConstraintSet android:id="@+id/closed">
+    <!-- LTR -->
+    <ConstraintSet android:id="@+id/closed_ltr">
         <Constraint
             android:id="@id/sideDrawer"
-            android:layout_width="280dp"
+            android:layout_width="@dimen/drawer_width"
             android:layout_height="match_parent"
             motion:layout_constraintTop_toTopOf="parent"
             motion:layout_constraintBottom_toBottomOf="parent"
             motion:layout_constraintStart_toStartOf="parent"
-            android:translationX="-280dp" />
-
-        <Constraint android:id="@id/overlay" android:visibility="gone" />
+            android:translationX="-280dp"/>
+        <Constraint android:id="@id/overlay" android:visibility="gone"/>
     </ConstraintSet>
 
-    <ConstraintSet android:id="@+id/open">
+    <ConstraintSet android:id="@+id/open_ltr">
         <Constraint
             android:id="@id/sideDrawer"
-            android:layout_width="280dp"
+            android:layout_width="@dimen/drawer_width"
             android:layout_height="match_parent"
             motion:layout_constraintTop_toTopOf="parent"
             motion:layout_constraintBottom_toBottomOf="parent"
             motion:layout_constraintStart_toStartOf="parent"
-            android:translationX="0dp" />
-
-        <Constraint android:id="@id/overlay" android:visibility="visible" />
+            android:translationX="0dp"/>
+        <Constraint android:id="@id/overlay" android:visibility="visible"/>
     </ConstraintSet>
+
+    <!-- RTL -->
+    <ConstraintSet android:id="@+id/closed_rtl">
+        <Constraint
+            android:id="@id/sideDrawer"
+            android:layout_width="@dimen/drawer_width"
+            android:layout_height="match_parent"
+            motion:layout_constraintTop_toTopOf="parent"
+            motion:layout_constraintBottom_toBottomOf="parent"
+            motion:layout_constraintEnd_toEndOf="parent"
+            android:translationX="280dp"/>
+        <Constraint android:id="@id/overlay" android:visibility="gone"/>
+    </ConstraintSet>
+
+    <ConstraintSet android:id="@+id/open_rtl">
+        <Constraint
+            android:id="@id/sideDrawer"
+            android:layout_width="@dimen/drawer_width"
+            android:layout_height="match_parent"
+            motion:layout_constraintTop_toTopOf="parent"
+            motion:layout_constraintBottom_toBottomOf="parent"
+            motion:layout_constraintEnd_toEndOf="parent"
+            android:translationX="0dp"/>
+        <Constraint android:id="@id/overlay" android:visibility="visible"/>
+    </ConstraintSet>
+
+    <!-- שתי תנועות: אחת ל-LTR ואחת ל-RTL -->
+    <Transition
+        android:id="@+id/t_ltr"
+        motion:constraintSetStart="@id/closed_ltr"
+        motion:constraintSetEnd="@id/open_ltr"
+        motion:duration="400"/>
 
     <Transition
-        motion:constraintSetStart="@id/closed"
-        motion:constraintSetEnd="@id/open"
-        motion:duration="400" />
+        android:id="@+id/t_rtl"
+        motion:constraintSetStart="@id/closed_rtl"
+        motion:constraintSetEnd="@id/open_rtl"
+        motion:duration="400"/>
 </MotionScene>
