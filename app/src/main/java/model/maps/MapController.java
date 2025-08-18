@@ -33,8 +33,8 @@ import java.util.Map;
 
 import model.MapReport;
 import model.User;
-import model.firebase.MapRepository;
-import model.firebase.UserRepository;
+import model.firebase.firestore.MapRepository;
+import model.firebase.firestore.UserRepository;
 
 public class MapController {
     private LatLng pendingFocusCenter = null;

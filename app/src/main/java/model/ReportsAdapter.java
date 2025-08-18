@@ -17,7 +17,7 @@ import com.example.pawpals.R;
 
 import java.util.List;
 
-import model.firebase.CommunityRepository;
+import model.firebase.firestore.CommunityRepository;
 
 public class ReportsAdapter extends RecyclerView.Adapter<ReportsAdapter.ReportViewHolder> {
 

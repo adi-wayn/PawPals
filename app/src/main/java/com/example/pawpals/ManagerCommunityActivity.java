@@ -2,7 +2,6 @@ package com.example.pawpals;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -16,7 +15,7 @@ import java.util.List;
 import model.FeedAdapter;
 import model.Report;
 import model.User;
-import model.firebase.CommunityRepository;
+import model.firebase.firestore.CommunityRepository;
 
 public class ManagerCommunityActivity extends AppCompatActivity {
 

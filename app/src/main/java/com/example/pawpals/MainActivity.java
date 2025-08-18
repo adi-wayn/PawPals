@@ -25,19 +25,17 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 import java.util.List;
 import java.util.Map;
 
 import model.User;
-import model.firebase.AuthHelper;
-import model.firebase.CommunityRepository;
-import model.firebase.MapRepository;
-import model.firebase.UserRepository;
+import model.firebase.Authentication.AuthHelper;
+import model.firebase.firestore.CommunityRepository;
+import model.firebase.firestore.MapRepository;
+import model.firebase.firestore.UserRepository;
 import model.maps.MapController;
-import model.Report;
 
 public class MainActivity extends AppCompatActivity {
     public static final String EXTRA_FOCUS_COMMUNITY_NAME = "EXTRA_FOCUS_COMMUNITY_NAME";
@@ -385,5 +383,6 @@ public class MainActivity extends AppCompatActivity {
         super.onSaveInstanceState(outState);
         if (mapController != null) mapController.onSaveInstanceState(outState);
     }
+
 
 }

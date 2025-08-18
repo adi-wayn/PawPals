@@ -12,8 +12,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 import model.User;
-import model.firebase.AuthHelper;
-import model.firebase.UserRepository;
+import model.firebase.Authentication.AuthHelper;
+import model.firebase.firestore.UserRepository;
 
 public class LauncherActivity extends AppCompatActivity {
 
