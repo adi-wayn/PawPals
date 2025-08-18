@@ -1,4 +1,4 @@
-package model.firebase;
+package model.firebase.Authentication;
 
 import android.app.Activity;
 import android.util.Log;
