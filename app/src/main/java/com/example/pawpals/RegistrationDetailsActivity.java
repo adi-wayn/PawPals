@@ -11,6 +11,7 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
@@ -33,6 +34,7 @@ import model.firebase.firestore.UserRepository;
 public class RegistrationDetailsActivity extends AppCompatActivity {
 
     private EditText inputName, inputCommunity;
+    private EditText inputContactDetails, inputBio; // ← חדשים
     private CheckBox checkboxCreateCommunity;
     private MaterialButton buttonContinue;
     private Spinner spinnerCommunities;
@@ -52,6 +54,8 @@ public class RegistrationDetailsActivity extends AppCompatActivity {
 
         inputName = findViewById(R.id.input_name);
         inputCommunity = findViewById(R.id.input_community);
+        inputContactDetails = findViewById(R.id.input_contact_details); // ← חדשים ב-XML
+        inputBio = findViewById(R.id.input_bio);                         // ← חדשים ב-XML
         checkboxCreateCommunity = findViewById(R.id.checkbox_create_community);
         buttonContinue = findViewById(R.id.button_continue);
         spinnerCommunities = findViewById(R.id.spinner_communities);
@@ -66,19 +70,23 @@ public class RegistrationDetailsActivity extends AppCompatActivity {
             spinnerCommunities.setVisibility(isChecked ? View.GONE : View.VISIBLE);
         });
 
-        // בקשת הרשאות וטעינת מיקום
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+        // הרשאות מיקום
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
             fetchLocationAndLoadCommunities();
         } else {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1001);
+            ActivityCompat.requestPermissions(
+                    this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    1001
+            );
         }
     }
 
-    // מקבל מיקום נוכחי וטוען קהילות קרובות
+    // מיקום נוכחי + טעינת קהילות קרובות
     private void fetchLocationAndLoadCommunities() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // אם אין הרשאה – לא ננסה לגשת למיקום
             Toast.makeText(this, "Location permission not granted", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -95,29 +103,29 @@ public class RegistrationDetailsActivity extends AppCompatActivity {
         });
     }
 
-    // טוען קהילות קרובות ל־Spinner
     private void loadNearbyCommunities() {
-        mapRepo.getNearbyCommunities(currentLat, currentLng, 5000, new MapRepository.FirestoreNearbyCommunitiesCallback() {
-            @Override
-            public void onSuccess(List<String> nearbyCommunityIds) {
-                ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                        RegistrationDetailsActivity.this,
-                        android.R.layout.simple_spinner_item,
-                        nearbyCommunityIds
-                );
-                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                spinnerCommunities.setAdapter(adapter);
-                spinnerCommunities.setVisibility(View.VISIBLE);
-            }
+        mapRepo.getNearbyCommunities(currentLat, currentLng, 5000,
+                new MapRepository.FirestoreNearbyCommunitiesCallback() {
+                    @Override
+                    public void onSuccess(List<String> nearbyCommunityIds) {
+                        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                                RegistrationDetailsActivity.this,
+                                android.R.layout.simple_spinner_item,
+                                nearbyCommunityIds
+                        );
+                        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                        spinnerCommunities.setAdapter(adapter);
+                        spinnerCommunities.setVisibility(View.VISIBLE);
+                    }
 
-            @Override
-            public void onFailure(Exception e) {
-                Toast.makeText(RegistrationDetailsActivity.this, "Failed to load nearby communities", Toast.LENGTH_SHORT).show();
-            }
-        });
+                    @Override
+                    public void onFailure(Exception e) {
+                        Toast.makeText(RegistrationDetailsActivity.this,
+                                "Failed to load nearby communities", Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
-    // טיפול באישור הרשאות
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -129,7 +137,9 @@ public class RegistrationDetailsActivity extends AppCompatActivity {
     }
 
     private void handleRegistrationDetails() {
-        String name = inputName.getText().toString().trim();
+        String name = safeText(inputName);
+        String contactDetails = safeText(inputContactDetails); // ← חדש
+        String bio = safeText(inputBio);                       // ← חדש
         boolean wantsToCreate = checkboxCreateCommunity.isChecked();
         String communityName;
 
@@ -139,23 +149,27 @@ public class RegistrationDetailsActivity extends AppCompatActivity {
         }
 
         if (wantsToCreate) {
-            communityName = inputCommunity.getText().toString().trim();
+            communityName = safeText(inputCommunity);
             if (communityName.isEmpty()) {
                 Toast.makeText(this, "Please enter a community name to create", Toast.LENGTH_SHORT).show();
                 return;
             }
-            checkCommunityExistence(name, communityName, true);
+            checkCommunityExistence(name, contactDetails, bio, communityName, true);
         } else {
             if (spinnerCommunities.getSelectedItem() == null) {
                 Toast.makeText(this, "Please select a community", Toast.LENGTH_SHORT).show();
                 return;
             }
             communityName = spinnerCommunities.getSelectedItem().toString();
-            checkCommunityExistence(name, communityName, false);
+            checkCommunityExistence(name, contactDetails, bio, communityName, false);
         }
     }
 
-    private void checkCommunityExistence(String name, String communityName, boolean wantsToCreate) {
+    private void checkCommunityExistence(String name,
+                                         String contactDetails,
+                                         String bio,
+                                         String communityName,
+                                         boolean wantsToCreate) {
         db.collection("communities")
                 .document(communityName)
                 .get()
@@ -166,15 +180,19 @@ public class RegistrationDetailsActivity extends AppCompatActivity {
                     } else if (!exists && !wantsToCreate) {
                         Toast.makeText(this, "Community doesn't exist. Please check 'create' to create it.", Toast.LENGTH_SHORT).show();
                     } else {
-                        saveUserAndCommunity(name, communityName, wantsToCreate);
+                        saveUserAndCommunity(name, contactDetails, bio, communityName, wantsToCreate);
                     }
                 })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Error checking community", Toast.LENGTH_SHORT).show();
-                });
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Error checking community", Toast.LENGTH_SHORT).show()
+                );
     }
 
-    private void saveUserAndCommunity(String name, String communityName, boolean isManager) {
+    private void saveUserAndCommunity(String name,
+                                      String contactDetails,
+                                      String bio,
+                                      String communityName,
+                                      boolean isManager) {
         CommunityRepository communityRepository = new CommunityRepository();
 
         if (isManager) {
@@ -187,30 +205,42 @@ public class RegistrationDetailsActivity extends AppCompatActivity {
                     new CommunityRepository.FirestoreCallback() {
                         @Override
                         public void onSuccess(String id) {
-                            saveUser(name, communityName, true);
+                            saveUser(name, contactDetails, bio, communityName, true);
                         }
 
                         @Override
                         public void onFailure(Exception e) {
-                            Toast.makeText(RegistrationDetailsActivity.this, "Failed to create community", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(RegistrationDetailsActivity.this,
+                                    "Failed to create community", Toast.LENGTH_SHORT).show();
                         }
                     }
             );
         } else {
-            saveUser(name, communityName, false);
+            saveUser(name, contactDetails, bio, communityName, false);
         }
     }
 
-    private void saveUser(String name, String communityName, boolean isManager) {
+    private void saveUser(String name,
+                          String contactDetails,
+                          String bio,
+                          String communityName,
+                          boolean isManager) {
         UserRepository userRepository = new UserRepository();
 
+        // אם Community שלך מקבל מנהל בבנאי – נעביר כבר עם פרטי קשר וביו
         Community community = isManager
-                ? new Community(communityName, currentLat, currentLng, new CommunityManager(name, communityName))
+                ? new Community(
+                communityName,
+                currentLat,
+                currentLng,
+                new CommunityManager(name, communityName, contactDetails, bio)
+        )
                 : new Community(communityName, currentLat, currentLng);
 
+        // בניית המשתמש לשמירה ב-Firestore
         User user = isManager
-                ? new CommunityManager(name, communityName)
-                : new User(name, communityName);
+                ? new CommunityManager(name, communityName, contactDetails, bio)
+                : new User(name, communityName, contactDetails, bio);
 
         user.setIsManager(isManager);
 
@@ -227,8 +257,13 @@ public class RegistrationDetailsActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Exception e) {
-                Toast.makeText(RegistrationDetailsActivity.this, "Failed to save user data", Toast.LENGTH_SHORT).show();
+                Toast.makeText(RegistrationDetailsActivity.this,
+                        "Failed to save user data", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private String safeText(EditText et) {
+        return et == null || et.getText() == null ? "" : et.getText().toString().trim();
     }
 }

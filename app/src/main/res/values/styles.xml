@@ -25,4 +25,10 @@
         <item name="strokeWidth">1dp</item>
         <item name="shapeAppearance">@style/Shape.Round16</item>
     </style>
+
+    <style name="Theme.PawPals.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">#FFFDF7</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="postSplashScreenTheme">@style/Theme.PawPals</item>
+    </style>
 </resources>

@@ -15,7 +15,7 @@ public class CommunityUnitTests {
 
     @Before
     public void setUp() {
-        manager = new CommunityManager("Dor", "ben-devide");
+        manager = new CommunityManager("Dor", "ben-devide","05**","i love dog");
         community = new Community("ben-devide", manager);
     }
 

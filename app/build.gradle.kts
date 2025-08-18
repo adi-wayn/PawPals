@@ -68,7 +68,10 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
-    testImplementation("org.mockito:mockito-core:5.11.0")
-    testImplementation("org.mockito.kotlin:mockito-kotlin:5.1.0")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+
+     testImplementation ("org.mockito:mockito-core:5.11.0")
+    testImplementation ("org.mockito.kotlin:mockito-kotlin:5.1.0")
+    testImplementation ("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+    implementation("androidx.core:core-splashscreen:1.0.1")
+
 }
