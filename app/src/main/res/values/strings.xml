@@ -5,6 +5,7 @@
     <string name="profile_picture">User Profile Picture</string>
     <string name="dogs">Dogs</string>
     <string name="user_community">Your community is </string>
+    <string name="in_the_same_community">In the same community </string>
     <string name="not_in_community">Not in the same community</string>
     <string name="user_name_placeholder">User Name</string>
     <string name="dog_picture">Dog picture</string>
