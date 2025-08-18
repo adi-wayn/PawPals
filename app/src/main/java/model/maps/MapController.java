@@ -4,6 +4,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -13,11 +14,14 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.example.pawpals.ProfileActivity;
 import com.example.pawpals.R;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -40,7 +44,6 @@ public class MapController {
     private LatLng pendingFocusCenter = null;
     private Integer pendingFocusRadius = null;
     private Circle focusCircle = null;
-
     private final Context context;
     private final MapView mapView;
     private final FusedLocationProviderClient locationClient;
@@ -57,6 +60,19 @@ public class MapController {
     private boolean reportMode = false;
     private String reportType;
     private Map<String, Marker> mapReportMarkers = new HashMap<>();
+
+    // cache של משתמשים להצגת הפריוויו מהר
+    private final Map<String, User> userCache = new HashMap<>();
+
+    // תג לסימון סוג מרקר (משתמש/דיווח)
+    private enum MarkerKind { USER, REPORT }
+
+    private static class MarkerTag {
+        final MarkerKind kind;
+        final String id; // userId או reportId
+        MarkerTag(MarkerKind kind, String id) { this.kind = kind; this.id = id; }
+    }
+
 
     public MapController(MapView mapView, Context context, String currentUserId) {
         this.mapView = mapView;
@@ -87,6 +103,62 @@ public class MapController {
             }
 
             googleMap.setMyLocationEnabled(true);
+
+            googleMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
+                @Override public View getInfoWindow(Marker marker) { return null; } // נשתמש ב־getInfoContents
+
+                @Override
+                public View getInfoContents(Marker marker) {
+                    Object t = marker.getTag();
+                    if (!(t instanceof MarkerTag)) return null;
+                    MarkerTag tag = (MarkerTag) t;
+                    if (tag.kind != MarkerKind.USER) return null; // לדיווחים – החלון הסטנדרטי
+
+                    // ננפח layout מותאם
+                    View v = View.inflate(context, R.layout.view_user_preview, null);
+                    TextView tvName = v.findViewById(R.id.tvName);
+                    TextView tvCommunity = v.findViewById(R.id.tvCommunity);
+                    TextView tvBio = v.findViewById(R.id.tvBio);
+                    TextView tvManager = v.findViewById(R.id.tvManager);
+
+                    // ברירת מחדל מהירה
+                    tvName.setText(marker.getTitle());
+                    tvCommunity.setText("");
+                    tvBio.setText("");
+                    tvManager.setVisibility(View.GONE);
+
+                    // אם יש בקאש – נציג; אחרת נמשוך ואז נרענן
+                    User u = userCache.get(tag.id);
+                    if (u != null) {
+                        tvName.setText(u.getUserName());
+                        tvCommunity.setText(u.getCommunityName());
+                        if (u.getFieldsOfInterest() != null) tvBio.setText(u.getFieldsOfInterest());
+                        if (u.isManager()) tvManager.setVisibility(View.VISIBLE);
+                    } else {
+                        userRepo.getUserById(tag.id, new UserRepository.FirestoreUserCallback() {
+                            @Override public void onSuccess(User user) {
+                                userCache.put(tag.id, user);
+                                if (marker.isInfoWindowShown()) marker.showInfoWindow(); // רענון התצוגה
+                            }
+                            @Override public void onFailure(Exception e) { /* no-op */ }
+                        });
+                    }
+                    return v;
+                }
+            });
+
+            // לחיצה על החלון – מעבר לפרופיל של אותו משתמש
+            googleMap.setOnInfoWindowClickListener(marker -> {
+                Object t = marker.getTag();
+                if (t instanceof MarkerTag && ((MarkerTag) t).kind == MarkerKind.USER) {
+                    String userId = ((MarkerTag) t).id;
+                    Intent i = new Intent(context, ProfileActivity.class);
+                    i.putExtra("userId", userId);          // תומך בפרופיל של משתמש אחר
+                    i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    context.startActivity(i);
+                }
+            });
+
 
             // אם המתנו למיקוד – נבצע עכשיו
             if (pendingFocusCenter != null && pendingFocusRadius != null) {
@@ -184,8 +256,20 @@ public class MapController {
                         } else {
                             Marker marker = googleMap.addMarker(new MarkerOptions()
                                     .position(position)
-                                    .title(userName));
-                            userMarkers.put(userId, marker);
+                                    .title(userName))
+                                    .snippet("Tap to view profile");
+                            if (marker != null) {
+                                marker.setTag(new MarkerTag(MarkerKind.USER, userId));
+                                userMarkers.put(userId, marker);
+                            }
+
+                            // משוך פעם אחת את כל פרטי המשתמש לקאש (ל־InfoWindow)
+                            if (!userCache.containsKey(userId)) {
+                                userRepo.getUserById(userId, new UserRepository.FirestoreUserCallback() {
+                                    @Override public void onSuccess(User user) { userCache.put(userId, user); }
+                                    @Override public void onFailure(Exception e) { /* no-op */ }
+                                });
+                            }
                         }
                     }
 
@@ -194,6 +278,7 @@ public class MapController {
                         if (userMarkers.containsKey(userId)) {
                             userMarkers.get(userId).remove();
                             userMarkers.remove(userId);
+                            userCache.remove(userId);
                         }
                     }
                 });
@@ -274,10 +359,10 @@ public class MapController {
                         .title(report.getType())
                         .snippet("Reported by: " + report.getSenderName())
                         .icon(getMarkerIcon(report.getType())));
+                if (marker != null) marker.setTag(new MarkerTag(MarkerKind.REPORT, id));
                 mapReportMarkers.put(id, marker);
             }
-            @Override
-            public void onReportRemoved(String id) {
+            @Override public void onReportRemoved(String id) {
                 Marker m = mapReportMarkers.remove(id);
                 if (m != null) m.remove();
             }
