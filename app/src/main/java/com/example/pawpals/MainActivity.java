@@ -214,8 +214,20 @@ public class MainActivity extends AppCompatActivity {
         View overlay = drawerMotion.findViewById(R.id.overlay);
         View root = findViewById(R.id.rootLayout);
 
+        // קבע כיוון
+        boolean isRtl = ViewCompat.getLayoutDirection(root) == ViewCompat.LAYOUT_DIRECTION_RTL;
+
+        // מזהי סטים ותנועה לפי כיוון
+        final int CLOSED_ID = isRtl ? R.id.closed_rtl : R.id.closed_ltr;
+        final int OPEN_ID   = isRtl ? R.id.open_rtl   : R.id.open_ltr;
+        final int TRANS_ID  = isRtl ? R.id.t_rtl      : R.id.t_ltr;
+
+        // בחר את התנועה הנכונה וודא שמתחילים מסגור
+        drawerMotion.setTransition(TRANS_ID);
+        drawerMotion.setState(CLOSED_ID, -1, -1);
+
         // רוחב המגרה (מ-@dimen/drawer_width), המרווח ההתחלתי של הכפתור, ורווח קטן ליד המגרה
-        drawerMotion.setState(R.id.closed, -1, -1);
+        drawerMotion.setState(CLOSED_ID, -1, -1);
 
         // רוחב המגירה מה־dimen
         final float drawerW = getResources().getDimension(R.dimen.drawer_width);
@@ -236,7 +248,7 @@ public class MainActivity extends AppCompatActivity {
                 menuButton.setVisibility(View.VISIBLE);
                 menuButton.setAlpha(1f);
                 menuButton.bringToFront();
-                if (startId == R.id.closed) ml.setVisibility(View.VISIBLE);
+                if (startId == CLOSED_ID) ml.setVisibility(View.VISIBLE);
             }
 
             @Override public void onTransitionChange(MotionLayout ml, int s, int e, float p) {
@@ -247,7 +259,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override public void onTransitionCompleted(MotionLayout ml, int currentId) {
-                if (currentId == R.id.closed) {
+                if (currentId == CLOSED_ID) {
                     // כשנסגר: ודא שהכפתור חוזר למקום ונשאר נראה מעל הכל
                     menuButton.setTranslationX(0f);
                     menuButton.setVisibility(View.VISIBLE);
@@ -256,7 +268,7 @@ public class MainActivity extends AppCompatActivity {
 
                     // המגירה ל-GONE כדי שלא תחסום טאצ'ים
                     ml.setVisibility(View.GONE);
-                } else if (currentId == R.id.open) {
+                } else if (currentId == OPEN_ID) {
                     menuButton.setVisibility(View.VISIBLE);
                     menuButton.setAlpha(1f);
                     menuButton.bringToFront();
@@ -269,7 +281,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Handle Bottom Sheet dragging
         bottomSheet.setOnTouchListener((v, event) -> {
-            if (drawerMotion.getVisibility() == View.VISIBLE && drawerMotion.getCurrentState() == R.id.open) {
+            if (drawerMotion.getVisibility() == View.VISIBLE && drawerMotion.getCurrentState() == OPEN_ID) {
                 return false; // אל תגרור את הסדין כשהמגירה פתוחה
             }
             switch (event.getAction()) {
@@ -303,14 +315,14 @@ public class MainActivity extends AppCompatActivity {
         // Handle drawer open/close from hamburger menu
         menuButton.setOnClickListener(v -> {
             // האם הכוונה לפתוח או לסגור? (טוגל)
-            final boolean wantOpen = drawerMotion.getCurrentState() != R.id.open;
+            final boolean wantOpen = drawerMotion.getCurrentState() != OPEN_ID;
 
             Runnable openOrCloseDrawer = () -> {
                 if (drawerMotion.getVisibility() != View.VISIBLE) {
                     drawerMotion.setVisibility(View.VISIBLE);
-                    drawerMotion.setState(R.id.closed, -1, -1); // להתחיל מסגור
+                    drawerMotion.setState(CLOSED_ID, -1, -1); // להתחיל מסגור
                 }
-                drawerMotion.transitionToState(wantOpen ? R.id.open : R.id.closed);
+                drawerMotion.transitionToState(wantOpen ? OPEN_ID : CLOSED_ID);
             };
 
             // אם ה-Bottom Sheet פתוח/באמצע – סגור אותו קודם ואז בצע את הפעולה
@@ -331,7 +343,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // Handle drawer close on overlay tap
-        overlay.setOnClickListener(v -> drawerMotion.transitionToState(R.id.closed));
+        overlay.setOnClickListener(v -> drawerMotion.transitionToState(CLOSED_ID));
 
         View communityCard = findViewById(R.id.communityButtonContainer);
         communityCard.setOnClickListener(v -> {
@@ -356,7 +368,7 @@ public class MainActivity extends AppCompatActivity {
         View myProfileButton = findViewById(R.id.myProfileButton);
         myProfileButton.setOnClickListener(v -> {
             // סגירת התפריט
-            drawerMotion.transitionToState(R.id.closed);
+            drawerMotion.transitionToState(CLOSED_ID);
 
             // מעבר לעמוד הפרופיל
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
@@ -369,7 +381,7 @@ public class MainActivity extends AppCompatActivity {
         View settingsButton = findViewById(R.id.settingsButton);
         settingsButton.setOnClickListener(v -> {
             // סגירת התפריט הצדדי
-            drawerMotion.transitionToState(R.id.closed);
+            drawerMotion.transitionToState(CLOSED_ID);
 
             // מעבר לעמוד ההגדרות
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
@@ -382,7 +394,7 @@ public class MainActivity extends AppCompatActivity {
         View logoutButton = findViewById(R.id.logoutButton);
         logoutButton.setOnClickListener(v -> {
             // סגירת התפריט
-            drawerMotion.transitionToState(R.id.closed);
+            drawerMotion.transitionToState(CLOSED_ID);
 
             // יציאה מהאפליקציה
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
