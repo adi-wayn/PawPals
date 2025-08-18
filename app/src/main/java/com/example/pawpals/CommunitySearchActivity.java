@@ -21,7 +21,7 @@ import java.util.Locale;
 
 import model.CommunityAdapter;
 import model.User;
-import model.firebase.UserRepository;
+import model.firebase.firestore.UserRepository;
 
 public class CommunitySearchActivity extends AppCompatActivity {
 

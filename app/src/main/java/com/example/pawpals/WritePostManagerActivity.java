@@ -11,7 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import model.Report;
 import model.User;
-import model.firebase.CommunityRepository;
+import model.firebase.firestore.CommunityRepository;
 
 public class WritePostManagerActivity extends AppCompatActivity {
 
