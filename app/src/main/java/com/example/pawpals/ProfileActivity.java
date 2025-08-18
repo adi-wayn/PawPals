@@ -17,7 +17,7 @@ import java.util.List;
 
 import model.Dog;
 import model.User;
-import model.firebase.UserRepository;
+import model.firebase.firestore.UserRepository;
 
 public class ProfileActivity extends AppCompatActivity {
 
@@ -129,7 +129,7 @@ public class ProfileActivity extends AppCompatActivity {
         if (dogs == null || dogs.isEmpty()) return;
 
         for (Dog d : dogs) {
-            View card = getLayoutInflater().inflate(R.layout.item_dog_card, dogsContainer, false);
+            View card = getLayoutInflater().inflate(R.layout.item_profile_card, dogsContainer, false);
 
             TextView tvName  = card.findViewById(R.id.dog_name);
             TextView tvBreed = card.findViewById(R.id.dog_breed);
