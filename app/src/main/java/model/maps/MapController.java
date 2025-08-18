@@ -13,6 +13,7 @@ import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
@@ -120,12 +121,17 @@ public class MapController {
                     TextView tvCommunity = v.findViewById(R.id.tvCommunity);
                     TextView tvBio = v.findViewById(R.id.tvBio);
                     TextView tvManager = v.findViewById(R.id.tvManager);
+                    TextView tvDogs     = v.findViewById(R.id.tvDogs);
+                    TextView tvContact  = v.findViewById(R.id.tvContact);
+                    TextView tvAvatar = v.findViewById(R.id.tvAvatar);
 
                     // ברירת מחדל מהירה
                     tvName.setText(marker.getTitle());
                     tvCommunity.setText("");
                     tvBio.setText("");
                     tvManager.setVisibility(View.GONE);
+                    tvDogs.setText("");
+                    tvContact.setText("");
 
                     // אם יש בקאש – נציג; אחרת נמשוך ואז נרענן
                     User u = userCache.get(tag.id);
@@ -134,7 +140,22 @@ public class MapController {
                         tvCommunity.setText(u.getCommunityName());
                         if (u.getFieldsOfInterest() != null) tvBio.setText(u.getFieldsOfInterest());
                         if (u.isManager()) tvManager.setVisibility(View.VISIBLE);
+
+                        int dogs = (u.getDogs() == null) ? 0 : u.getDogs().size();
+                        tvDogs.setText("Dogs: " + dogs);
+
+                        String contact = (u.getContactDetails() == null || u.getContactDetails().isEmpty())
+                                ? "—" : u.getContactDetails();
+                        tvContact.setText("Contact: " + contact);
+
+                        String n = u.getUserName();
+                        String initial = !TextUtils.isEmpty(n) ? n.substring(0,1).toUpperCase() : "?";
+                        tvAvatar.setText(initial);
                     } else {
+                        String n = marker.getTitle();
+                        String initial = !TextUtils.isEmpty(n) ? n.substring(0,1).toUpperCase() : "?";
+                        tvAvatar.setText(initial);
+
                         userRepo.getUserById(tag.id, new UserRepository.FirestoreUserCallback() {
                             @Override public void onSuccess(User user) {
                                 userCache.put(tag.id, user);
@@ -256,8 +277,9 @@ public class MapController {
                         } else {
                             Marker marker = googleMap.addMarker(new MarkerOptions()
                                     .position(position)
-                                    .title(userName))
-                                    .snippet("Tap to view profile");
+                                    .title(userName)
+                                    .snippet("Tap to view profile"));
+
                             if (marker != null) {
                                 marker.setTag(new MarkerTag(MarkerKind.USER, userId));
                                 userMarkers.put(userId, marker);

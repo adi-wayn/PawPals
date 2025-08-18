@@ -1,49 +1,122 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
-    android:padding="12dp"
+    android:padding="2dp"
     android:layout_width="wrap_content"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:layoutDirection="locale">
 
-    <TextView
-        android:id="@+id/tvName"
-        android:textStyle="bold"
-        android:textSize="16sp"
-        android:textColor="#1F3B3D"
+    <!-- כרטיס עם פינות מעוגלות ו"צל" עדין -->
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:maxLines="1"
-        android:ellipsize="end" />
+        android:background="@drawable/bg_infowindow_card"
+        android:padding="14dp"
+        android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/tvCommunity"
-        android:textSize="13sp"
-        android:textColor="#607D8B"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:maxLines="1"
-        android:ellipsize="end" />
+        <!-- שורה עליונה: אווטאר אות + שם + תג מנהל -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
-    <TextView
-        android:id="@+id/tvBio"
-        android:textSize="13sp"
-        android:textColor="#444444"
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:maxLines="2"
-        android:ellipsize="end"
-        android:layout_marginTop="4dp" />
+            <TextView
+                android:id="@+id/tvAvatar"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:background="@drawable/bg_avatar_circle"
+                android:text="A"
+                android:textColor="@android:color/white"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:textSize="14sp"/>
 
-    <TextView
-        android:id="@+id/tvManager"
-        android:text="Manager"
-        android:textSize="12sp"
-        android:textColor="#FFFFFF"
-        android:paddingHorizontal="8dp"
-        android:paddingVertical="2dp"
-        android:background="#FF7043"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
-        android:visibility="gone"/>
+            <TextView
+                android:id="@+id/tvName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="User name"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:textColor="#102A43"
+                android:layout_marginStart="10dp"/>
+
+            <TextView
+                android:id="@+id/tvManager"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Manager"
+                android:textSize="12sp"
+                android:textColor="#1B5E20"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="2dp"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/bg_manager_chip"
+                android:visibility="gone"/>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvCommunity"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="community"
+            android:textSize="13sp"
+            android:textColor="#5E7A88"
+            android:layout_marginTop="4dp"/>
+
+        <!-- ביוגרפיה / תיאור קצר -->
+        <TextView
+            android:id="@+id/tvBio"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textSize="13sp"
+            android:textColor="#34444F"
+            android:maxLines="2"
+            android:ellipsize="end"
+            android:layout_marginTop="6dp"/>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#EFEFEF"
+            android:layout_marginVertical="8dp"/>
+
+        <!-- סטטוס קצר: כלבים ויצירת קשר -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tvDogs"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Dogs: 0"
+                android:textSize="14sp"
+                android:textColor="#102A43"/>
+
+            <TextView
+                android:layout_width="8dp"
+                android:layout_height="wrap_content"/>
+
+            <TextView
+                android:id="@+id/tvContact"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Contact: —"
+                android:textSize="14sp"
+                android:textColor="#102A43"/>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvHint"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tap to view profile ›"
+            android:textSize="12sp"
+            android:textColor="#7A8A99"
+            android:layout_marginTop="6dp"/>
+    </LinearLayout>
 </LinearLayout>
