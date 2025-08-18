@@ -18,8 +18,8 @@ public class CommunityManager extends User implements Parcelable {
         this.isManager = true;
     }
 
-    public CommunityManager(String name, String community) {
-        super(name, community);
+    public CommunityManager(String name, String community, String info,String bio) {
+        super(name, community,info,bio);
         this.isManager = true;
     }
 
