@@ -11,7 +11,7 @@
     android:background="?android:windowBackground"
     tools:context=".ProfileActivity">
 
-    <!-- User Profile Section -->
+    <!-- User Profile Section (unchanged) -->
     <LinearLayout
         android:id="@+id/user_profile_section"
         android:layout_width="match_parent"
@@ -56,37 +56,116 @@
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:layout_marginTop="16dp"
-        android:layout_marginBottom="8dp"
+        android:layout_marginBottom="12dp"
         android:background="@color/light_gray" />
 
-    <!-- Dogs Section Title -->
+    <!-- Bio -->
     <TextView
-        android:id="@+id/dogs_section_title"
+        android:id="@+id/bio_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/dogs"
+        android:text="About"
         android:textStyle="bold"
         android:textAppearance="?attr/textAppearanceSubtitle1"
-        android:layout_marginBottom="8dp" />
+        android:layout_marginBottom="4dp" />
 
-    <!-- Scrollable Dog Card Container -->
-    <ScrollView
+    <TextView
+        android:id="@+id/bio_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Short bio goes here…"
+        android:textAppearance="?attr/textAppearanceBody2"
+        android:lineSpacingExtra="2dp"
+        android:layout_marginBottom="12dp"
+        tools:text="Dog lover, early riser, love morning park walks and organizing weekend meetups." />
+
+    <!-- Contact -->
+    <TextView
+        android:id="@+id/contact_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Contact"
+        android:textStyle="bold"
+        android:textAppearance="?attr/textAppearanceSubtitle1"
+        android:layout_marginBottom="4dp" />
+
+    <TextView
+        android:id="@+id/contact_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="email@example.com | 050-0000000"
+        android:autoLink="email|phone"
+        android:linksClickable="true"
+        android:textAppearance="?attr/textAppearanceBody2"
+        android:layout_marginBottom="16dp"
+        tools:text="bella.owner@gmail.com | 050-1234567" />
+
+    <!-- Toggle buttons -->
+    <LinearLayout
+        android:id="@+id/toggle_row"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="2"
+        android:layout_marginBottom="8dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_show_friends"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Friends" />
+
+        <View
+            android:layout_width="8dp"
+            android:layout_height="0dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_show_dogs"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Dogs" />
+    </LinearLayout>
+
+    <!-- Switchable content area -->
+    <FrameLayout
+        android:id="@+id/content_switcher"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:fillViewport="true">
+        android:layout_weight="1">
 
-        <LinearLayout
-            android:id="@+id/dogs_container"
+        <!-- Friends list (RecyclerView) -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/friends_recycler"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:divider="?android:attr/dividerHorizontal"
-            android:showDividers="middle"
-            android:dividerPadding="8dp">
-            <!-- Dog cards will be added here dynamically -->
-        </LinearLayout>
-    </ScrollView>
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingTop="4dp"
+            android:paddingBottom="8dp"
+            tools:listitem="@layout/item_profile_card"
+            tools:itemCount="6" />
+
+        <!-- Dogs cards (your previous scrollable list) -->
+        <ScrollView
+            android:id="@+id/dogs_scroll"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:id="@+id/dogs_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:divider="?android:attr/dividerHorizontal"
+                android:showDividers="middle"
+                android:dividerPadding="8dp" />
+        </ScrollView>
+    </FrameLayout>
 
     <!-- Community Status -->
     <TextView
