@@ -172,7 +172,7 @@
         android:id="@+id/community_status"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/in_same_community"
+        android:text="@string/user_community"
         android:textAppearance="?attr/textAppearanceBody2"
         android:gravity="center"
         android:layout_marginTop="12dp"

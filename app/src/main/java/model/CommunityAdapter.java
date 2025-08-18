@@ -26,7 +26,6 @@ public class CommunityAdapter extends RecyclerView.Adapter<CommunityAdapter.View
         this.users = (users != null) ? users : new ArrayList<>();
     }
 
-    /** Optional: constructor with listener */
     public CommunityAdapter(List<User> users, @Nullable OnUserClickListener listener) {
         this.users = (users != null) ? users : new ArrayList<>();
         this.clickListener = listener;
@@ -66,19 +65,29 @@ public class CommunityAdapter extends RecyclerView.Adapter<CommunityAdapter.View
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView nameText, infoText;
+        TextView nameText, infoText, communityText;
 
         ViewHolder(View itemView) {
             super(itemView);
             nameText = itemView.findViewById(R.id.profile_name);
             infoText = itemView.findViewById(R.id.profile_info);
+            communityText = itemView.findViewById(R.id.profile_community); // נוסיף ל־XML
         }
 
         void bind(User user) {
             if (user == null) return;
+
+            // שם
             nameText.setText(user.getUserName() != null ? user.getUserName() : "Unknown");
+
+            // מידע כללי – כמות כלבים
             int dogCount = (user.getDogs() != null) ? user.getDogs().size() : 0;
             infoText.setText("Dogs: " + dogCount);
+
+            // קהילה
+            communityText.setText(user.getCommunityName() != null
+                    ? "Community: " + user.getCommunityName()
+                    : "Community: -");
         }
     }
 }
