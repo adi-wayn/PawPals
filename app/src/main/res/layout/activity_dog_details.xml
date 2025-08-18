@@ -27,7 +27,7 @@
 
         <!-- Dog name -->
         <TextView
-            android:id="@+id/dog_name1"
+            android:id="@+id/dog_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/dog_name_placeholder"
@@ -36,7 +36,7 @@
 
         <!-- Dog age -->
         <TextView
-            android:id="@+id/dog_age1"
+            android:id="@+id/dog_age"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/dog_age_placeholder"
