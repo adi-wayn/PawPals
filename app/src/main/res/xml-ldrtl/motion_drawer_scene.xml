@@ -7,6 +7,7 @@
         <Constraint
             android:id="@id/sideDrawer"
             android:layout_width="@dimen/drawer_width"
+            android:layout_height="match_parent"
             motion:layout_constraintTop_toTopOf="parent"
             motion:layout_constraintBottom_toBottomOf="parent"
             motion:layout_constraintEnd_toEndOf="parent"
@@ -18,6 +19,8 @@
     <ConstraintSet android:id="@+id/open">
         <Constraint
             android:id="@id/sideDrawer"
+            android:layout_width="@dimen/drawer_width"
+            android:layout_height="match_parent"
             motion:layout_constraintTop_toTopOf="parent"
             motion:layout_constraintBottom_toBottomOf="parent"
             motion:layout_constraintEnd_toEndOf="parent"
