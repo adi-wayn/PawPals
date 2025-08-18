@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- צל עדין -->
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="18dp"/>
+            <solid android:color="#17000000"/> <!-- ~9% שחור -->
+        </shape>
+    </item>
+
+    <!-- הכרטיס עצמו (מוזז טיפה למעלה כדי לחשוף את ה"צל") -->
+    <item android:bottom="2dp">
+        <shape android:shape="rectangle">
+            <corners android:radius="18dp"/>
+            <solid android:color="@android:color/white"/>
+            <stroke android:width="1dp" android:color="#11000000"/>
+        </shape>
+    </item>
+</layer-list>
