@@ -2,6 +2,7 @@ package model.firebase.firestore;
 
 
 import android.util.Log;
+import android.util.Pair;
 
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -163,6 +164,23 @@ public class UserRepository {
                 .addOnFailureListener(callback::onFailure);
     }
 
+    public void getUsersByCommunityWithIds(String communityName, FirestoreUsersWithIdsCallback callback) {
+        db.collection("users")
+                .whereEqualTo("communityName", communityName)
+                .get()
+                .addOnSuccessListener(query -> {
+                    List<Pair<String, User>> rows = new ArrayList<>();
+                    for (DocumentSnapshot doc : query.getDocuments()) {
+                        User u = doc.toObject(User.class);
+                        if (u != null) {
+                            rows.add(new Pair<>(doc.getId(), u)); // <-- מזהה המסמך לצד האובייקט
+                        }
+                    }
+                    callback.onSuccess(rows);
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
     // מפת userId->userName עבור קהילה
     public void getUserNamesByCommunity(String communityName, FirestoreUserNamesCallback callback) {
         db.collection("users")
@@ -276,6 +294,11 @@ public class UserRepository {
 
     public interface FirestoreUsersListCallback {
         void onSuccess(List<User> users);
+        void onFailure(Exception e);
+    }
+
+    public interface FirestoreUsersWithIdsCallback {
+        void onSuccess(List<Pair<String, User>> rows);
         void onFailure(Exception e);
     }
 }

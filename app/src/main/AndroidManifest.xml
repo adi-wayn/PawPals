@@ -97,6 +97,11 @@
             android:name=".WritePostManagerActivity"
             android:exported="false"/>
 
+        <activity
+            android:name=".OtherUserProfileActivity"
+            android:exported="false" />
+
+
 
         <service
             android:name="model.firebase.CloudMessaging.MyFirebaseMessagingService"

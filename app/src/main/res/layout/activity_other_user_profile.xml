@@ -134,6 +134,14 @@
         android:layout_height="0dp"
         android:layout_weight="1">
 
+        <com.google.android.material.progressindicator.CircularProgressIndicator
+            android:id="@+id/progressBar"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="center"
+            android:visibility="gone"
+            app:indicatorSize="48dp"/>
+
         <!-- Dogs cards -->
         <ScrollView
             android:id="@+id/dogs_scroll"
