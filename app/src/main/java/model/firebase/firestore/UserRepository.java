@@ -1,5 +1,6 @@
 package model.firebase.firestore;
 
+
 import android.util.Log;
 
 import com.google.firebase.firestore.DocumentSnapshot;
