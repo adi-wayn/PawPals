@@ -1,12 +1,15 @@
-package model.firebase.firestore;
+package model.firebase.firestore.;
 
 import android.util.Log;
+
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import model.CommunityManager;
 import model.User;
 
@@ -18,7 +21,7 @@ public class UserRepository {
         db = FirebaseFirestore.getInstance();
     }
 
-    // יצירת פרופיל
+    // יצירת/עדכון פרופיל
     public void createUserProfile(String userId, User user, FirestoreCallback callback) {
         Map<String, Object> userMap = user.toMap();
 
@@ -44,7 +47,7 @@ public class UserRepository {
                 .addOnFailureListener(callback::onError);
     }
 
-    // קבלת משתמש לפי ID
+    // קבלת משתמש לפי ID (כולל קריאה של contactDetails ו-fieldsOfInterest)
     public void getUserById(String userId, FirestoreUserCallback callback) {
         db.collection("users")
                 .document(userId)
@@ -56,28 +59,33 @@ public class UserRepository {
                         return;
                     }
 
-                    // הצג את כל המידע שהגיע מהמסמך
+                    // לוג לכל התוכן שהגיע
                     Log.d(TAG, "Raw Firestore snapshot: " + snapshot.getData());
 
-                    Boolean isManager = snapshot.getBoolean("isManager");
-                    String name = snapshot.getString("userName");
-                    String community = snapshot.getString("communityName");
+                    Boolean isManager     = snapshot.getBoolean("isManager");
+                    String  name          = snapshot.getString("userName");
+                    String  community     = snapshot.getString("communityName");
+                    String  contact       = snapshot.getString("contactDetails");
+                    String  bioOrFields   = snapshot.getString("fieldsOfInterest");
 
-                    Log.d(TAG, String.format("Extracted fields: userName='%s', communityName='%s', isManager=%s", name, community, isManager));
+                    Log.d(TAG, String.format(
+                            "Extracted fields: userName='%s', communityName='%s', isManager=%s, contact='%s', fields='%s'",
+                            name, community, isManager, contact, bioOrFields
+                    ));
 
                     User user = null;
 
                     if (name != null && community != null) {
-                        // טעינה ידנית בטוחה
+                        // בנייה ידנית בטוחה עם כל השדות החדשים
                         if (Boolean.TRUE.equals(isManager)) {
-                            user = new CommunityManager(name, community);
+                            user = new CommunityManager(name, community, contact != null ? contact : "", bioOrFields != null ? bioOrFields : "");
                             Log.d(TAG, "Created CommunityManager manually: " + user);
                         } else {
-                            user = new User(name, community);
+                            user = new User(name, community, contact != null ? contact : "", bioOrFields != null ? bioOrFields : "");
                             Log.d(TAG, "Created regular User manually: " + user);
                         }
                     } else {
-                        // fallback ל־toObject() אם השדות לא נקלטו ידנית
+                        // fallback ל-toObject אם חסר מידע
                         if (Boolean.TRUE.equals(isManager)) {
                             user = snapshot.toObject(CommunityManager.class);
                             Log.w(TAG, "Used toObject fallback (CommunityManager): " + user);
@@ -144,6 +152,7 @@ public class UserRepository {
                 .addOnFailureListener(callback::onFailure);
     }
 
+    // מפת userId->userName עבור קהילה
     public void getUserNamesByCommunity(String communityName, FirestoreUserNamesCallback callback) {
         db.collection("users")
                 .whereEqualTo("communityName", communityName)
@@ -151,10 +160,10 @@ public class UserRepository {
                 .addOnSuccessListener(query -> {
                     Map<String, String> userNames = new HashMap<>();
                     for (DocumentSnapshot doc : query.getDocuments()) {
-                        String userId = doc.getId();
+                        String id   = doc.getId();
                         String name = doc.getString("userName");
-                        if (userId != null && name != null) {
-                            userNames.put(userId, name);
+                        if (id != null && name != null) {
+                            userNames.put(id, name);
                         }
                     }
                     callback.onSuccess(userNames);
