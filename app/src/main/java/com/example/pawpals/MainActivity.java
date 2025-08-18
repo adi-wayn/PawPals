@@ -8,8 +8,10 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.util.Pair;
+import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
@@ -210,18 +212,59 @@ public class MainActivity extends AppCompatActivity {
         View bottomSheet = findViewById(R.id.bottomSheet);
         View menuButton = findViewById(R.id.imageButton);
         View overlay = drawerMotion.findViewById(R.id.overlay);
+        View root = findViewById(R.id.rootLayout);
 
+        // רוחב המגרה (מ-@dimen/drawer_width), המרווח ההתחלתי של הכפתור, ורווח קטן ליד המגרה
         drawerMotion.setState(R.id.closed, -1, -1);
 
+        // רוחב המגירה מה־dimen
+        final float drawerW = getResources().getDimension(R.dimen.drawer_width);
+
+        // marginStart האמיתי של הכפתור (לפי LayoutParams)
+        final ViewGroup.MarginLayoutParams mbLp =
+                (ViewGroup.MarginLayoutParams) menuButton.getLayoutParams();
+        final int marginStartPx = mbLp.getMarginStart();
+
+        // מרחק קטן מהשפה (שחק עם המספר כדי לקרב/להרחיק את הכפתור מהמגירה)
+        final float gapPx = TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, -4, getResources().getDisplayMetrics());
+
+        // מאזין לתנועה של המגירה – מזיז את הכפתור בהתאם להתקדמות האנימציה
         drawerMotion.setTransitionListener(new MotionLayout.TransitionListener() {
+            @Override public void onTransitionStarted(MotionLayout ml, int startId, int endId) {
+                // הכפתור תמיד נראה ומעל הכל בזמן אנימציה
+                menuButton.setVisibility(View.VISIBLE);
+                menuButton.setAlpha(1f);
+                menuButton.bringToFront();
+                if (startId == R.id.closed) ml.setVisibility(View.VISIBLE);
+            }
+
+            @Override public void onTransitionChange(MotionLayout ml, int s, int e, float p) {
+                boolean isRtl = root.getLayoutDirection() == View.LAYOUT_DIRECTION_RTL;
+                float dir = isRtl ? -1f : 1f;
+                float delta = (drawerW - marginStartPx - gapPx) * p * dir;
+                menuButton.setTranslationX(delta);
+            }
+
             @Override public void onTransitionCompleted(MotionLayout ml, int currentId) {
                 if (currentId == R.id.closed) {
-                    ml.setVisibility(View.GONE); // שלא יחסום טאצ'ים כשהוא סגור
+                    // כשנסגר: ודא שהכפתור חוזר למקום ונשאר נראה מעל הכל
+                    menuButton.setTranslationX(0f);
+                    menuButton.setVisibility(View.VISIBLE);
+                    menuButton.setAlpha(1f);
+                    menuButton.bringToFront();
+
+                    // המגירה ל-GONE כדי שלא תחסום טאצ'ים
+                    ml.setVisibility(View.GONE);
+                } else if (currentId == R.id.open) {
+                    menuButton.setVisibility(View.VISIBLE);
+                    menuButton.setAlpha(1f);
+                    menuButton.bringToFront();
+                    ml.setVisibility(View.VISIBLE);
                 }
             }
-            @Override public void onTransitionStarted(MotionLayout m, int s, int e) {}
-            @Override public void onTransitionChange(MotionLayout m, int s, int e, float p) {}
-            @Override public void onTransitionTrigger(MotionLayout m, int id, boolean p1, float p2) {}
+
+            @Override public void onTransitionTrigger(MotionLayout ml, int id, boolean p1, float p2) {}
         });
 
         // Handle Bottom Sheet dragging
