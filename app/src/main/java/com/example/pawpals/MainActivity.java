@@ -259,17 +259,31 @@ public class MainActivity extends AppCompatActivity {
 
         // Handle drawer open/close from hamburger menu
         menuButton.setOnClickListener(v -> {
-            if (drawerMotion.getVisibility() != View.VISIBLE) {
-                drawerMotion.setVisibility(View.VISIBLE);
-                drawerMotion.setState(R.id.closed, -1, -1); // ודא שהתחלנו מסגור
-                drawerMotion.post(() -> drawerMotion.transitionToState(R.id.open));
-                return;
-            }
-            // אם סגור – פתח; אם פתוח – סגור
-            if (drawerMotion.getCurrentState() == R.id.open) {
-                drawerMotion.transitionToState(R.id.closed);
+            // האם הכוונה לפתוח או לסגור? (טוגל)
+            final boolean wantOpen = drawerMotion.getCurrentState() != R.id.open;
+
+            Runnable openOrCloseDrawer = () -> {
+                if (drawerMotion.getVisibility() != View.VISIBLE) {
+                    drawerMotion.setVisibility(View.VISIBLE);
+                    drawerMotion.setState(R.id.closed, -1, -1); // להתחיל מסגור
+                }
+                drawerMotion.transitionToState(wantOpen ? R.id.open : R.id.closed);
+            };
+
+            // אם ה-Bottom Sheet פתוח/באמצע – סגור אותו קודם ואז בצע את הפעולה
+            if (mainMotion.getProgress() > 0f) {
+                mainMotion.setTransitionListener(new MotionLayout.TransitionListener() {
+                    @Override public void onTransitionCompleted(MotionLayout ml, int id) {
+                        ml.setTransitionListener(null);
+                        openOrCloseDrawer.run();
+                    }
+                    @Override public void onTransitionStarted(MotionLayout m, int s, int e) {}
+                    @Override public void onTransitionChange(MotionLayout m, int s, int e, float p) {}
+                    @Override public void onTransitionTrigger(MotionLayout m, int id, boolean b, float v) {}
+                });
+                mainMotion.transitionToStart(); // סוגר את הסדין
             } else {
-                drawerMotion.transitionToState(R.id.open);
+                openOrCloseDrawer.run();
             }
         });
 

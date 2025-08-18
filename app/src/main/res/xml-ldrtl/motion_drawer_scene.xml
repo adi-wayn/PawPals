@@ -2,7 +2,7 @@
 <MotionScene xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:motion="http://schemas.android.com/apk/res-auto">
 
-    <!-- מצב סגור: ב-RTL המגירה צמודה ל-End ו"זזה" ימינה (תרגום חיובי) -->
+    <!-- ב-RTL העוגן ל-End והסגירה היא הזזה חיובית (ימינה) -->
     <ConstraintSet android:id="@+id/closed">
         <Constraint
             android:id="@id/sideDrawer"

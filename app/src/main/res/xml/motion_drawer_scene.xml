@@ -2,6 +2,7 @@
 <MotionScene xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:motion="http://schemas.android.com/apk/res-auto">
 
+
     <ConstraintSet android:id="@+id/closed">
         <Constraint
             android:id="@id/sideDrawer"
