@@ -1,4 +1,4 @@
-package model.firebase.firestore.;
+package model.firebase.firestore;
 
 import android.util.Log;
 
