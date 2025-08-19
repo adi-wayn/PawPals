@@ -20,6 +20,7 @@
     <string name="mood_placeholder">Happy</string>
     <string name="notes">Notes</string>
     <string name="notes_placeholder">Loves to play fetch. Good with other dogs.</string>
+    <string name="add_dog" />
     <string name="no_dogs_to_show">No dogs to show.</string>
     <string name="add_friend">Add Friend</string>
     <string name="remove_friend">Remove Friend</string>
