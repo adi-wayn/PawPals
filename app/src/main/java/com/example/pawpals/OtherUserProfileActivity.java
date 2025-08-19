@@ -11,6 +11,7 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.widget.TextViewCompat;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
@@ -161,10 +162,19 @@ public class OtherUserProfileActivity extends AppCompatActivity {
     private View simpleRow(String text) {
         TextView tv = new TextView(this);
         tv.setText(text);
-        tv.setTextAppearance(this, com.google.android.material.R.style
-                .TextAppearance_MaterialComponents_Body2);
-        int p = (int) getResources().getDisplayMetrics().density * 8;
-        tv.setPadding(p, p + 4, p, p + 4);
+
+        // בלי דפריקציה, עובד בכל הגרסאות
+        TextViewCompat.setTextAppearance(
+                tv,
+                // אם אתה על Material 3:
+                com.google.android.material.R.style.TextAppearance_Material3_BodyMedium
+        );
+
+        float d = getResources().getDisplayMetrics().density;
+        int padH = (int) (8 * d);   // 8dp
+        int padV = (int) (12 * d);  // 12dp (במקום p+4 פיקסלים שהם לא dp)
+        tv.setPadding(padH, padV, padH, padV);
+
         return tv;
     }
 
