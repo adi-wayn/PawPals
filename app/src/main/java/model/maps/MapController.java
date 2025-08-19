@@ -22,6 +22,7 @@ import android.widget.Toast;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.example.pawpals.OtherUserProfileActivity;
 import com.example.pawpals.ProfileActivity;
 import com.example.pawpals.R;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -173,8 +174,8 @@ public class MapController {
                 Object t = marker.getTag();
                 if (t instanceof MarkerTag && ((MarkerTag) t).kind == MarkerKind.USER) {
                     String userId = ((MarkerTag) t).id;
-                    Intent i = new Intent(context, ProfileActivity.class);
-                    i.putExtra("userId", userId);          // תומך בפרופיל של משתמש אחר
+                    Intent i = new Intent(context, OtherUserProfileActivity.class);
+                    i.putExtra(OtherUserProfileActivity.EXTRA_OTHER_USER_ID, userId);          // תומך בפרופיל של משתמש אחר
                     i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     context.startActivity(i);
                 }
