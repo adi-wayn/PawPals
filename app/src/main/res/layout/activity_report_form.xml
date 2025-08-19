@@ -38,6 +38,12 @@
                 android:layout_height="wrap_content"
                 android:text="Assistance" />
 
+            <RadioButton
+                android:id="@+id/tab_manager_application"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Manager Application" />
+
         </RadioGroup>
 
         <!-- קו הפרדה -->

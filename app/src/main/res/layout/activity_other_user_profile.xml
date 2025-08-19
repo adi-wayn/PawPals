@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/profile_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:layoutDirection="locale"
+    android:background="?android:windowBackground"
+    tools:context=".OtherUserProfileActivity">
+
+    <!-- User Profile Section (זהה + כפתור חברות) -->
+    <LinearLayout
+        android:id="@+id/user_profile_section"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <FrameLayout
+            android:layout_width="80dp"
+            android:layout_height="80dp">
+
+            <ImageView
+                android:id="@+id/user_profile_picture"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:contentDescription="@string/profile_picture"
+                android:scaleType="centerCrop"
+                tools:srcCompat="@tools:sample/avatars" />
+
+            <!-- אינדיקטור סטטוס (נשתמש בצבע כדי לבטא חברות/לא חברות אם תרצה) -->
+            <View
+                android:id="@+id/friend_status_indicator"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_gravity="bottom|end"
+                android:layout_margin="4dp"
+                android:background="@drawable/status_indicator" />
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/user_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_weight="1"
+            android:text="@string/user_name_placeholder"
+            android:textAppearance="?attr/textAppearanceHeadline6" />
+
+        <!-- כפתור פעולה לחברות — Outlined, תואם סטייל -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_friend_action"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Add Friend" />
+    </LinearLayout>
+
+    <!-- Divider (זהה) -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="12dp"
+        android:background="@color/light_gray" />
+
+    <!-- Bio (זהה) -->
+    <TextView
+        android:id="@+id/bio_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="About"
+        android:textStyle="bold"
+        android:textAppearance="?attr/textAppearanceSubtitle1"
+        android:layout_marginBottom="4dp" />
+
+    <TextView
+        android:id="@+id/bio_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Short bio goes here…"
+        android:textAppearance="?attr/textAppearanceBody2"
+        android:lineSpacingExtra="2dp"
+        android:layout_marginBottom="12dp"
+        tools:text="Dog lover, early riser, love morning park walks and organizing weekend meetups." />
+
+    <!-- Contact (זהה) -->
+    <TextView
+        android:id="@+id/contact_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Contact"
+        android:textStyle="bold"
+        android:textAppearance="?attr/textAppearanceSubtitle1"
+        android:layout_marginBottom="4dp" />
+
+    <TextView
+        android:id="@+id/contact_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="email@example.com | 050-0000000"
+        android:autoLink="email|phone"
+        android:linksClickable="true"
+        android:textAppearance="?attr/textAppearanceBody2"
+        android:layout_marginBottom="16dp"
+        tools:text="bella.owner@gmail.com | 050-1234567" />
+
+    <!-- Toggle row נשארת לעקביות, אך מכילה רק Dogs -->
+    <LinearLayout
+        android:id="@+id/toggle_row"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="1"
+        android:layout_marginBottom="8dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_show_dogs"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Dogs" />
+    </LinearLayout>
+
+    <!-- Switchable content: כאן יש רק Dogs -->
+    <FrameLayout
+        android:id="@+id/content_switcher"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <com.google.android.material.progressindicator.CircularProgressIndicator
+            android:id="@+id/progressBar"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="center"
+            android:visibility="gone"
+            app:indicatorSize="48dp"/>
+
+        <!-- Dogs cards -->
+        <ScrollView
+            android:id="@+id/dogs_scroll"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true">
+
+            <LinearLayout
+                android:id="@+id/dogs_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:divider="?android:attr/dividerHorizontal"
+                android:showDividers="middle"
+                android:dividerPadding="8dp" />
+        </ScrollView>
+    </FrameLayout>
+
+    <!-- Community Status (זהה) -->
+    <TextView
+        android:id="@+id/community_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/in_the_same_community"
+        android:textAppearance="?attr/textAppearanceBody2"
+        android:gravity="center"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="8dp" />
+
+</LinearLayout>

@@ -1,4 +1,3 @@
-// model/ReportsAdapter.java
 package model;
 
 import androidx.recyclerview.widget.RecyclerView;
@@ -14,6 +13,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 
 import com.example.pawpals.R;
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.List;
 
@@ -25,7 +25,7 @@ public class ReportsAdapter extends RecyclerView.Adapter<ReportsAdapter.ReportVi
         void onReportRemoved(Report report);
     }
 
-    private final List<Report> reportList; // this is your filtered list
+    private final List<Report> reportList; // filtered list
     private final String communityId;
     private final Context context;
     private final CommunityRepository repo;
@@ -62,13 +62,17 @@ public class ReportsAdapter extends RecyclerView.Adapter<ReportsAdapter.ReportVi
 
         String text = report.getText() != null ? report.getText() : "";
         String shortText = text.length() > 80 ? text.substring(0, 80) + "..." : text;
-
         holder.textPostMessage.setText(shortText);
         holder.textPostMessageFull.setText(text);
 
         boolean isExpanded = position == expandedPosition;
+        boolean isPost = report.isPost();
+        boolean isManagerApp = report.isManagerApplication();
+
+        // כפתורי פעולה מוצגים רק כשמורחב ורק אם יש מה לאשר/לדחות
+        boolean showActions = isExpanded && (isPost || isManagerApp);
         holder.textPostMessageFull.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
-        holder.actionButtonsLayout.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
+        holder.actionButtonsLayout.setVisibility(showActions ? View.VISIBLE : View.GONE);
 
         // פתיחה/סגירה של הכרטיס (expand/collapse)
         holder.itemView.setOnClickListener(v -> {
@@ -78,12 +82,11 @@ public class ReportsAdapter extends RecyclerView.Adapter<ReportsAdapter.ReportVi
             int oldExpanded = expandedPosition;
             expandedPosition = (position == expandedPosition) ? -1 : pos;
 
-            // רענון מינימלי: סגור הישן ופתח החדש
             if (oldExpanded != -1) notifyItemChanged(oldExpanded);
             if (expandedPosition != -1) notifyItemChanged(expandedPosition);
         });
 
-        // הצגת הטקסט המלא/מקוצר
+        // טקסט מלא בלחיצה על המקוצר
         holder.textPostMessage.setOnClickListener(v -> {
             boolean currentlyVisible = holder.textPostMessageFull.getVisibility() == View.VISIBLE;
             holder.textPostMessageFull.setVisibility(currentlyVisible ? View.GONE : View.VISIBLE);
@@ -100,13 +103,42 @@ public class ReportsAdapter extends RecyclerView.Adapter<ReportsAdapter.ReportVi
                 return;
             }
 
-            if ("post".equalsIgnoreCase(report.getType())) {
-                // 1) הוסף ל-feed  2) מחק מה-reports
+            if (isManagerApp) {
+                // אישור מועמדות לניהול → transferManager
+                String oldManagerUid = FirebaseAuth.getInstance().getUid();
+                String newManagerUid = report.getApplicantUserId();
+
+                if (communityId == null || oldManagerUid == null || newManagerUid == null || newManagerUid.isEmpty()) {
+                    Toast.makeText(context, "Missing data for manager transfer.", Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                repo.transferManager(communityId, oldManagerUid, newManagerUid, new CommunityRepository.FirestoreCallback() {
+                    @Override public void onSuccess(String id) {
+                        // מחיקת הדיווח אחרי ההעברה
+                        repo.deleteReport(communityId, reportId, new CommunityRepository.FirestoreCallback() {
+                            @Override public void onSuccess(String ignored) {
+                                Toast.makeText(context, "Manager transferred successfully.", Toast.LENGTH_SHORT).show();
+                                removeAt(adapterPos, report);
+                            }
+                            @Override public void onFailure(Exception e) {
+                                // גם אם המחיקה נכשלה – נסיר מקומית כדי לא לתקוע את ה-UI
+                                removeAt(adapterPos, report);
+                            }
+                        });
+                    }
+                    @Override public void onFailure(Exception e) {
+                        Toast.makeText(context, "Failed to transfer manager: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                });
+
+            } else if (isPost) {
+                // פוסט מאושר → עובר ל-feed ונמחק מהתור
                 repo.createFeedPost(communityId, report, new CommunityRepository.FirestoreCallback() {
                     @Override public void onSuccess(String feedId) {
                         repo.deleteReport(communityId, reportId, new CommunityRepository.FirestoreCallback() {
                             @Override public void onSuccess(String ignored) {
-                                Toast.makeText(context, "Post approved, moved to bulletin, and removed from queue.", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(context, "Post approved & moved to bulletin.", Toast.LENGTH_SHORT).show();
                                 removeAt(adapterPos, report);
                             }
                             @Override public void onFailure(Exception e) {
@@ -118,8 +150,9 @@ public class ReportsAdapter extends RecyclerView.Adapter<ReportsAdapter.ReportVi
                         Toast.makeText(context, "Failed to approve post: " + e.getMessage(), Toast.LENGTH_LONG).show();
                     }
                 });
+
             } else {
-                // לא פוסט – רק מחיקה מהתור
+                // סוג אחר – רק מחיקה
                 repo.deleteReport(communityId, reportId, new CommunityRepository.FirestoreCallback() {
                     @Override public void onSuccess(String ignored) {
                         Toast.makeText(context, "Report approved and removed.", Toast.LENGTH_SHORT).show();
@@ -146,7 +179,7 @@ public class ReportsAdapter extends RecyclerView.Adapter<ReportsAdapter.ReportVi
             repo.deleteReport(communityId, reportId, new CommunityRepository.FirestoreCallback() {
                 @Override public void onSuccess(String ignored) {
                     Toast.makeText(context, "Report rejected and deleted.", Toast.LENGTH_SHORT).show();
-                    removeAt(adapterPos, report); // מסיר מה־RecyclerView ומעדכן את הרשימות
+                    removeAt(adapterPos, report);
                 }
                 @Override public void onFailure(Exception e) {
                     Toast.makeText(context, "Failed to delete report: " + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -163,9 +196,8 @@ public class ReportsAdapter extends RecyclerView.Adapter<ReportsAdapter.ReportVi
         if (removedListener != null) {
             removedListener.onReportRemoved(report);
         }
-        // collapse if needed
         if (expandedPosition == position) expandedPosition = -1;
-        else if (expandedPosition > position) expandedPosition--; // keep expansion index consistent
+        else if (expandedPosition > position) expandedPosition--;
     }
 
     @Override

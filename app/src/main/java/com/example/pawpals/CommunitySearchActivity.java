@@ -2,6 +2,7 @@ package com.example.pawpals;
 
 import android.content.Intent; // ⬅️ חדש
 import android.os.Bundle;
+import android.util.Pair;
 import android.widget.SearchView;
 import android.widget.Toast;
 import android.view.View;
@@ -25,15 +26,14 @@ import model.firebase.firestore.UserRepository;
 
 public class CommunitySearchActivity extends AppCompatActivity {
 
+    // רשימות מקור/תצוגה
+    private final List<Pair<String, User>> masterRows = new ArrayList<>();
+    private final List<User> allUsers = new ArrayList<>();   // לתצוגה ב-Adapter
+    private final List<String> allIds = new ArrayList<>();   // מקביל ל-allUsers
     @Nullable private User currentUser;
 
     private RecyclerView recyclerView;
     private CommunityAdapter adapter;
-
-    // masterProfiles: full community members (no filters)
-    private final List<User> masterProfiles = new ArrayList<>();
-    // allProfiles: filtered list shown in the adapter
-    private final List<User> allProfiles = new ArrayList<>();
 
     private ChipGroup filterChipGroup;
     private SearchView searchView;
@@ -92,7 +92,7 @@ public class CommunitySearchActivity extends AppCompatActivity {
     }
 
     private void setupRecycler() {
-        adapter = new CommunityAdapter(allProfiles);
+        adapter = new CommunityAdapter(allUsers);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(adapter);
@@ -120,23 +120,12 @@ public class CommunitySearchActivity extends AppCompatActivity {
 
     private void loadCommunityMembers(String communityName) {
         showLoading(true);
-        userRepo.getUsersByCommunity(communityName, new UserRepository.FirestoreUsersListCallback() {
+        userRepo.getUsersByCommunityWithIds(communityName, new UserRepository.FirestoreUsersWithIdsCallback() {
             @Override
-            public void onSuccess(List<User> users) {
+            public void onSuccess(List<Pair<String, User>> rows) {
                 showLoading(false);
-
-                masterProfiles.clear();
-                if (users != null) {
-                    // Optional: exclude the current logged-in user from results
-                    String selfId = FirebaseAuth.getInstance().getUid();
-                    for (User u : users) {
-                        if (u == null) continue;
-                        // If your User has an id field, you can exclude self:
-                        // if (u.getId() != null && u.getId().equals(selfId)) continue;
-                        masterProfiles.add(u);
-                    }
-                }
-
+                masterRows.clear();
+                if (rows != null) masterRows.addAll(rows);
                 filterProfiles(searchView.getQuery() != null ? searchView.getQuery().toString() : "");
             }
 
@@ -152,8 +141,11 @@ public class CommunitySearchActivity extends AppCompatActivity {
         final String lowerQuery = (query == null ? "" : query).toLowerCase(Locale.ROOT);
         final List<Integer> checkedChipIds = filterChipGroup.getCheckedChipIds();
 
-        List<User> filtered = new ArrayList<>();
-        for (User user : masterProfiles) {
+        allUsers.clear();
+        allIds.clear();
+
+        for (Pair<String, User> row : masterRows) {
+            User user = row.second;
             if (user == null || user.getUserName() == null) continue;
 
             boolean matchesText = user.getUserName().toLowerCase(Locale.ROOT).contains(lowerQuery);
@@ -161,12 +153,11 @@ public class CommunitySearchActivity extends AppCompatActivity {
 
             if (!passesChipFilters(user, checkedChipIds)) continue;
 
-            filtered.add(user);
+            allUsers.add(row.second);
+            allIds.add(row.first); // שמירת ה-id באותו אינדקס
         }
 
-        allProfiles.clear();
-        allProfiles.addAll(filtered);
-        adapter.updateData(allProfiles);
+        adapter.updateData(allUsers);
     }
 
     private boolean passesChipFilters(User user, List<Integer> checkedChipIds) {
@@ -194,13 +185,26 @@ public class CommunitySearchActivity extends AppCompatActivity {
     }
 
     // ⬅️ מתודה לניווט לפרופיל
-    private void navigateToProfile(@Nullable User user) {
+    private void navigateToProfile(@Nullable User user, int position) {
         if (user == null) {
             Toast.makeText(this, "Unknown profile.", Toast.LENGTH_SHORT).show();
             return;
         }
-        Intent intent = new Intent(this, ProfileActivity.class);
-        intent.putExtra("currentUser", user); // Requires User implements Parcelable
-        startActivity(intent);
+        String targetId = (position >= 0 && position < allIds.size()) ? allIds.get(position) : null;
+        if (targetId == null || targetId.isEmpty()) {
+            Toast.makeText(this, "Missing user id.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String selfId = FirebaseAuth.getInstance().getUid();
+        if (selfId != null && selfId.equals(targetId)) {
+            Intent i = new Intent(this, ProfileActivity.class);
+            i.putExtra("currentUser", user);
+            startActivity(i);
+        } else {
+            Intent i = new Intent(this, OtherUserProfileActivity.class);
+            i.putExtra(OtherUserProfileActivity.EXTRA_OTHER_USER_ID, targetId);
+            startActivity(i);
+        }
     }
 }

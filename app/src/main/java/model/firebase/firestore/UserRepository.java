@@ -1,11 +1,19 @@
 package model.firebase.firestore;
 
 import android.util.Log;
+import android.util.Pair;
 
 import androidx.annotation.Nullable;
 
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.SetOptions;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,6 +27,9 @@ import model.Dog;
 public class UserRepository {
     private static final String TAG = "UserRepository";
     private final FirebaseFirestore db;
+    private CollectionReference friendsCol(String uid) {
+        return db.collection("users").document(uid).collection("friends");
+    }
 
     public UserRepository() {
         db = FirebaseFirestore.getInstance();
@@ -151,7 +162,25 @@ public class UserRepository {
                 .addOnFailureListener(callback::onFailure);
     }
 
-    // מפה של userId -> userName
+    // קבלת משתמשים לפי קהילה + מזהים (מהגרסת dev)
+    public void getUsersByCommunityWithIds(String communityName, FirestoreUsersWithIdsCallback callback) {
+        db.collection("users")
+                .whereEqualTo("communityName", communityName)
+                .get()
+                .addOnSuccessListener(query -> {
+                    List<Pair<String, User>> rows = new ArrayList<>();
+                    for (DocumentSnapshot doc : query.getDocuments()) {
+                        User u = doc.toObject(User.class);
+                        if (u != null) {
+                            rows.add(new Pair<>(doc.getId(), u)); // userId + האובייקט
+                        }
+                    }
+                    callback.onSuccess(rows);
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
+    // מפת userId->userName עבור קהילה
     public void getUserNamesByCommunity(String communityName, FirestoreUserNamesCallback callback) {
         db.collection("users")
                 .whereEqualTo("communityName", communityName)
@@ -170,7 +199,7 @@ public class UserRepository {
                 .addOnFailureListener(callback::onFailure);
     }
 
-    // ===== Dogs (תת־אוסף תחת המשתמש) =====
+    // ===== Dogs (תת־אוסף תחת המשתמש) — מהגרסת profil-dog =====
 
     /** יצירת כלב חדש תחת המשתמש (users/{userId}/dogs/{autoId}) */
     public void addDogToUser(String userId, Dog dog, FirestoreCallback callback) {
@@ -251,7 +280,79 @@ public class UserRepository {
                 .addOnFailureListener(callback::onFailure);
     }
 
-    // ===== Callbacks =====
+    // ===== Friends (מהגרסת dev) =====
+
+    public void addFriend(String meUserId, String otherUserId, FirestoreCallback cb) {
+        Map<String, Object> doc = new HashMap<>();
+        doc.put("createdAt", FieldValue.serverTimestamp());
+
+        friendsCol(meUserId).document(otherUserId)
+                .set(doc, SetOptions.merge())
+                .addOnSuccessListener(v -> cb.onSuccess(otherUserId)) // מחזירים את ה-friendId
+                .addOnFailureListener(cb::onFailure);
+    }
+
+    public void removeFriend(String meUserId, String otherUserId, FirestoreCallback cb) {
+        friendsCol(meUserId).document(otherUserId)
+                .delete()
+                .addOnSuccessListener(v -> cb.onSuccess(otherUserId))
+                .addOnFailureListener(cb::onFailure);
+    }
+
+    public void isFriend(String meUserId, String otherUserId, FirestoreExistCallback cb) {
+        friendsCol(meUserId).document(otherUserId)
+                .get()
+                .addOnSuccessListener(snap -> cb.onResult(snap.exists()))
+                .addOnFailureListener(cb::onError);
+    }
+
+    public ListenerRegistration observeIsFriend(String meUserId,
+                                                String otherUserId,
+                                                EventListener<DocumentSnapshot> listener) {
+        return friendsCol(meUserId).document(otherUserId).addSnapshotListener(listener);
+    }
+
+    public ListenerRegistration observeFriendsIds(String uid,
+                                                  EventListener<QuerySnapshot> listener) {
+        return friendsCol(uid)
+                .orderBy("createdAt", Query.Direction.DESCENDING)
+                .addSnapshotListener(listener);
+    }
+
+    public ListenerRegistration observeFriendsUsers(String uid, FirestoreUsersListCallback cb) {
+        return observeFriendsIds(uid, (qs, err) -> {
+            if (err != null) { cb.onFailure(err); return; }
+            if (qs == null || qs.isEmpty()) {
+                cb.onSuccess(new ArrayList<>());
+                return;
+            }
+
+            // אוספים את ה־IDs
+            List<String> ids = new ArrayList<>();
+            for (DocumentSnapshot d : qs) ids.add(d.getId());
+
+            // מושכים את המשתמשים לפי IDs
+            List<User> out = new ArrayList<>();
+            final int total = ids.size();
+            final int[] left = { total };
+            if (total == 0) { cb.onSuccess(out); return; }
+
+            for (String id : ids) {
+                getUserById(id, new FirestoreUserCallback() {
+                    @Override public void onSuccess(User u) {
+                        if (u != null) out.add(u);
+                        if (--left[0] == 0) cb.onSuccess(out);
+                    }
+                    @Override public void onFailure(Exception e) {
+                        // מתעלמים משגיאה נקודתית; סוגרים כשסיימנו את כולם
+                        if (--left[0] == 0) cb.onSuccess(out);
+                    }
+                });
+            }
+        });
+    }
+
+    // === ממשקי callback ===
 
     public interface FirestoreUserNamesCallback {
         void onSuccess(Map<String, String> userNamesById);
@@ -278,8 +379,15 @@ public class UserRepository {
         void onFailure(Exception e);
     }
 
+    // מהגרסת profil-dog
     public interface FirestoreDogsListCallback {
         void onSuccess(List<Dog> dogs);
+        void onFailure(Exception e);
+    }
+
+    // מהגרסת dev
+    public interface FirestoreUsersWithIdsCallback {
+        void onSuccess(List<Pair<String, User>> rows);
         void onFailure(Exception e);
     }
 }
