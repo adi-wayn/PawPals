@@ -19,4 +19,5 @@
     <string name="mood_placeholder">Happy</string>
     <string name="notes">Notes</string>
     <string name="notes_placeholder">Loves to play fetch. Good with other dogs.</string>
+    <string name="add_dog" />
 </resources>
