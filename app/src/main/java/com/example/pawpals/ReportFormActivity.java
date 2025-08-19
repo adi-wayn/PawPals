@@ -15,7 +15,7 @@ import com.google.firebase.auth.FirebaseAuth;
 
 import model.Report;
 import model.User;
-import model.firebase.firestore.CommunityRepository;
+import model.firebase.Firestore.CommunityRepository;
 
 public class ReportFormActivity extends AppCompatActivity {
 

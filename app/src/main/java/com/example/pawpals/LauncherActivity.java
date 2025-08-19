@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 
 import model.User;
 import model.firebase.Authentication.AuthHelper;
-import model.firebase.firestore.UserRepository;
+import model.firebase.Firestore.UserRepository;
 
 public class LauncherActivity extends AppCompatActivity {
     private static final String TAG = "LauncherActivity";
