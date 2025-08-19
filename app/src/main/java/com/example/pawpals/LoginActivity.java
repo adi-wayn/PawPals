@@ -8,7 +8,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import model.firebase.Authentication.AuthHelper;
-import model.firebase.firestore.UserRepository;
+import model.firebase.Firestore.UserRepository;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.FirebaseUser;
 

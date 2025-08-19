@@ -15,7 +15,7 @@ import java.util.List;
 import model.FeedAdapter;
 import model.Report;
 import model.User;
-import model.firebase.firestore.CommunityRepository;
+import model.firebase.Firestore.CommunityRepository;
 
 public class CommunityActivity extends AppCompatActivity {
 

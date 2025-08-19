@@ -34,9 +34,9 @@ import java.util.Map;
 
 import model.User;
 import model.firebase.Authentication.AuthHelper;
-import model.firebase.firestore.CommunityRepository;
-import model.firebase.firestore.MapRepository;
-import model.firebase.firestore.UserRepository;
+import model.firebase.Firestore.CommunityRepository;
+import model.firebase.Firestore.MapRepository;
+import model.firebase.Firestore.UserRepository;
 import model.maps.MapController;
 
 public class MainActivity extends AppCompatActivity {

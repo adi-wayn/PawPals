@@ -1,9 +1,7 @@
-package model.firebase.firestore;
+package model.firebase.Firestore;
 
 import android.util.Log;
 import android.util.Pair;
-
-import androidx.annotation.Nullable;
 
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;

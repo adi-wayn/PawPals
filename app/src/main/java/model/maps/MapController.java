@@ -23,7 +23,6 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.example.pawpals.OtherUserProfileActivity;
-import com.example.pawpals.ProfileActivity;
 import com.example.pawpals.R;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -39,8 +38,8 @@ import java.util.Map;
 
 import model.MapReport;
 import model.User;
-import model.firebase.firestore.MapRepository;
-import model.firebase.firestore.UserRepository;
+import model.firebase.Firestore.MapRepository;
+import model.firebase.Firestore.UserRepository;
 
 public class MapController {
     private LatLng pendingFocusCenter = null;

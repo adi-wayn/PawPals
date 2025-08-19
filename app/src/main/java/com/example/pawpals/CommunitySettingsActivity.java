@@ -6,9 +6,9 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
-import com.google.firebase.auth.FirebaseAuth;
+
 import model.User;
-import model.firebase.firestore.CommunityRepository;
+import model.firebase.Firestore.CommunityRepository;
 
 public class CommunitySettingsActivity extends AppCompatActivity {
     public static final String EXTRA_CURRENT_USER = "currentUser";
