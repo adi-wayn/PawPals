@@ -101,6 +101,11 @@
             android:name=".OtherUserProfileActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".CommunitySettingsActivity"
+            android:exported="false" />
+
+
 
 
         <service

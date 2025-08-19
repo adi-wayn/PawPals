@@ -3,12 +3,16 @@ package com.example.pawpals;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.firebase.auth.FirebaseAuth;
+
 import model.Report;
 import model.User;
 import model.firebase.firestore.CommunityRepository;
@@ -31,6 +35,7 @@ public class ReportFormActivity extends AppCompatActivity {
         inputSubject = findViewById(R.id.input_subject);
         inputText = findViewById(R.id.input_text);
         buttonSubmit = findViewById(R.id.button_submit);
+        RadioButton tabManagerApp = findViewById(R.id.tab_manager_application);
 
         buttonSubmit.setOnClickListener(v -> {
             String type = getSelectedType();
@@ -47,11 +52,28 @@ public class ReportFormActivity extends AppCompatActivity {
             // צור אובייקט Report
             Report report = new Report(type, senderName, subject, text);
 
+            // אם זו מועמדות – צרף userId של המועמד
+            if ("Manager Application".equalsIgnoreCase(type)) {
+                String uid = FirebaseAuth.getInstance().getUid();
+                report.setApplicantUserId(uid);           // ← שדה חדש (ראה עדכון מודל בהמשך)
+                report.setType(Report.TYPE_MANAGER_APPLICATION);
+            }
+
             // שמור במסד הנתונים תחת הקהילה
             CommunityRepository repo = new CommunityRepository();
             repo.getCommunityIdByName(currentUser.getCommunityName(), new CommunityRepository.FirestoreIdCallback() {
                 @Override
                 public void onSuccess(String communityId) {
+                    // בדוק אם יש צורך להציג את לשונית הבקשה למנהל
+                    repo.getManagerApplicationsOpen(communityId, new CommunityRepository.FirestoreBooleanCallback() {
+                        @Override public void onSuccess(boolean open) {
+                            // מציגים רק אם פתוח ורק אם המשתמש אינו מנהל
+                            tabManagerApp.setVisibility(open && !currentUser.isManager ? View.VISIBLE : View.GONE);
+                        }
+                        @Override public void onFailure(Exception e) { tabManagerApp.setVisibility(View.GONE); }
+                    });
+
+                    // שמירת הדו"ח במסד הנתונים
                     repo.createReport(communityId, report, new CommunityRepository.FirestoreCallback() {
                         @Override
                         public void onSuccess(String documentId) {
@@ -60,7 +82,6 @@ public class ReportFormActivity extends AppCompatActivity {
                             Intent intent = new Intent(ReportFormActivity.this, CommunityActivity.class);
                             intent.putExtra("currentUser", currentUser);
                             startActivity(intent);
-                            finish();
                             finish(); // חזור למסך הקודם
                         }
 
@@ -73,6 +94,7 @@ public class ReportFormActivity extends AppCompatActivity {
 
                 @Override
                 public void onFailure(Exception e) {
+                    tabManagerApp.setVisibility(View.GONE);
                     Toast.makeText(ReportFormActivity.this, "Community not found: " + e.getMessage(), Toast.LENGTH_LONG).show();
                 }
             });

@@ -98,12 +98,12 @@ public class ManagerCommunityActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-//        // כפתור הגדרות קהילה (חדש)
-//        Button settingsButton = findViewById(R.id.buttonCommunitySettings);
-//        settingsButton.setOnClickListener(v -> {
-//            Intent intent = new Intent(ManagerCommunityActivity.this, CommunitySettingsActivity.class);
-//            intent.putExtra("currentUser", currentUser);
-//            startActivity(intent);
-//        });
+        // כפתור הגדרות קהילה (חדש)
+        Button settingsButton = findViewById(R.id.buttonCommunitySettings);
+        settingsButton.setOnClickListener(v -> {
+            Intent i = new Intent(this, CommunitySettingsActivity.class);
+            i.putExtra(CommunitySettingsActivity.EXTRA_CURRENT_USER, currentUser);
+            startActivity(i);
+        });
     }
 }

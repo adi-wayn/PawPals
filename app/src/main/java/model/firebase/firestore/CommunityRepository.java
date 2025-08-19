@@ -360,6 +360,37 @@ public class CommunityRepository {
                 });
     }
 
+    // הדגל: האם פתוח להגיש מועמדות
+    public void setManagerApplicationsOpen(String communityId, boolean open, FirestoreCallback cb) {
+        db.collection("communities").document(communityId)
+                .update("managerApplicationsOpen", open)
+                .addOnSuccessListener(v -> cb.onSuccess(communityId))
+                .addOnFailureListener(cb::onFailure);
+    }
+
+    public void getManagerApplicationsOpen(String communityId, FirestoreBooleanCallback cb) {
+        db.collection("communities").document(communityId).get()
+                .addOnSuccessListener(s -> cb.onSuccess(Boolean.TRUE.equals(s.getBoolean("managerApplicationsOpen"))))
+                .addOnFailureListener(cb::onFailure);
+    }
+
+    // העברת ניהול: עדכון מנהל בקהילה + isManager של שני המשתמשים (Batch אטומי)
+    public void transferManager(String communityId, String oldManagerUid, String newManagerUid, FirestoreCallback cb) {
+        com.google.firebase.firestore.WriteBatch b = db.batch();
+        com.google.firebase.firestore.DocumentReference comm = db.collection("communities").document(communityId);
+        com.google.firebase.firestore.DocumentReference oldU = db.collection("users").document(oldManagerUid);
+        com.google.firebase.firestore.DocumentReference newU = db.collection("users").document(newManagerUid);
+
+        b.update(comm, "managerId", newManagerUid);
+        b.update(oldU, "isManager", false);
+        b.update(newU, "isManager", true);
+
+        b.commit().addOnSuccessListener(v -> cb.onSuccess(communityId))
+                .addOnFailureListener(cb::onFailure);
+    }
+
+
+
     // ===================== CHAT callbacks =====================
     public interface FirestoreMessagesListCallback {
         void onSuccess(List<model.Message> messages);
@@ -404,6 +435,11 @@ public class CommunityRepository {
 
     public interface FirestoreReportsListCallback {
         void onSuccess(List<Report> reports);
+        void onFailure(Exception e);
+    }
+
+    public interface FirestoreBooleanCallback {
+        void onSuccess(boolean value);
         void onFailure(Exception e);
     }
 }
