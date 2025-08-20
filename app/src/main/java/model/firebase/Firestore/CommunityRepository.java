@@ -262,7 +262,9 @@ public class CommunityRepository {
                 .addOnSuccessListener(query -> {
                     List<Report> posts = new ArrayList<>();
                     for (DocumentSnapshot doc : query.getDocuments()) {
-                        posts.add(doc.toObject(Report.class));
+                        Report r = doc.toObject(Report.class);
+                        if (r != null) r.setId(doc.getId()); // ← חשוב ליציבות ה-Recycler
+                        posts.add(r);
                     }
                     callback.onSuccess(posts);
                 })
@@ -389,6 +391,37 @@ public class CommunityRepository {
                 .addOnFailureListener(cb::onFailure);
     }
 
+    // עדכון תמונה/ות בתוך דו"ח בתור
+    public void updateReportImages(String communityId, String reportId,
+                                   @androidx.annotation.Nullable String imageUrl,
+                                   @androidx.annotation.Nullable java.util.List<String> imageUrls,
+                                   FirestoreCallback cb) {
+        java.util.Map<String,Object> m = new java.util.HashMap<>();
+        if (imageUrl != null) m.put("imageUrl", imageUrl);
+        if (imageUrls != null) m.put("imageUrls", imageUrls);
+
+        db.collection("communities").document(communityId)
+                .collection("reports").document(reportId)
+                .update(m)
+                .addOnSuccessListener(v -> cb.onSuccess(reportId))
+                .addOnFailureListener(cb::onFailure);
+    }
+
+    // עדכון תמונה/ות בתוך פוסט בפיד (אם תשתמש בהכנסה ישירה לפיד)
+    public void updateFeedImages(String communityId, String postId,
+                                 @androidx.annotation.Nullable String imageUrl,
+                                 @androidx.annotation.Nullable java.util.List<String> imageUrls,
+                                 FirestoreCallback cb) {
+        java.util.Map<String,Object> m = new java.util.HashMap<>();
+        if (imageUrl != null) m.put("imageUrl", imageUrl);
+        if (imageUrls != null) m.put("imageUrls", imageUrls);
+
+        db.collection("communities").document(communityId)
+                .collection("feed").document(postId)
+                .update(m)
+                .addOnSuccessListener(v -> cb.onSuccess(postId))
+                .addOnFailureListener(cb::onFailure);
+    }
 
 
     // ===================== CHAT callbacks =====================

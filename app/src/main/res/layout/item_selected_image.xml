@@ -1,0 +1,26 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="84dp"
+    android:layout_height="84dp"
+    android:layout_marginEnd="8dp">
+
+    <ImageView
+        android:id="@+id/img"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:contentDescription="@string/post_image" />
+
+    <!-- כפתור X להסרה (אופציונלי) -->
+    <TextView
+        android:id="@+id/btn_remove"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_gravity="end|top"
+        android:gravity="center"
+        android:text="✕"
+        android:textSize="12sp"
+        android:textColor="@android:color/white"
+        android:background="@android:color/black"
+        android:alpha="0.6"
+        android:padding="2dp"/>
+</FrameLayout>

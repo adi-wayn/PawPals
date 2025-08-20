@@ -26,9 +26,9 @@ public class ReportsListActivity extends AppCompatActivity {
     private ReportsAdapter adapter;
     private List<Report> allReports = new ArrayList<>();
     private List<Report> filteredReports = new ArrayList<>();
-
     private User currentUser;
     private CommunityRepository communityRepo;
+    private static String s(String v) { return v == null ? "" : v; }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,20 +94,19 @@ public class ReportsListActivity extends AppCompatActivity {
     }
 
     private void filterReports(String query) {
+        String q = query == null ? "" : query.toLowerCase();
         filteredReports.clear();
-        if (query.isEmpty()) {
+        if (q.isEmpty()) {
             filteredReports.addAll(allReports);
         } else {
             for (Report r : allReports) {
-                if (r.getType().toLowerCase().contains(query.toLowerCase()) ||
-                        r.getSubject().toLowerCase().contains(query.toLowerCase()) ||
-                        r.getText().toLowerCase().contains(query.toLowerCase())) {
+                if (s(r.getType()).toLowerCase().contains(q) ||
+                        s(r.getSubject()).toLowerCase().contains(q) ||
+                        s(r.getText()).toLowerCase().contains(q)) {
                     filteredReports.add(r);
                 }
             }
         }
-        if (adapter != null) {
-            adapter.notifyDataSetChanged();
-        }
+        if (adapter != null) adapter.notifyDataSetChanged();
     }
 }
