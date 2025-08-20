@@ -7,4 +7,8 @@
     <item name="dog_personality" type="id" />
     <item name="dog_mood" type="id" />
     <item name="dog_notes" type="id" />
+    <item name="btn_save_dog" type="id" />
+    <item name="et_dog_age" type="id" />
+    <item name="et_dog_breed" type="id" />
+    <item name="et_dog_name" type="id" />
 </resources>
