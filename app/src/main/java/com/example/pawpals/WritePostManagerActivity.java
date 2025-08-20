@@ -94,59 +94,52 @@ public class WritePostManagerActivity extends AppCompatActivity {
             @Override public void onSuccess(String communityId) {
                 // 2) צור מסמך report (ללא תמונות עדיין)
                 repo.createReport(communityId, report, new CommunityRepository.FirestoreCallback() {
-                    @Override public void onSuccess(String reportId) {
-                        Log.d(TAG, "Report created with ID: " + reportId);
+                    @Override
+                    public void onSuccess(String documentId) {
+                        // זה ה-id של הדיווח החדש
+                        final String reportId = documentId;
 
-                        // 3) אם אין תמונות – סיימנו
                         if (selectedUris.isEmpty()) {
-                            Toast.makeText(WritePostManagerActivity.this, "Report submitted!", Toast.LENGTH_SHORT).show();
+                            // אין תמונות — סיימנו
                             goBackToManagerCommunity();
                             return;
                         }
 
-                        // 4) העלאה סדרתית ל־Storage → קבל URLs → עדכון המסמך
-                        StorageRepository storage = new StorageRepository();
-                        List<String> urls = new ArrayList<>();
+                        StorageRepository storageRepo = new StorageRepository();
+                        java.util.List<String> urls = new java.util.ArrayList<>();
 
                         uploadAllImagesSequentially(
-                                0,
-                                selectedUris,
-                                urls,
-                                (u, cb) -> storage.uploadReportImageCompressed(
-                                        WritePostManagerActivity.this,
-                                        communityId,
-                                        reportId,
-                                        u,
-                                        1280,   // maxDim
-                                        82,     // quality
-                                        null,   // progress
-                                        cb
+                                0, selectedUris, urls,
+                                (u, c) -> storageRepo.uploadReportImageCompressed(
+                                        WritePostManagerActivity.this, communityId, reportId, u, 1280, 82, null, c
                                 ),
-                                () -> {
-                                    String cover = urls.isEmpty() ? null : urls.get(0);
-                                    repo.updateReportImages(communityId, reportId, cover, urls,
-                                            new CommunityRepository.FirestoreCallback() {
-                                                @Override public void onSuccess(String ignored) {
-                                                    Log.d("Upload", "got url");
-                                                    Toast.makeText(WritePostManagerActivity.this, "Report + images submitted!", Toast.LENGTH_SHORT).show();
-                                                    goBackToManagerCommunity();
-                                                }
-                                                @Override public void onFailure(Exception e) {
-                                                    Log.e("Upload", "failed: ", e);
-                                                    Toast.makeText(WritePostManagerActivity.this, "Saved report but failed images meta: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                                                    goBackToManagerCommunity();
-                                                }
-                                            });
+                                new Runnable() {
+                                    @Override public void run() {
+                                        // עדכון השדה imageUrls במסמך הדיווח
+                                        repo.updateReportImages(communityId, reportId, null, urls, new CommunityRepository.FirestoreCallback() {
+                                            @Override public void onSuccess(String id) {
+                                                Log.d("Upload", "got url");
+                                                goBackToManagerCommunity();
+                                            }
+                                            @Override public void onFailure(Exception e) {
+                                                Log.e("Upload", "failed: ", e);
+                                                Toast.makeText(WritePostManagerActivity.this,
+                                                        "Saved report but failed to update images: " + e.getMessage(),
+                                                        Toast.LENGTH_LONG).show();
+                                                goBackToManagerCommunity();
+                                            }
+                                        });
+                                    }
                                 },
-                                e -> {
-                                    Toast.makeText(WritePostManagerActivity.this, "Image upload failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                                    goBackToManagerCommunity();
-                                }
+                                e -> Toast.makeText(WritePostManagerActivity.this,
+                                        "Image upload failed: " + e.getMessage(),
+                                        Toast.LENGTH_LONG).show()
                         );
                     }
-                    @Override public void onFailure(Exception e) {
+
+                    @Override
+                    public void onFailure(Exception e) {
                         Toast.makeText(WritePostManagerActivity.this, "Error saving report: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                        Log.e(TAG, "Failed to save report", e);
                     }
                 });
             }
@@ -195,7 +188,6 @@ public class WritePostManagerActivity extends AppCompatActivity {
         inputSenderName.setText("");
         inputSubject.setText("");
         inputText.setText("");
-        selectedUris.clear();
         // TODO: אם יש אדפטר לפריוויו: notifyDataSetChanged()
     }
 }
