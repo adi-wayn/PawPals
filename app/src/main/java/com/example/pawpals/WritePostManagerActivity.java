@@ -127,10 +127,12 @@ public class WritePostManagerActivity extends AppCompatActivity {
                                     repo.updateReportImages(communityId, reportId, cover, urls,
                                             new CommunityRepository.FirestoreCallback() {
                                                 @Override public void onSuccess(String ignored) {
+                                                    Log.d("Upload", "got url");
                                                     Toast.makeText(WritePostManagerActivity.this, "Report + images submitted!", Toast.LENGTH_SHORT).show();
                                                     goBackToManagerCommunity();
                                                 }
                                                 @Override public void onFailure(Exception e) {
+                                                    Log.e("Upload", "failed: ", e);
                                                     Toast.makeText(WritePostManagerActivity.this, "Saved report but failed images meta: " + e.getMessage(), Toast.LENGTH_LONG).show();
                                                     goBackToManagerCommunity();
                                                 }

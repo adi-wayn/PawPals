@@ -127,8 +127,12 @@ public class ReportFormActivity extends AppCompatActivity {
                                         @Override public void run() {
                                             // עדכון השדה imageUrls במסמך הדיווח
                                             repo.updateReportImages(communityId, reportId, null, urls, new CommunityRepository.FirestoreCallback() {
-                                                @Override public void onSuccess(String id) { finishAfterSubmit(); }
+                                                @Override public void onSuccess(String id) {
+                                                    Log.d("Upload", "got url");
+                                                    finishAfterSubmit();
+                                                }
                                                 @Override public void onFailure(Exception e) {
+                                                    Log.e("Upload", "failed: ", e);
                                                     Toast.makeText(ReportFormActivity.this,
                                                             "Saved report but failed to update images: " + e.getMessage(),
                                                             Toast.LENGTH_LONG).show();
