@@ -40,11 +40,14 @@ public class CommunitySearchActivity extends AppCompatActivity {
     private CircularProgressIndicator progressBar;
 
     private UserRepository userRepo;
+    @Nullable private String selfId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search_dog_owner);
+
+        selfId = FirebaseAuth.getInstance().getUid();
 
         bindViews();
         setupRecycler();
@@ -145,6 +148,9 @@ public class CommunitySearchActivity extends AppCompatActivity {
         allIds.clear();
 
         for (Pair<String, User> row : masterRows) {
+            // ⬅️ דילוג על עצמי
+            if (selfId != null && selfId.equals(row.first)) continue;
+
             User user = row.second;
             if (user == null || user.getUserName() == null) continue;
 
@@ -153,7 +159,7 @@ public class CommunitySearchActivity extends AppCompatActivity {
 
             if (!passesChipFilters(user, checkedChipIds)) continue;
 
-            allUsers.add(row.second);
+            allUsers.add(user);
             allIds.add(row.first); // שמירת ה-id באותו אינדקס
         }
 
