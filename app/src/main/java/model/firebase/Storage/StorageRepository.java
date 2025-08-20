@@ -215,6 +215,49 @@ public class StorageRepository {
         return task;
     }
 
+    @Nullable
+    public UploadTask uploadReportImageCompressed(
+            @NonNull Context ctx,
+            @NonNull String communityId,
+            @NonNull String reportId,
+            @NonNull Uri fileUri,
+            int maxDimPx,
+            int quality,
+            @Nullable ProgressListener progress,
+            @NonNull UploadCallback cb
+    ) {
+        String fileName = java.util.UUID.randomUUID() + ".jpg";
+        StorageReference ref = storage.getReference()
+                .child("communities")
+                .child(communityId)
+                .child("reports")
+                .child(reportId)
+                .child(fileName);
+
+        byte[] data;
+        try {
+            data = decodeAndCompress(ctx, fileUri, maxDimPx, quality);
+        } catch (Exception e) {
+            cb.onFailure(e);
+            return null;
+        }
+
+        UploadTask task = ref.putBytes(data, new StorageMetadata.Builder()
+                .setContentType("image/jpeg")
+                .build());
+
+        if (progress != null) {
+            task.addOnProgressListener(s -> progress.onProgress(s.getBytesTransferred(), s.getTotalByteCount()));
+        }
+
+        task.addOnSuccessListener(snap ->
+                ref.getDownloadUrl().addOnSuccessListener(url -> cb.onSuccess(url.toString()))
+                        .addOnFailureListener(cb::onFailure)
+        ).addOnFailureListener(cb::onFailure);
+
+        return task;
+    }
+
     // ===== Delete helpers (אופציונלי אבל שימושי) =====
 
     /** מחיקה לפי downloadUrl (כששמורים לך ה־URLs). */

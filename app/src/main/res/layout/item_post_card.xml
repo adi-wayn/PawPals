@@ -54,5 +54,29 @@
             android:textSize="14sp"
             android:textColor="#333333"
             android:lineSpacingExtra="4dp" />
+
+        <ImageView
+            android:id="@+id/image_post"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:scaleType="centerCrop"
+            android:visibility="gone"
+            android:contentDescription="@string/post_image" />
+
+        <TextView
+            android:id="@+id/image_count_badge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:background="@drawable/bg_count_badge"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp"
+            android:textColor="@android:color/white"
+            android:textStyle="bold"
+            android:visibility="gone"
+            android:layout_margin="8dp"/>
+
     </LinearLayout>
 </androidx.cardview.widget.CardView>

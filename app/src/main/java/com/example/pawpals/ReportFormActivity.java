@@ -1,6 +1,7 @@
 package com.example.pawpals;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -9,13 +10,18 @@ import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.google.firebase.auth.FirebaseAuth;
 
 import model.Report;
 import model.User;
 import model.firebase.Firestore.CommunityRepository;
+import model.firebase.Storage.StorageRepository;
 
 public class ReportFormActivity extends AppCompatActivity {
 
@@ -23,6 +29,19 @@ public class ReportFormActivity extends AppCompatActivity {
     private EditText inputSenderName, inputSubject, inputText;
     private Button buttonSubmit;
     private User currentUser;
+    private final java.util.List<Uri> selectedUris = new java.util.ArrayList<>();
+    private androidx.recyclerview.widget.RecyclerView selectedImagesRv;
+    private android.view.View addImagesBtn;
+
+    private final androidx.activity.result.ActivityResultLauncher<androidx.activity.result.PickVisualMediaRequest> pickImages =
+            registerForActivityResult(new androidx.activity.result.contract.ActivityResultContracts.PickMultipleVisualMedia(4), uris -> {
+                selectedUris.clear();
+                if (uris != null) selectedUris.addAll(uris);
+                // TODO: לעדכן אדפטר פריוויו (או פשוט להראות כמות)
+                Toast.makeText(this, "Selected: " + selectedUris.size(), Toast.LENGTH_SHORT).show();
+            });
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,6 +55,16 @@ public class ReportFormActivity extends AppCompatActivity {
         inputText = findViewById(R.id.input_text);
         buttonSubmit = findViewById(R.id.button_submit);
         RadioButton tabManagerApp = findViewById(R.id.tab_manager_application);
+        addImagesBtn = findViewById(R.id.button_add_images);
+        selectedImagesRv = findViewById(R.id.selectedImagesRv);
+
+        selectedImagesRv.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        // TODO: חבר אדפטר קטן לפריוויו אם תרצה
+
+        addImagesBtn.setOnClickListener(v ->
+                pickImages.launch(new androidx.activity.result.PickVisualMediaRequest.Builder()
+                        .setMediaType(androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
+                        .build()));
 
         buttonSubmit.setOnClickListener(v -> {
             String type = getSelectedType();
@@ -77,12 +106,41 @@ public class ReportFormActivity extends AppCompatActivity {
                     repo.createReport(communityId, report, new CommunityRepository.FirestoreCallback() {
                         @Override
                         public void onSuccess(String documentId) {
-                            Toast.makeText(ReportFormActivity.this, "Report submitted!", Toast.LENGTH_SHORT).show();
-                            // מעבר לעמוד הקהילה
-                            Intent intent = new Intent(ReportFormActivity.this, CommunityActivity.class);
-                            intent.putExtra("currentUser", currentUser);
-                            startActivity(intent);
-                            finish(); // חזור למסך הקודם
+                            // זה ה-id של הדיווח החדש
+                            final String reportId = documentId;
+
+                            if (selectedUris.isEmpty()) {
+                                // אין תמונות — סיימנו
+                                finishAfterSubmit();
+                                return;
+                            }
+
+                            StorageRepository storageRepo = new StorageRepository();
+                            java.util.List<String> urls = new java.util.ArrayList<>();
+
+                            uploadAllImagesSequentially(
+                                    0, selectedUris, urls,
+                                    (u, c) -> storageRepo.uploadReportImageCompressed(
+                                            ReportFormActivity.this, communityId, reportId, u, 1280, 82, null, c
+                                    ),
+                                    new Runnable() {
+                                        @Override public void run() {
+                                            // עדכון השדה imageUrls במסמך הדיווח
+                                            repo.updateReportImages(communityId, reportId, null, urls, new CommunityRepository.FirestoreCallback() {
+                                                @Override public void onSuccess(String id) { finishAfterSubmit(); }
+                                                @Override public void onFailure(Exception e) {
+                                                    Toast.makeText(ReportFormActivity.this,
+                                                            "Saved report but failed to update images: " + e.getMessage(),
+                                                            Toast.LENGTH_LONG).show();
+                                                    finishAfterSubmit();
+                                                }
+                                            });
+                                        }
+                                    },
+                                    e -> Toast.makeText(ReportFormActivity.this,
+                                            "Image upload failed: " + e.getMessage(),
+                                            Toast.LENGTH_LONG).show()
+                            );
                         }
 
                         @Override
@@ -107,6 +165,36 @@ public class ReportFormActivity extends AppCompatActivity {
 
             clearForm();
         });
+    }
+
+    // Helper: העלאה סדרתית כדי לשמור על זיכרון נמוך
+    private interface Uploader { @Nullable
+    com.google.firebase.storage.UploadTask go(Uri u, StorageRepository.UploadCallback cb); }
+    private void uploadAllImagesSequentially(
+            int idx,
+            java.util.List<Uri> uris,
+            java.util.List<String> outUrls,
+            Uploader uploader,
+            Runnable onDone,
+            java.util.function.Consumer<Exception> onError
+    ) {
+        if (idx >= uris.size()) { onDone.run(); return; }
+        Uri u = uris.get(idx);
+        uploader.go(u, new StorageRepository.UploadCallback() {
+            @Override public void onSuccess(@NonNull String downloadUrl) {
+                outUrls.add(downloadUrl);
+                uploadAllImagesSequentially(idx+1, uris, outUrls, uploader, onDone, onError);
+            }
+            @Override public void onFailure(@NonNull Exception e) { onError.accept(e); }
+        });
+    }
+
+    private void finishAfterSubmit() {
+        Toast.makeText(this, "Report submitted!", Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(ReportFormActivity.this, CommunityActivity.class);
+        intent.putExtra("currentUser", currentUser);
+        startActivity(intent);
+        finish();
     }
 
     private String getSelectedType() {
