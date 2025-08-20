@@ -84,11 +84,10 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button_add_images"
+            style="@style/Widget.Material3.Button.OutlinedButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Add images"
-            style="@style/Widget.PawPals.Button"
-            android:layout_marginBottom="8dp"/>
+            android:text="@string/add_images" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/selectedImagesRv"
