@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -21,6 +22,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import model.Report;
+import model.SelectedImagesAdapter;
 import model.User;
 import model.firebase.Firestore.CommunityRepository;
 import model.firebase.Storage.StorageRepository;
@@ -34,6 +36,7 @@ public class WritePostManagerActivity extends AppCompatActivity {
     private final List<Uri> selectedUris = new ArrayList<>();
     private androidx.recyclerview.widget.RecyclerView selectedImagesRv;
     private android.view.View addImagesBtn;
+    private SelectedImagesAdapter previewAdapter;
 
     private User currentUser;
     private final String TAG = "SingleReportForm";
@@ -43,9 +46,9 @@ public class WritePostManagerActivity extends AppCompatActivity {
             registerForActivityResult(new ActivityResultContracts.PickMultipleVisualMedia(4), uris -> {
                 selectedUris.clear();
                 if (uris != null) selectedUris.addAll(uris);
-                // אפשר לחבר כאן אדפטר פריוויו; בינתיים רק מציג כמות
+                previewAdapter.submit(selectedUris);
+                selectedImagesRv.setVisibility(selectedUris.isEmpty() ? View.GONE : View.VISIBLE);
                 Toast.makeText(this, "Selected: " + selectedUris.size(), Toast.LENGTH_SHORT).show();
-                // TODO: adapter.notifyDataSetChanged() אם תוסיף אדפטר
             });
 
     @Override
@@ -66,6 +69,18 @@ public class WritePostManagerActivity extends AppCompatActivity {
         selectedImagesRv.setLayoutManager(
                 new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         );
+        selectedImagesRv.setHasFixedSize(true);
+        selectedImagesRv.setNestedScrollingEnabled(false); // בתוך ScrollView זה עוזר
+
+        previewAdapter = new SelectedImagesAdapter(selectedUris, pos -> {
+            if (pos >= 0 && pos < selectedUris.size()) {
+                selectedUris.remove(pos);
+                previewAdapter.notifyItemRemoved(pos);
+                selectedImagesRv.setVisibility(selectedUris.isEmpty() ? View.GONE : View.VISIBLE);
+            }
+        });
+        selectedImagesRv.setAdapter(previewAdapter);
+        selectedImagesRv.setVisibility(View.GONE);
 
         addImagesBtn.setOnClickListener(v ->
                 pickImages.launch(new PickVisualMediaRequest.Builder()

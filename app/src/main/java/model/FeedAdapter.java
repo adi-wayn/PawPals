@@ -8,6 +8,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -19,6 +20,7 @@ import java.util.List;
 public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.PostViewHolder> {
 
     private final List<Report> posts;
+    private final RecyclerView.RecycledViewPool imagesPool = new RecyclerView.RecycledViewPool();
 
     public FeedAdapter(List<Report> posts) {
         this.posts = posts != null ? posts : new ArrayList<>();
@@ -37,7 +39,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.PostViewHolder
     public PostViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_post_card, parent, false);
-        return new PostViewHolder(itemView);
+        return new PostViewHolder(itemView, imagesPool);
     }
 
     @Override
@@ -49,44 +51,20 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.PostViewHolder
         holder.message.setText(post.getText());
         holder.type.setText(post.getType());
 
-        // ----- תמונות -----
-        List<String> urls = post.getImageUrls();
-        String single = post.getImageUrl();
-
-        String firstToShow = null;
-        int extraCount = 0;
-
-        if (urls != null && !urls.isEmpty()) {
-            firstToShow = urls.get(0);
-            extraCount = urls.size() - 1;
-        } else if (!TextUtils.isEmpty(single)) {
-            firstToShow = single;
-            extraCount = 0;
+        // איסוף כל ה־URLs (רשימה או שדה יחיד)
+        List<String> all = new ArrayList<>();
+        if (post.getImageUrls() != null && !post.getImageUrls().isEmpty()) {
+            all.addAll(post.getImageUrls());
+        } else if (!TextUtils.isEmpty(post.getImageUrl())) {
+            all.add(post.getImageUrl());
         }
 
-        if (!TextUtils.isEmpty(firstToShow)) {
-            holder.image.setVisibility(View.VISIBLE);
-            Glide.with(holder.image.getContext())
-                    .load(firstToShow)
-                    .placeholder(R.drawable.image_placeholder) // אופציונלי
-                    .error(R.drawable.image_error)             // אופציונלי
-                    .into(holder.image);
-
-            if (extraCount > 0) {
-                holder.imageCountBadge.setVisibility(View.VISIBLE);
-                holder.imageCountBadge.setText("+" + extraCount);
-            } else {
-                holder.imageCountBadge.setVisibility(View.GONE);
-            }
-
-            // (אופציונלי) פתיחת גלריה במסך מלא כשנוגעים בתמונה
-            // holder.image.setOnClickListener(v -> openGallery(v.getContext(), urlsOrSingle));
-
+        if (all.isEmpty()) {
+            holder.imagesRv.setVisibility(View.GONE);
+            holder.imagesAdapter.submit(null);
         } else {
-            holder.image.setVisibility(View.GONE);
-            holder.imageCountBadge.setVisibility(View.GONE);
-            // חשוב לנקות Glide כשאין תמונה כדי שלא יופיע reuse שגוי
-            Glide.with(holder.image.getContext()).clear(holder.image);
+            holder.imagesRv.setVisibility(View.VISIBLE);
+            holder.imagesAdapter.submit(all);
         }
     }
 
@@ -103,17 +81,26 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.PostViewHolder
 
     static class PostViewHolder extends RecyclerView.ViewHolder {
         TextView sender, subject, message, type;
-        ImageView image;
-        TextView imageCountBadge;
+        RecyclerView imagesRv;
+        ImagesAdapter imagesAdapter;
 
-        public PostViewHolder(View itemView) {
+        public PostViewHolder(View itemView, RecyclerView.RecycledViewPool sharedPool) {
             super(itemView);
-            sender = itemView.findViewById(R.id.text_post_sender);
+            sender  = itemView.findViewById(R.id.text_post_sender);
             subject = itemView.findViewById(R.id.text_post_subject);
             message = itemView.findViewById(R.id.text_post_message);
             type    = itemView.findViewById(R.id.text_post_type);
-            image   = itemView.findViewById(R.id.image_post);
-            imageCountBadge = itemView.findViewById(R.id.image_count_badge);
+
+            imagesRv = itemView.findViewById(R.id.postImagesRv);
+            imagesRv.setLayoutManager(
+                    new LinearLayoutManager(itemView.getContext(), LinearLayoutManager.HORIZONTAL, false)
+            );
+            imagesRv.setRecycledViewPool(sharedPool);
+            imagesRv.setItemAnimator(null);
+            imagesRv.setNestedScrollingEnabled(false);
+
+            imagesAdapter = new ImagesAdapter(/*maxToShow*/4); // מציג עד 4 ומראה +N על האחרונה
+            imagesRv.setAdapter(imagesAdapter);
         }
     }
 }

@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.google.firebase.auth.FirebaseAuth;
 
 import model.Report;
+import model.SelectedImagesAdapter;
 import model.User;
 import model.firebase.Firestore.CommunityRepository;
 import model.firebase.Storage.StorageRepository;
@@ -32,12 +33,15 @@ public class ReportFormActivity extends AppCompatActivity {
     private final java.util.List<Uri> selectedUris = new java.util.ArrayList<>();
     private androidx.recyclerview.widget.RecyclerView selectedImagesRv;
     private android.view.View addImagesBtn;
+    private SelectedImagesAdapter previewAdapter;
+
 
     private final androidx.activity.result.ActivityResultLauncher<androidx.activity.result.PickVisualMediaRequest> pickImages =
             registerForActivityResult(new androidx.activity.result.contract.ActivityResultContracts.PickMultipleVisualMedia(4), uris -> {
                 selectedUris.clear();
                 if (uris != null) selectedUris.addAll(uris);
-                // TODO: לעדכן אדפטר פריוויו (או פשוט להראות כמות)
+                previewAdapter.submit(selectedUris);
+                selectedImagesRv.setVisibility(selectedUris.isEmpty() ? View.GONE : View.VISIBLE);
                 Toast.makeText(this, "Selected: " + selectedUris.size(), Toast.LENGTH_SHORT).show();
             });
 
@@ -59,7 +63,18 @@ public class ReportFormActivity extends AppCompatActivity {
         selectedImagesRv = findViewById(R.id.selectedImagesRv);
 
         selectedImagesRv.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        // TODO: חבר אדפטר קטן לפריוויו אם תרצה
+        selectedImagesRv.setHasFixedSize(true);
+        selectedImagesRv.setNestedScrollingEnabled(false); // בתוך ScrollView זה עוזר
+
+        previewAdapter = new SelectedImagesAdapter(selectedUris, pos -> {
+            if (pos >= 0 && pos < selectedUris.size()) {
+                selectedUris.remove(pos);
+                previewAdapter.notifyItemRemoved(pos);
+                selectedImagesRv.setVisibility(selectedUris.isEmpty() ? View.GONE : View.VISIBLE);
+            }
+        });
+        selectedImagesRv.setAdapter(previewAdapter);
+        selectedImagesRv.setVisibility(View.GONE);
 
         addImagesBtn.setOnClickListener(v ->
                 pickImages.launch(new androidx.activity.result.PickVisualMediaRequest.Builder()
