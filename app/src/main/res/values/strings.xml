@@ -19,4 +19,6 @@
     <string name="mood_placeholder">Happy</string>
     <string name="notes">Notes</string>
     <string name="notes_placeholder">Loves to play fetch. Good with other dogs.</string>
+    <string name="maps_api_key">AIzaSyCt-ggSSOKENR05HsWTKGKV7PzyUA4RqvI</string>
+
 </resources>

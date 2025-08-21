@@ -1,5 +1,7 @@
 package com.example.pawpals;
 
+import static androidx.core.content.ContextCompat.startActivity;
+
 import android.content.Intent; // ⬅️ חדש
 import android.os.Bundle;
 import android.widget.SearchView;
