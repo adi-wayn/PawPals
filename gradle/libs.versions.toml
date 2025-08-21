@@ -23,4 +23,3 @@ firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
-
