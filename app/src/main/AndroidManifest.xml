@@ -6,11 +6,6 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
 
-
-
-
-
-
     <application
 
         android:allowBackup="true"
@@ -25,6 +20,9 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/maps_api_key"/>
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="default_channel" />
 
 
         <activity
@@ -106,8 +104,6 @@
         <activity
             android:name=".CommunitySettingsActivity"
             android:exported="false" />
-
-
 
 
         <service

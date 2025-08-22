@@ -17,69 +17,74 @@ import java.util.Random;
 
 public class NotificationHelper {
 
-    // פונקציה קיימת (עבור FCM)
-    public static void showNotification(Context context, RemoteMessage remoteMessage, String communityId) {
+    public static final String CHANNEL_ID   = "default_channel";
+    private static final String CHANNEL_NAME = "General Notifications";
+
+    // FCM payload
+    public static void showNotification(Context context, RemoteMessage remoteMessage) {
         createChannelIfNeeded(context);
 
-        String title = null;
-        String body = null;
+        String title = null, body = null;
 
         if (remoteMessage.getNotification() != null) {
             title = remoteMessage.getNotification().getTitle();
-            body = remoteMessage.getNotification().getBody();
+            body  = remoteMessage.getNotification().getBody();
         } else if (remoteMessage.getData() != null && !remoteMessage.getData().isEmpty()) {
             title = remoteMessage.getData().get("title");
             body  = remoteMessage.getData().get("body");
         }
 
         if (title == null) title = "New message";
-        if (body == null) body = "";
-
+        if (body  == null) body  = "";
         showInternalNotification(context, title, body);
     }
 
-    // === פונקציה חדשה לשימוש מקומי מתוך ChatActivity ===
+    // local use
     public static void showSimpleNotification(Context context, String title, String body) {
         createChannelIfNeeded(context);
         if (title == null) title = "New message";
-        if (body == null) body = "";
+        if (body  == null) body  = "";
         showInternalNotification(context, title, body);
     }
 
-    // יצירת ערוץ התראות (פעם אחת)
     private static void createChannelIfNeeded(Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(
-                    "default_channel",
-                    "General Notifications",
-                    NotificationManager.IMPORTANCE_HIGH
+            NotificationChannel ch = new NotificationChannel(
+                    CHANNEL_ID,
+                    CHANNEL_NAME,
+                    NotificationManager.IMPORTANCE_HIGH // heads-up
             );
-            NotificationManager manager = context.getSystemService(NotificationManager.class);
-            if (manager != null) {
-                manager.createNotificationChannel(channel);
-            }
+            // אופציונלי: קול/ויברציה (Heads-up נוטה להופיע יותר עקבי)
+            ch.enableVibration(true);
+            ch.setShowBadge(true);
+
+            NotificationManager nm = context.getSystemService(NotificationManager.class);
+            if (nm != null) nm.createNotificationChannel(ch);
         }
     }
 
-    // פונקציית עזר פנימית שמציגה את ההתראה בפועל
     private static void showInternalNotification(Context context, String title, String body) {
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "default_channel")
+        NotificationCompat.Builder b = new NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_notification)
                 .setContentTitle(title)
                 .setContentText(body)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(body))
+                .setCategory(NotificationCompat.CATEGORY_MESSAGE)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)     // ל-pre-O
+                .setDefaults(NotificationCompat.DEFAULT_ALL)       // קול/ויברציה/אור
                 .setAutoCancel(true);
 
-        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
-        int notificationId = new Random().nextInt();
+        NotificationManagerCompat nm = NotificationManagerCompat.from(context);
+        int notificationId = new Random().nextInt(Integer.MAX_VALUE); // חיובי
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS)
                     == PackageManager.PERMISSION_GRANTED) {
-                notificationManager.notify(notificationId, builder.build());
+                nm.notify(notificationId, b.build());
             }
         } else {
-            notificationManager.notify(notificationId, builder.build());
+            nm.notify(notificationId, b.build());
         }
     }
 }
