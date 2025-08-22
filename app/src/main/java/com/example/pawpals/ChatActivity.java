@@ -23,6 +23,7 @@ import java.util.List;
 import model.Message;
 import model.MessagesAdapter;
 import model.User;
+import model.firebase.CloudMessaging.NotificationHelper;
 import model.firebase.firestore.CommunityRepository;
 
 public class ChatActivity extends AppCompatActivity {
@@ -43,7 +44,7 @@ public class ChatActivity extends AppCompatActivity {
 
     // current user / community
     private String currentUserId = "";
-    private String currentUserName ;
+    private String currentUserName;
     private @Nullable String communityId = null;      // ייקבע אחרי חיפוש לפי שם
     private @Nullable User currentUser = null;        // מתקבל ב-Intent (Parcelable)
 
@@ -51,9 +52,12 @@ public class ChatActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_community_chat);
+
         // --- 1) קבלת המשתמש ושם הקהילה מה-Intent ---
         currentUser = getIntent().getParcelableExtra("currentUser");
-        currentUserName=currentUser.getUserName();
+        if (currentUser != null) {
+            currentUserName = currentUser.getUserName();
+        }
         if (currentUser == null || TextUtils.isEmpty(currentUser.getCommunityName())) {
             Toast.makeText(this, "Missing user or community name", Toast.LENGTH_SHORT).show();
             finish();
@@ -73,8 +77,8 @@ public class ChatActivity extends AppCompatActivity {
 
         // --- 3) Views + RecyclerView ---
         recyclerView = findViewById(R.id.chat_recycler_view);
-        editMessage   = findViewById(R.id.edit_text_message);
-        btnSend       = findViewById(R.id.button_send);
+        editMessage = findViewById(R.id.edit_text_message);
+        btnSend = findViewById(R.id.button_send);
 
         LinearLayoutManager lm = new LinearLayoutManager(this);
         lm.setStackFromEnd(true); // הצגת הצ'אט מלמטה
@@ -129,9 +133,7 @@ public class ChatActivity extends AppCompatActivity {
             registration = null;
         }
 
-        // במקום preload + listener, נשתמש רק בליסנר.
-        // אם את חייבת להשאיר preload, השאירי אותו - אבל ה-firstBatch הזה יבטיח שלא יהיו כפילויות.
-        final boolean[] firstBatch = { true };
+        final boolean[] firstBatch = {true};
 
         registration = repo.listenToMessagesStream(
                 communityId,
@@ -140,8 +142,6 @@ public class ChatActivity extends AppCompatActivity {
                     public void onChanges(List<DocumentChange> changes) {
                         if (changes == null || changes.isEmpty()) return;
 
-                        // בסנפשוט הראשון Firestore שולח את כל ההודעות כ-ADDED.
-                        // כדי לא לקבל כפילויות אחרי preload, ננקה פעם אחת בתחילת הליסנר.
                         if (firstBatch[0]) {
                             messages.clear();
                             firstBatch[0] = false;
@@ -151,22 +151,26 @@ public class ChatActivity extends AppCompatActivity {
                             Message m = dc.getDocument().toObject(Message.class);
                             switch (dc.getType()) {
                                 case ADDED:
-                                    // השאילתה ב-Repository היא orderBy("timestamp", ASCENDING),
-                                    // לכן ההוספה תשמור על סדר ישן→חדש.
                                     messages.add(m);
                                     adapter.notifyItemInserted(messages.size() - 1);
                                     recyclerView.scrollToPosition(Math.max(0, adapter.getItemCount() - 1));
+
+                                    // === כאן נשלחת ההתראה למי שאינו השולח ===
+                                    if (!m.getSenderId().equals(currentUserId)) {
+                                        NotificationHelper.showSimpleNotification(
+                                                ChatActivity.this,
+                                                "New message from " + m.getSenderName(),
+                                                m.getText()
+                                        );
+                                    }
                                     break;
 
                                 case MODIFIED:
-                                    // עדכון פריט קיים לפי מיקום חדש מהסנפשוט
                                     int idxM = dc.getNewIndex();
                                     if (idxM >= 0 && idxM < messages.size()) {
                                         messages.set(idxM, m);
                                         adapter.notifyItemChanged(idxM);
                                     } else {
-                                        // גיבוי: אם האינדקס לא חוקי, נאתר לפי תוכן/נוסיף לסוף
-                                        // (אפשר לשפר אם תשמרי docId בתוך Message)
                                         messages.add(m);
                                         adapter.notifyItemInserted(messages.size() - 1);
                                     }
@@ -177,9 +181,6 @@ public class ChatActivity extends AppCompatActivity {
                                     if (idxR >= 0 && idxR < messages.size()) {
                                         messages.remove(idxR);
                                         adapter.notifyItemRemoved(idxR);
-                                    } else {
-                                        // גיבוי: אם לא מצאנו, ננסה להסיר לפי התאמה טקסטואלית/לא לבצע כלום
-                                        // (מומלץ בעתיד לשמור docId ב-Message כדי להסיר במדויק)
                                     }
                                     break;
                             }
@@ -195,7 +196,6 @@ public class ChatActivity extends AppCompatActivity {
         );
     }
 
-
     /** שולח הודעה חדשה ל-communities/{communityId}/messages דרך createMessage */
     private void sendMessageViaRepo() {
         if (TextUtils.isEmpty(communityId)) return;
@@ -203,16 +203,17 @@ public class ChatActivity extends AppCompatActivity {
         String text = editMessage.getText().toString().trim();
         if (TextUtils.isEmpty(text)) return;
 
-        // שימי לב: הבנאי של Message הוא (senderId, senderName, text)
-        Message msg = new Message( communityId,currentUserId,currentUserName, text);
+        Message msg = new Message(communityId, currentUserId, currentUserName, text);
 
         repo.createMessage(communityId, msg, new CommunityRepository.FirestoreCallback() {
-            @Override public void onSuccess(String documentId) {
+            @Override
+            public void onSuccess(String documentId) {
                 editMessage.setText("");
                 recyclerView.scrollToPosition(Math.max(0, adapter.getItemCount() - 1));
             }
 
-            @Override public void onFailure(Exception e) {
+            @Override
+            public void onFailure(Exception e) {
                 Toast.makeText(ChatActivity.this,
                         "Send failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }

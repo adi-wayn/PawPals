@@ -17,8 +17,37 @@ import java.util.Random;
 
 public class NotificationHelper {
 
+    // פונקציה קיימת (עבור FCM)
     public static void showNotification(Context context, RemoteMessage remoteMessage, String communityId) {
-        // Step 1: יצירת ערוץ התראות
+        createChannelIfNeeded(context);
+
+        String title = null;
+        String body = null;
+
+        if (remoteMessage.getNotification() != null) {
+            title = remoteMessage.getNotification().getTitle();
+            body = remoteMessage.getNotification().getBody();
+        } else if (remoteMessage.getData() != null && !remoteMessage.getData().isEmpty()) {
+            title = remoteMessage.getData().get("title");
+            body  = remoteMessage.getData().get("body");
+        }
+
+        if (title == null) title = "New message";
+        if (body == null) body = "";
+
+        showInternalNotification(context, title, body);
+    }
+
+    // === פונקציה חדשה לשימוש מקומי מתוך ChatActivity ===
+    public static void showSimpleNotification(Context context, String title, String body) {
+        createChannelIfNeeded(context);
+        if (title == null) title = "New message";
+        if (body == null) body = "";
+        showInternalNotification(context, title, body);
+    }
+
+    // יצירת ערוץ התראות (פעם אחת)
+    private static void createChannelIfNeeded(Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
                     "default_channel",
@@ -30,32 +59,17 @@ public class NotificationHelper {
                 manager.createNotificationChannel(channel);
             }
         }
+    }
 
-        // Step 2: חילוץ title/body
-        String title = null;
-        String body = null;
-
-        if (remoteMessage.getNotification() != null) {
-            // במקרה רגיל (FCM Notification)
-            title = remoteMessage.getNotification().getTitle();
-            body = remoteMessage.getNotification().getBody();
-        } else if (remoteMessage.getData() != null && !remoteMessage.getData().isEmpty()) {
-            // במקרה של הודעת Data (כמו אצלנו)
-            title = remoteMessage.getData().get("title");
-            body  = remoteMessage.getData().get("body");
-        }
-
-        if (title == null) title = "New message";
-        if (body == null) body = "";
-
-        // Step 3: בניית התראה
+    // פונקציית עזר פנימית שמציגה את ההתראה בפועל
+    private static void showInternalNotification(Context context, String title, String body) {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "default_channel")
                 .setSmallIcon(R.drawable.ic_notification)
                 .setContentTitle(title)
                 .setContentText(body)
-                .setPriority(NotificationCompat.PRIORITY_HIGH);
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setAutoCancel(true);
 
-        // Step 4: הצגת התראה
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
         int notificationId = new Random().nextInt();
 
@@ -68,5 +82,4 @@ public class NotificationHelper {
             notificationManager.notify(notificationId, builder.build());
         }
     }
-
 }
