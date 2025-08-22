@@ -1,5 +1,7 @@
 package com.example.pawpals;
 
+import static android.content.Intent.getIntent;
+
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;

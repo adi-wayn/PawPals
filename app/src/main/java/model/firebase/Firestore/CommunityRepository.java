@@ -1,4 +1,6 @@
+
 package model.firebase.Firestore;
+
 
 import android.util.Log;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -262,9 +264,11 @@ public class CommunityRepository {
                 .addOnSuccessListener(query -> {
                     List<Report> posts = new ArrayList<>();
                     for (DocumentSnapshot doc : query.getDocuments()) {
+
                         Report r = doc.toObject(Report.class);
                         if (r != null) r.setId(doc.getId()); // ← חשוב ליציבות ה-Recycler
                         posts.add(r);
+
                     }
                     callback.onSuccess(posts);
                 })
@@ -362,6 +366,7 @@ public class CommunityRepository {
                 });
     }
 
+
     // הדגל: האם פתוח להגיש מועמדות
     public void setManagerApplicationsOpen(String communityId, boolean open, FirestoreCallback cb) {
         db.collection("communities").document(communityId)
@@ -424,6 +429,7 @@ public class CommunityRepository {
     }
 
 
+
     // ===================== CHAT callbacks =====================
     public interface FirestoreMessagesListCallback {
         void onSuccess(List<model.Message> messages);
@@ -471,8 +477,10 @@ public class CommunityRepository {
         void onFailure(Exception e);
     }
 
+
     public interface FirestoreBooleanCallback {
         void onSuccess(boolean value);
         void onFailure(Exception e);
     }
+
 }
