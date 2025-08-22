@@ -1,49 +1,41 @@
 package model.firebase.CloudMessaging;
 
 import androidx.annotation.NonNull;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.FieldValue;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
-import java.util.HashMap;
 
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
     @Override
-    public void onMessageReceived(@NonNull RemoteMessage rm) {
-        super.onMessageReceived(rm);
+    public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
+        super.onMessageReceived(remoteMessage);
 
-        if (rm.getData() != null && "chat_message".equals(rm.getData().get("type"))) {
-            // פריסה לבטיחות
-            String chatId     = rm.getData().get("chatId");
-            String messageId  = rm.getData().get("messageId");
-            String senderId   = rm.getData().get("senderId");
-            String senderName = rm.getData().get("senderName");
-            String text       = rm.getData().get("text");
-            String avatarUrl  = rm.getData().get("avatarUrl"); // אופציונלי
+        // עדיפות: הודעת צ'אט מדאטה
+        if (remoteMessage.getData() != null && !remoteMessage.getData().isEmpty()) {
+            String type = remoteMessage.getData().get("type");
+            if ("chat_message".equals(type)) {
+                String chatId     = remoteMessage.getData().get("chatId");
+                String messageId  = remoteMessage.getData().get("messageId");
+                String senderId   = remoteMessage.getData().get("senderId");
+                String senderName = remoteMessage.getData().get("senderName");
+                String text       = remoteMessage.getData().get("text");
 
-            NotificationHelper.showChatMessage(
-                    getApplicationContext(),
-                    chatId, messageId, senderId, senderName, text, avatarUrl
-            );
-            return;
+                NotificationHelper.showChatMessage(
+                        getApplicationContext(),
+                        chatId, messageId, senderId, senderName, text, /* avatarUrl= */ null
+                );
+                return;
+            }
         }
 
-        // אחרת – ההתנהגות הישנה שלך
-        NotificationHelper.showNotification(getApplicationContext(), rm);
+        // fallback: התראה רגילה
+        NotificationHelper.showNotification(getApplicationContext(), remoteMessage);
     }
+
 
     @Override
     public void onNewToken(@NonNull String token) {
         super.onNewToken(token);
-        FirebaseUser u = FirebaseAuth.getInstance().getCurrentUser();
-        if (u != null) {
-            FirebaseFirestore.getInstance()
-                    .collection("users").document(u.getUid())
-                    .collection("fcmTokens").document(token)
-                    .set(new HashMap<String, Object>() {{ put("active", true); put("platform","android"); put("ts", FieldValue.serverTimestamp()); }});
-        }
+        model.firebase.CloudMessaging.FcmTokenManager.registerCurrentToken();
     }
 }

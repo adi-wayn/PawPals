@@ -58,7 +58,7 @@ exports.onNewMessage = onDocumentCreated(
           senderName,
           text,
         },
-        android: {priority: "HIGH"},
+        android: {priority: "high"},
       };
 
       // 4) שליחה במנות וניקוי טוקנים מתים
