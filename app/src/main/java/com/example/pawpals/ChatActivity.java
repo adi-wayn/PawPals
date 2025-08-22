@@ -23,7 +23,7 @@ import java.util.List;
 import model.Message;
 import model.MessagesAdapter;
 import model.User;
-import model.firebase.firestore.CommunityRepository;
+import model.firebase.Firestore.CommunityRepository;
 
 public class ChatActivity extends AppCompatActivity {
 
