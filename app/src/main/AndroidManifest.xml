@@ -114,6 +114,14 @@
             </intent-filter>
         </service>
 
+        <receiver
+            android:name="model.MarkReadReceiver"
+            android:exported="false" />
+
+        <receiver
+            android:name="model.ReplyReceiver"
+            android:exported="false" />
+
 
     </application>
 
