@@ -28,12 +28,23 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?attr/textAppearanceSubtitle1"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            tools:text="Rex" />
 
         <TextView
-            android:id="@+id/dog_breed"
+            android:id="@+id/dog_breed1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="?attr/textAppearanceBody2" />
+            android:textAppearance="?attr/textAppearanceBody2"
+            tools:text="German Shepherd" />
+
+        <!-- גיל הכלב -->
+        <TextView
+            android:id="@+id/dog_age"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?attr/textAppearanceBody2"
+            android:layout_marginTop="2dp"
+            tools:text="Age: 3" />
     </LinearLayout>
 </LinearLayout>

@@ -148,7 +148,7 @@
             tools:listitem="@layout/item_profile_card"
             tools:itemCount="6" />
 
-        <!-- Dogs cards (your previous scrollable list) -->
+        <!-- Dogs list scroll -->
         <ScrollView
             android:id="@+id/dogs_scroll"
             android:layout_width="match_parent"
@@ -165,17 +165,42 @@
                 android:showDividers="middle"
                 android:dividerPadding="8dp" />
         </ScrollView>
+
+        <!-- NOTE: ה-FAB שהיה כאן הוסר -->
     </FrameLayout>
+
+    <!-- Extended FAB under the scroll (no outline) -->
+    <LinearLayout
+        android:id="@+id/add_dog_footer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="8dp"
+        android:gravity="center"
+        android:padding="8dp">
+
+        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+            android:id="@+id/fab_add_dog"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="add dog"
+            android:contentDescription="@string/add_dog"
+            app:icon="@drawable/ic_add"
+            app:iconPadding="8dp"
+            app:iconGravity="textStart"
+            app:showMotionSpec="@animator/mtrl_extended_fab_show_motion_spec"
+            app:hideMotionSpec="@animator/mtrl_extended_fab_hide_motion_spec" />
+    </LinearLayout>
 
     <!-- Community Status -->
     <TextView
         android:id="@+id/community_status"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/in_same_community"
+        android:text="@string/user_community"
         android:textAppearance="?attr/textAppearanceBody2"
         android:gravity="center"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="0dp"
         android:layout_marginBottom="8dp" />
 
 </LinearLayout>

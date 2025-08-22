@@ -4,6 +4,7 @@ import static androidx.core.content.ContextCompat.startActivity;
 
 import android.content.Intent; // ⬅️ חדש
 import android.os.Bundle;
+import android.util.Pair;
 import android.widget.SearchView;
 import android.widget.Toast;
 import android.view.View;
@@ -16,37 +17,44 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.ListenerRegistration;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import model.CommunityAdapter;
 import model.User;
-import model.firebase.firestore.UserRepository;
+import model.firebase.Firestore.UserRepository;
 
 public class CommunitySearchActivity extends AppCompatActivity {
 
+    // רשימות מקור/תצוגה
+    private final List<Pair<String, User>> masterRows = new ArrayList<>();
+    private final List<User> allUsers = new ArrayList<>();   // לתצוגה ב-Adapter
+    private final List<String> allIds = new ArrayList<>();   // מקביל ל-allUsers
     @Nullable private User currentUser;
 
     private RecyclerView recyclerView;
     private CommunityAdapter adapter;
-
-    // masterProfiles: full community members (no filters)
-    private final List<User> masterProfiles = new ArrayList<>();
-    // allProfiles: filtered list shown in the adapter
-    private final List<User> allProfiles = new ArrayList<>();
-
     private ChipGroup filterChipGroup;
     private SearchView searchView;
     private CircularProgressIndicator progressBar;
-
     private UserRepository userRepo;
+    @Nullable private String selfId;
+    private final Set<String> myFriendIds = new HashSet<>();
+    @Nullable private ListenerRegistration friendReg;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search_dog_owner);
+
+        selfId = FirebaseAuth.getInstance().getUid();
 
         bindViews();
         setupRecycler();
@@ -56,6 +64,20 @@ public class CommunitySearchActivity extends AppCompatActivity {
 
         // Try to get community from intent (via currentUser)
         currentUser = getIntent().getParcelableExtra("currentUser");
+
+        if (selfId != null) {
+            friendReg = userRepo.observeFriendsIds(selfId, (qs, err) -> {
+                myFriendIds.clear();
+                if (err == null && qs != null) {
+                    for (DocumentSnapshot d : qs.getDocuments()) {
+                        myFriendIds.add(d.getId()); // כל דוק הוא friendId
+                    }
+                }
+                // מרעננים את הסינון הנוכחי כדי לשקף עדכון חברים
+                filterProfiles(searchView.getQuery() != null ? searchView.getQuery().toString() : "");
+            });
+        }
+
 
         String communityFromIntent = (currentUser != null) ? currentUser.getCommunityName() : null;
         if (communityFromIntent != null && !communityFromIntent.isEmpty()) {
@@ -94,7 +116,7 @@ public class CommunitySearchActivity extends AppCompatActivity {
     }
 
     private void setupRecycler() {
-        adapter = new CommunityAdapter(allProfiles);
+        adapter = new CommunityAdapter(allUsers);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(adapter);
@@ -122,23 +144,12 @@ public class CommunitySearchActivity extends AppCompatActivity {
 
     private void loadCommunityMembers(String communityName) {
         showLoading(true);
-        userRepo.getUsersByCommunity(communityName, new UserRepository.FirestoreUsersListCallback() {
+        userRepo.getUsersByCommunityWithIds(communityName, new UserRepository.FirestoreUsersWithIdsCallback() {
             @Override
-            public void onSuccess(List<User> users) {
+            public void onSuccess(List<Pair<String, User>> rows) {
                 showLoading(false);
-
-                masterProfiles.clear();
-                if (users != null) {
-                    // Optional: exclude the current logged-in user from results
-                    String selfId = FirebaseAuth.getInstance().getUid();
-                    for (User u : users) {
-                        if (u == null) continue;
-                        // If your User has an id field, you can exclude self:
-                        // if (u.getId() != null && u.getId().equals(selfId)) continue;
-                        masterProfiles.add(u);
-                    }
-                }
-
+                masterRows.clear();
+                if (rows != null) masterRows.addAll(rows);
                 filterProfiles(searchView.getQuery() != null ? searchView.getQuery().toString() : "");
             }
 
@@ -153,9 +164,19 @@ public class CommunitySearchActivity extends AppCompatActivity {
     private void filterProfiles(String query) {
         final String lowerQuery = (query == null ? "" : query).toLowerCase(Locale.ROOT);
         final List<Integer> checkedChipIds = filterChipGroup.getCheckedChipIds();
+        final boolean requireFriend = checkedChipIds != null && checkedChipIds.contains(R.id.chipFriends);
 
-        List<User> filtered = new ArrayList<>();
-        for (User user : masterProfiles) {
+        allUsers.clear();
+        allIds.clear();
+
+        for (Pair<String, User> row : masterRows) {
+            // דילוג על עצמי
+            if (selfId != null && selfId.equals(row.first)) continue;
+
+            // אם נבחר "חברים" – חייב להיות ברשימת החברים
+            if (requireFriend && !myFriendIds.contains(row.first)) continue;
+
+            User user = row.second;
             if (user == null || user.getUserName() == null) continue;
 
             boolean matchesText = user.getUserName().toLowerCase(Locale.ROOT).contains(lowerQuery);
@@ -163,12 +184,11 @@ public class CommunitySearchActivity extends AppCompatActivity {
 
             if (!passesChipFilters(user, checkedChipIds)) continue;
 
-            filtered.add(user);
+            allUsers.add(user);
+            allIds.add(row.first);
         }
 
-        allProfiles.clear();
-        allProfiles.addAll(filtered);
-        adapter.updateData(allProfiles);
+        adapter.updateData(allUsers);
     }
 
     private boolean passesChipFilters(User user, List<Integer> checkedChipIds) {
@@ -178,13 +198,8 @@ public class CommunitySearchActivity extends AppCompatActivity {
         int dogCount = (user.getDogs() != null) ? user.getDogs().size() : 0;
 
         for (int id : checkedChipIds) {
-            if (id == R.id.chipTwoPlusDogs && dogCount < 2) {
-                return false;
-            } else if (id == R.id.chipOneDog && dogCount != 1) {
-                return false;
-            } else if (id == R.id.chipHasPuppies) {
-                // TODO: implement when "friends" relation exists
-            }
+            if (id == R.id.chipTwoPlusDogs && dogCount < 2) return false;
+            else if (id == R.id.chipOneDog && dogCount != 1) return false;
         }
         return true;
     }
@@ -196,13 +211,37 @@ public class CommunitySearchActivity extends AppCompatActivity {
     }
 
     // ⬅️ מתודה לניווט לפרופיל
-    private void navigateToProfile(@Nullable User user) {
+    private void navigateToProfile(@Nullable User user, int position) {
         if (user == null) {
             Toast.makeText(this, "Unknown profile.", Toast.LENGTH_SHORT).show();
             return;
         }
-        Intent intent = new Intent(this, ProfileActivity.class);
-        intent.putExtra("currentUser", user); // Requires User implements Parcelable
-        startActivity(intent);
+        String targetId = (position >= 0 && position < allIds.size()) ? allIds.get(position) : null;
+        if (targetId == null || targetId.isEmpty()) {
+            Toast.makeText(this, "Missing user id.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String selfId = FirebaseAuth.getInstance().getUid();
+        if (selfId != null && selfId.equals(targetId)) {
+            Intent i = new Intent(this, ProfileActivity.class);
+            i.putExtra("currentUser", user);
+            startActivity(i);
+        } else {
+            Intent i = new Intent(this, OtherUserProfileActivity.class);
+            i.putExtra(OtherUserProfileActivity.EXTRA_OTHER_USER_ID, targetId);
+            startActivity(i);
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        if (friendReg != null) { friendReg.remove(); friendReg = null; }
+        super.onStop();
+    }
+    @Override
+    protected void onDestroy() {
+        if (friendReg != null) { friendReg.remove(); friendReg = null; }
+        super.onDestroy();
     }
 }

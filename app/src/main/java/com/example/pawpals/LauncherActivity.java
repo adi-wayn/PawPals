@@ -20,6 +20,7 @@ import java.util.concurrent.TimeUnit;
 import model.User;
 import model.firebase.Authentication.AuthHelper;
 import model.firebase.firestore.UserRepository;
+
 public class LauncherActivity extends AppCompatActivity {
     private static final String TAG = "LauncherActivity";
     private final AuthHelper authHelper = new AuthHelper();
@@ -27,8 +28,6 @@ public class LauncherActivity extends AppCompatActivity {
 
     private final Handler handler = new Handler(Looper.getMainLooper());
     private boolean navigated = false;
-
-    // failsafe אם משהו נתקע
     private final Runnable failSafe = () -> {
         if (!navigated) {
             Log.w(TAG, "Failsafe timeout → LoginActivity");
@@ -38,11 +37,13 @@ public class LauncherActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        // Splash (Android 12+ יופעל אוטומטית, בגרסאות קודמות פשוט יופיע ה־layout שהוגדר בערכת נושא)
         SplashScreen.installSplashScreen(this);
         super.onCreate(savedInstanceState);
+        // מסך רקע/Progress קטן כדי שלא יהיה לבן גם לפני splash API:
         setContentView(R.layout.activity_splash);
 
-        // הפעלה של failsafe אחרי 8 שניות
+        // failsafe אחרי 8 שניות
         handler.postDelayed(failSafe, 8000);
 
         FirebaseUser currentUser = authHelper.getCurrentUser();
@@ -54,7 +55,7 @@ public class LauncherActivity extends AppCompatActivity {
 
         Log.d(TAG, "Attempting reload for user: " + currentUser.getUid());
 
-        // טעינה מחדש עם טיימאאוט של 5 שניות
+        // עטיפה עם טיימאאוט; אם נכשלה/נגמר הזמן – ממשיכים כרגיל
         Tasks.withTimeout(currentUser.reload(), 5, TimeUnit.SECONDS)
                 .addOnCompleteListener(task -> {
                     FirebaseUser refreshed = FirebaseAuth.getInstance().getCurrentUser();
@@ -70,8 +71,7 @@ public class LauncherActivity extends AppCompatActivity {
 
     private void checkUserProfile(String userId) {
         userRepository.checkIfUserProfileExists(userId, new UserRepository.FirestoreExistCallback() {
-            @Override
-            public void onResult(boolean exists) {
+            @Override public void onResult(boolean exists) {
                 if (exists) {
                     loadUserAndContinue(userId);
                 } else {
@@ -79,12 +79,9 @@ public class LauncherActivity extends AppCompatActivity {
                     navigateTo(RegisterActivity.class);
                 }
             }
-
-            @Override
-            public void onError(Exception e) {
+            @Override public void onError(Exception e) {
                 Log.e(TAG, "Error checking profile", e);
-                Toast.makeText(LauncherActivity.this,
-                        "Error checking profile", Toast.LENGTH_SHORT).show();
+                Toast.makeText(LauncherActivity.this, "Error checking profile", Toast.LENGTH_SHORT).show();
                 navigateTo(LoginActivity.class);
             }
         });
@@ -92,12 +89,10 @@ public class LauncherActivity extends AppCompatActivity {
 
     private void loadUserAndContinue(String userId) {
         userRepository.getUserById(userId, new UserRepository.FirestoreUserCallback() {
-            @Override
-            public void onSuccess(User user) {
+            @Override public void onSuccess(User user) {
                 if (user == null) {
                     Log.e(TAG, "User is null → LoginActivity");
-                    Toast.makeText(LauncherActivity.this,
-                            "User data is null", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(LauncherActivity.this, "User data is null", Toast.LENGTH_SHORT).show();
                     navigateTo(LoginActivity.class);
                     return;
                 }
@@ -105,12 +100,9 @@ public class LauncherActivity extends AppCompatActivity {
                 i.putExtra("currentUser", user);
                 navigateTo(i);
             }
-
-            @Override
-            public void onFailure(Exception e) {
+            @Override public void onFailure(Exception e) {
                 Log.e(TAG, "Failed to load user profile", e);
-                Toast.makeText(LauncherActivity.this,
-                        "Failed to load user profile", Toast.LENGTH_SHORT).show();
+                Toast.makeText(LauncherActivity.this, "Failed to load user profile", Toast.LENGTH_SHORT).show();
                 navigateTo(LoginActivity.class);
             }
         });
@@ -128,7 +120,5 @@ public class LauncherActivity extends AppCompatActivity {
         finish();
     }
 
-    private void goToLogin() {
-        navigateTo(LoginActivity.class);
-    }
+    private void goToLogin() { navigateTo(LoginActivity.class); }
 }

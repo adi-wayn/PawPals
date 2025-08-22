@@ -63,15 +63,29 @@
             android:inputType="textMultiLine"
             android:layout_marginBottom="16dp"/>
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_add_images"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/add_images" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/selectedImagesRv"
+            android:layout_width="match_parent"
+            android:layout_height="84dp"
+            android:layout_marginBottom="12dp"
+            android:clipToPadding="false"/>
+
         <!-- כפתור שליחה -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button_submit"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Submit Report"
+            style="@style/Widget.PawPals.Button"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="16dp"
-            style="@style/Widget.PawPals.Button"
             android:drawableStart="@drawable/ic_heart"
             android:drawablePadding="8dp" />
     </LinearLayout>

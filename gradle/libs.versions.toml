@@ -31,4 +31,3 @@ core-splashscreen = { group = "androidx.core", name = "core-splashscreen", versi
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
-

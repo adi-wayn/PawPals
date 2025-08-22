@@ -38,6 +38,12 @@
                 android:layout_height="wrap_content"
                 android:text="Assistance" />
 
+            <RadioButton
+                android:id="@+id/tab_manager_application"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Manager Application" />
+
         </RadioGroup>
 
         <!-- קו הפרדה -->
@@ -75,6 +81,20 @@
             android:background="@android:drawable/editbox_background"
             android:inputType="textMultiLine"
             android:layout_marginBottom="16dp"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_add_images"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/add_images" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/selectedImagesRv"
+            android:layout_width="match_parent"
+            android:layout_height="84dp"
+            android:layout_marginBottom="12dp"
+            android:clipToPadding="false"/>
 
         <!-- כפתור שליחה -->
         <com.google.android.material.button.MaterialButton
