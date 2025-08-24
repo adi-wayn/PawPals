@@ -32,6 +32,7 @@ import com.google.android.libraries.identity.googleid.GetGoogleIdOption;
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
 
 import model.firebase.Authentication.AuthHelper;
+import model.firebase.CloudMessaging.FcmTokenManager;
 import model.firebase.Firestore.UserRepository;
 
 public class LoginActivity extends AppCompatActivity {
@@ -113,6 +114,7 @@ public class LoginActivity extends AppCompatActivity {
                                         new AuthHelper.GoogleAuthCallback() {
                                             @Override
                                             public void onSuccess(FirebaseUser user, boolean isNewUser) {
+                                                FcmTokenManager.registerCurrentToken();
                                                 if (isNewUser) {
                                                     startActivity(new Intent(LoginActivity.this, RegistrationDetailsActivity.class));
                                                     finish();
@@ -191,7 +193,9 @@ public class LoginActivity extends AppCompatActivity {
         authHelper.loginUser(email, password, this, new AuthHelper.AuthCallback() {
             @Override
             public void onSuccess(FirebaseUser user) {
-                if (user == null) { enableButtons(); return; }
+                if (user == null) {
+                    FcmTokenManager.registerCurrentToken();
+                    enableButtons(); return; }
 
                 // If we had a pending Google credential from a collision — link it now
                 if (pendingGoogleCred != null) {

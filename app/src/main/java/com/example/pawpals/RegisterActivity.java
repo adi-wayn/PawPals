@@ -11,6 +11,8 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import model.firebase.Authentication.AuthHelper;
+import model.firebase.CloudMessaging.FcmTokenManager;
+
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -76,6 +78,7 @@ public class RegisterActivity extends AppCompatActivity {
         authHelper.registerUser(email, password, this, new AuthHelper.AuthCallback() {
             @Override
             public void onSuccess(FirebaseUser user) {
+                FcmTokenManager.registerCurrentToken();
                 // כאן אפשר לשמור גם פרופיל ב-Firestore אם נרצה
                 // נניח שנעבור למסך בית לאחר הרשמה
                 Log.d("Register", "Registration success: " + user.getEmail());

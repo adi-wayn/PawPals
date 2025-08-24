@@ -1,31 +1,41 @@
 package model.firebase.CloudMessaging;
 
-import android.content.Context;
-import android.util.Log;
-
-
 import androidx.annotation.NonNull;
-import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
-
-import com.example.pawpals.R;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
+
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
     @Override
     public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
-        // כאן ניצור את ההתראה מהנתונים שהגיעו
+
+        // עדיפות: הודעת צ'אט מדאטה
+        if (remoteMessage.getData() != null && !remoteMessage.getData().isEmpty()) {
+            String type = remoteMessage.getData().get("type");
+            if ("chat_message".equals(type)) {
+                String chatId     = remoteMessage.getData().get("chatId");
+                String messageId  = remoteMessage.getData().get("messageId");
+                String senderId   = remoteMessage.getData().get("senderId");
+                String senderName = remoteMessage.getData().get("senderName");
+                String text       = remoteMessage.getData().get("text");
+
+                NotificationHelper.showChatMessage(
+                        getApplicationContext(),
+                        chatId, messageId, senderId, senderName, text, /* avatarUrl= */ null
+                );
+                return;
+            }
+        }
+
+        // fallback: התראה רגילה
         NotificationHelper.showNotification(getApplicationContext(), remoteMessage);
     }
+
 
     @Override
     public void onNewToken(@NonNull String token) {
         super.onNewToken(token);
-        Log.d("FCM", "Refreshed token: " + token);
-        // שלח את הטוקן לשרת שלך אם יש לך
+        model.firebase.CloudMessaging.FcmTokenManager.registerCurrentToken();
     }
-
-
 }
