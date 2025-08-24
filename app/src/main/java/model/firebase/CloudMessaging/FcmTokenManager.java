@@ -17,6 +17,7 @@ public class FcmTokenManager {
         FirebaseMessaging.getInstance().getToken()
                 .addOnSuccessListener(token -> {
                     if (token == null || token.isEmpty()) return;
+                    android.util.Log.d("FCM", "My token: " + token);
                     FirebaseFirestore.getInstance()
                             .collection("users").document(u.getUid())
                             .collection("fcmTokens").document(token)
