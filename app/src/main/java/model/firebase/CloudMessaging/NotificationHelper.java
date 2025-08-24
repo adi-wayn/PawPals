@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Build;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
@@ -32,6 +33,9 @@ public class NotificationHelper {
     public static final String KEY_TEXT_REPLY = "key_text_reply";
     public static final String EXTRA_CHAT_ID = "extra_chat_id";
     public static final String EXTRA_MESSAGE_ID = "extra_message_id";
+    public static final String EXTRA_COMMUNITY_ID = "extra_community_id";
+    public static final String EXTRA_POST_ID = "extra_post_id";
+
 
     // FCM payload
     public static void showNotification(Context context, RemoteMessage remoteMessage) {
@@ -205,6 +209,58 @@ public class NotificationHelper {
                     .setGroupSummary(true)
                     .setAutoCancel(true);
             nm.notify(("summary_"+chatId).hashCode(), summary.build());
+        }
+    }
+
+    public static void showFeedPost(Context ctx,
+                                    String communityId,
+                                    String postId,
+                                    @Nullable String senderName,
+                                    @Nullable String subject,
+                                    @Nullable String text) {
+        createChannelIfNeeded(ctx);
+
+        Intent openIntent = new Intent(ctx, com.example.pawpals.MainActivity.class);
+        openIntent.putExtra(EXTRA_COMMUNITY_ID, communityId);
+        openIntent.putExtra(EXTRA_POST_ID, postId);
+        openIntent.putExtra("open_feed", true);
+
+        PendingIntent contentPi = PendingIntent.getActivity(
+                ctx,
+                (communityId + ":" + postId).hashCode(),
+                openIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+
+        String title = (subject != null && !subject.isEmpty()) ? subject : "New post";
+        String body  = ((senderName != null && !senderName.isEmpty()) ? (senderName + ": ") : "")
+                + (text != null ? text : "");
+
+        NotificationCompat.Builder b = new NotificationCompat.Builder(ctx, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_notification)
+                .setContentTitle(title)
+                .setContentText(body)
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(body))
+                .setCategory(NotificationCompat.CATEGORY_SOCIAL)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setDefaults(NotificationCompat.DEFAULT_ALL)
+                .setAutoCancel(true)
+                .setContentIntent(contentPi);
+
+        NotificationManagerCompat nm = NotificationManagerCompat.from(ctx);
+        int notificationId = Math.abs((communityId + ":" + postId).hashCode());
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            if (androidx.core.content.ContextCompat.checkSelfPermission(
+                    ctx, android.Manifest.permission.POST_NOTIFICATIONS)
+                    == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                nm.notify(notificationId, b.build());
+            } else {
+                Log.w("NotificationHelper", "POST_NOTIFICATIONS not granted");
+            }
+        } else {
+            nm.notify(notificationId, b.build());
         }
     }
 }

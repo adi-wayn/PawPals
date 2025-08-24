@@ -83,3 +83,84 @@ exports.onNewMessage = onDocumentCreated(
       }
     },
 );
+
+// === פוש על פוסט חדש ב-feed ===
+exports.onNewFeedPost = onDocumentCreated(
+    "communities/{communityId}/feed/{postId}",
+    async (event) => {
+      const snap = event.data;
+      const data = snap ? snap.data() : {};
+      const communityId = event.params.communityId;
+      const postId = event.params.postId;
+
+      // בשדות הפוסט שלך השם הוא "sender name" עם רווח
+      const senderName = data.senderName || data["sender name"] || "Someone";
+      const subject = data.subject || "New post";
+      const text = data.text || "";
+
+      // נמענים = כל המשתמשים שה-communityName שלהם הוא ה-communityId (אצלך ה-id הוא השם)
+      const usersSnap = await admin
+          .firestore()
+          .collection("users")
+          .where("communityName", "==", communityId)
+          .get();
+
+      const recipientUids = usersSnap.docs.map((d) => d.id);
+      if (recipientUids.length === 0) return;
+
+      // אוסף טוקנים מכל המשתמשים
+      const tokens = [];
+      for (const uid of recipientUids) {
+        const tokSnap = await admin
+            .firestore()
+            .collection("users")
+            .doc(uid)
+            .collection("fcmTokens")
+            .get();
+        tokSnap.forEach((doc) => tokens.push(doc.id));
+      }
+      if (tokens.length === 0) return;
+
+      // הודעת דאטה – תתופעל בצד הקליינט
+      const baseMessage = {
+        data: {
+          type: "feed_post",
+          communityId,
+          postId,
+          senderName,
+          subject,
+          text,
+        },
+        android: {priority: "high"},
+      };
+
+      // שליחה במנות + ניקוי טוקנים מתים
+      const chunk = 500;
+      for (let i = 0; i < tokens.length; i += chunk) {
+        const res = await admin.messaging().sendEachForMulticast({
+          tokens: tokens.slice(i, i + chunk),
+          ...baseMessage,
+        });
+
+        res.responses.forEach((r, idx) => {
+          if (
+            !r.success &&
+          r.error &&
+          r.error.code === "messaging/registration-token-not-registered"
+          ) {
+            const dead = tokens[i + idx];
+            recipientUids.forEach((uid) => {
+              admin
+                  .firestore()
+                  .collection("users")
+                  .doc(uid)
+                  .collection("fcmTokens")
+                  .doc(dead)
+                  .delete()
+                  .catch(() => {});
+            });
+          }
+        });
+      }
+    },
+);
