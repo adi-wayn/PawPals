@@ -1,7 +1,11 @@
 package com.example.pawpals;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -9,12 +13,13 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.pawpals.R; // ודאי שזה ה-R של האפליקציה שלך
-
 import model.Dog;
 import model.firebase.firestore.UserRepository;
 
 public class AddDogActivity extends AppCompatActivity {
+
+    public static final String EXTRA_USER_ID = "userId";
+    private static final String TAG = "AddDogActivity";
 
     private EditText etName, etBreed, etAge;
     private Button btnSave;
@@ -23,66 +28,108 @@ public class AddDogActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_add_dog); // ודאי שקיים קובץ כזה עם ה-IDs למטה
+        Log.d(TAG, "onCreate()");
+        setContentView(R.layout.activity_add_dog); // ודאי שהקובץ קיים וה-IDs תואמים
 
-        etName = findViewById(R.id.et_dog_name);
+        etName  = findViewById(R.id.et_dog_name);
         etBreed = findViewById(R.id.et_dog_breed);
-        etAge = findViewById(R.id.et_dog_age);
+        etAge   = findViewById(R.id.et_dog_age);
         btnSave = findViewById(R.id.btn_save_dog);
 
-        btnSave.setOnClickListener(v -> saveDog());
-    }
-
-    private void saveDog() {
-        String name = etName.getText().toString().trim();
-        String breed = etBreed.getText().toString().trim();
-        String ageStr = etAge.getText().toString().trim();
-
-        if (TextUtils.isEmpty(name)) {
-            etName.setError("שימי שם לכלב");
-            etName.requestFocus();
+        // בדיקת עשן ל-IDs לא נכונים ב-XML
+        if (etName == null || etBreed == null || etAge == null || btnSave == null) {
+            Toast.makeText(this, "בעיה ב-IDs של layout (activity_add_dog.xml)", Toast.LENGTH_LONG).show();
+            Log.e(TAG, "One or more views are null. Check IDs in layout.");
+            finish();
             return;
         }
 
-        // בונים את האובייקט עם ה-Setters (תואם למחלקה שלך שמאפשרת nulls)
+        btnSave.setOnClickListener(v -> {
+            hideKeyboard();
+            saveDog();
+        });
+    }
+
+    private void saveDog() {
+        Log.d(TAG, "saveDog() clicked");
+        String name   = etName.getText().toString().trim();
+        String breed  = etBreed.getText().toString().trim();
+        String ageStr = etAge.getText().toString().trim();
+
+        // שם חובה
+        if (TextUtils.isEmpty(name)) {
+            etName.setError("שימי שם לכלב");
+            etName.requestFocus();
+            Log.w(TAG, "Validation failed: empty name");
+            return;
+        }
+
+        // בניית האובייקט לפי המודל
         Dog dog = new Dog();
         dog.setName(name);
         dog.setBreed(TextUtils.isEmpty(breed) ? null : breed);
+
         if (!TextUtils.isEmpty(ageStr)) {
             try {
-                dog.setAge(Integer.valueOf(ageStr));
+                dog.setAge(Integer.valueOf(ageStr)); // ודאי של- Dog.setAge יש פרמטר Integer (לא int)
             } catch (NumberFormatException e) {
                 etAge.setError("גיל חייב להיות מספר");
                 etAge.requestFocus();
+                Log.w(TAG, "Age parse failed", e);
                 return;
             }
         } else {
             dog.setAge(null);
         }
 
-        // השיגי userId: או מה-Intent או מה-FirebaseAuth (בחרי את מה שמתאים אצלך)
-        // 1) דרך Intent:
-        String userId = getIntent().getStringExtra("userId");
-        // 2) או דרך FirebaseAuth:
-        // String userId = FirebaseAuth.getInstance().getCurrentUser() != null
-        //         ? FirebaseAuth.getInstance().getCurrentUser().getUid() : null;
-
+        // קבלת userId שנשלח ע"י ה-ProfileActivity
+        String userId = getIntent().getStringExtra(EXTRA_USER_ID);
+        Log.d(TAG, "Incoming userId: " + userId);
         if (TextUtils.isEmpty(userId)) {
             Toast.makeText(this, "חסר userId לשמירה", Toast.LENGTH_SHORT).show();
+            Log.e(TAG, "userId is missing in Intent extras");
             return;
         }
 
-        repo.addDogToUser(userId, dog, new UserRepository.FirestoreCallback() {
-            @Override
-            public void onSuccess(String documentId) {
-                Toast.makeText(AddDogActivity.this, "הכלב נשמר", Toast.LENGTH_SHORT).show();
-                finish(); // חזרה למסך הקודם
-            }
+        // מניעת דאבל-קליק
+        btnSave.setEnabled(false);
+        Log.d(TAG, "Calling repo.addDogToUser()");
 
-            @Override
-            public void onFailure(Exception e) {
-                Toast.makeText(AddDogActivity.this, "נכשל: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        try {
+            repo.addDogToUser(userId, dog, new UserRepository.FirestoreCallback() {
+                @Override
+                public void onSuccess(String documentId) {
+                    Log.d(TAG, "Dog saved. docId=" + documentId);
+                    Toast.makeText(AddDogActivity.this, "הכלב נשמר", Toast.LENGTH_SHORT).show();
+                    setResult(RESULT_OK); // לאפשר למסך קודם לרענן
+                    finish();
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                    btnSave.setEnabled(true);
+                    String msg = (e != null && e.getMessage() != null) ? e.getMessage() : "שגיאה לא ידועה";
+                    Log.e(TAG, "Failed to save dog: " + msg, e);
+                    Toast.makeText(AddDogActivity.this, "נכשל: " + msg, Toast.LENGTH_LONG).show();
+                }
+            });
+        } catch (Exception e) {
+            // הגנה נוספת במקרה של חריגה מיידית לפני הקולבקים (למשל שגיאת שימוש ב-Repository)
+            btnSave.setEnabled(true);
+            String msg = (e.getMessage() != null) ? e.getMessage() : "שגיאה לא ידועה";
+            Log.e(TAG, "Unexpected exception while saving dog: " + msg, e);
+            Toast.makeText(this, "נכשל: " + msg, Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void hideKeyboard() {
+        View view = getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm =
+                    (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (imm != null) {
+                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
             }
-        });
+        }
     }
 }
