@@ -10,9 +10,10 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
 
-        // עדיפות: הודעת צ'אט מדאטה
         if (remoteMessage.getData() != null && !remoteMessage.getData().isEmpty()) {
             String type = remoteMessage.getData().get("type");
+
+            //הודעת צ'אט מדאטה
             if ("chat_message".equals(type)) {
                 String chatId     = remoteMessage.getData().get("chatId");
                 String messageId  = remoteMessage.getData().get("messageId");
@@ -23,6 +24,21 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 NotificationHelper.showChatMessage(
                         getApplicationContext(),
                         chatId, messageId, senderId, senderName, text, /* avatarUrl= */ null
+                );
+                return;
+            }
+
+            //הודעת פוסט מדאטה
+            if ("feed_post".equals(type)) {
+                String communityId = remoteMessage.getData().get("communityId");
+                String postId      = remoteMessage.getData().get("postId");
+                String senderName  = remoteMessage.getData().get("senderName");
+                String subject     = remoteMessage.getData().get("subject");
+                String text        = remoteMessage.getData().get("text");
+
+                NotificationHelper.showFeedPost(
+                        getApplicationContext(),
+                        communityId, postId, senderName, subject, text
                 );
                 return;
             }
