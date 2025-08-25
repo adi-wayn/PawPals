@@ -6,8 +6,11 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
 
-    <application
 
+
+
+
+    <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -20,9 +23,6 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/maps_api_key"/>
-        <meta-data
-            android:name="com.google.firebase.messaging.default_notification_channel_id"
-            android:value="default_channel" />
 
 
         <activity
@@ -106,6 +106,8 @@
             android:exported="false" />
 
 
+
+
         <service
             android:name="model.firebase.CloudMessaging.MyFirebaseMessagingService"
             android:exported="false">
@@ -113,14 +115,6 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
-
-        <receiver
-            android:name="model.MarkReadReceiver"
-            android:exported="false" />
-
-        <receiver
-            android:name="model.ReplyReceiver"
-            android:exported="false" />
 
 
     </application>
