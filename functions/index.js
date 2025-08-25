@@ -21,14 +21,18 @@ exports.onNewMessage = onDocumentCreated(
       const senderName = data.senderName || "Someone";
       const text = data.text || "";
 
-      // נביא את שם הקהילה מתוך המסמך של הקהילה (או נשתמש ב-id אם אין שדה name)
-      let communityName = data.communityName; // אופציונלי אם תתחילו לשמור גם בהודעה
+      // שם הקהילה (אם לא נשמר בהודעה)
+      let communityName = data.communityName;
       if (!communityName) {
-        const commDoc = await admin.firestore().collection("communities").doc(chatId).get();
+        const commDoc = await admin
+            .firestore()
+            .collection("communities")
+            .doc(chatId)
+            .get();
         communityName = (commDoc.exists && commDoc.get("name")) || chatId;
       }
 
-      // כל המשתמשים בקהילה הזו
+      // כל המשתמשים בקהילה, חוץ מהשולח
       const usersSnap = await admin
           .firestore()
           .collection("users")
@@ -39,30 +43,50 @@ exports.onNewMessage = onDocumentCreated(
           .map((d) => d.id)
           .filter((uid) => uid && uid !== senderId);
 
-      if (recipientUids.length === 0) return;
+      if (!recipientUids.length) return;
 
-      // שליפת כל ה־tokens של הנמענים
+      // שליפת טוקנים של נמענים
       const tokenSnaps = await Promise.all(
           recipientUids.map((uid) =>
-            admin.firestore().collection("users").doc(uid).collection("fcmTokens").get(),
+            admin
+                .firestore()
+                .collection("users")
+                .doc(uid)
+                .collection("fcmTokens")
+                .get(),
           ),
       );
-
-      const tokens = [];
+      let tokens = [];
       tokenSnaps.forEach((qs) => qs.forEach((doc) => tokens.push(doc.id)));
-      if (tokens.length === 0) return;
 
-      // הודעת דאטה (Heads-up יוצג אצלך באפליקציה)
+      // שליפת טוקנים של השולח (למקרה שטוקן שלו מקושר גם לאחרים)
+      const senderTokens = [];
+      if (senderId) {
+        const sSnap = await admin
+            .firestore()
+            .collection("users")
+            .doc(senderId)
+            .collection("fcmTokens")
+            .get();
+        sSnap.forEach((d) => senderTokens.push(d.id));
+      }
+
+      // סינון סופי: לא שולחים אף טוקן של השולח
+      tokens = tokens.filter((t) => !senderTokens.includes(t));
+      if (!tokens.length) return;
+
       const baseMessage = {
         data: {type: "chat_message", chatId, messageId, senderId, senderName, text},
         android: {priority: "high"},
       };
 
-      // שליחה במנות + ניקוי טוקנים מתים
       const chunk = 500;
       for (let i = 0; i < tokens.length; i += chunk) {
         const slice = tokens.slice(i, i + chunk);
-        const res = await admin.messaging().sendEachForMulticast({tokens: slice, ...baseMessage});
+        const res = await admin
+            .messaging()
+            .sendEachForMulticast({tokens: slice, ...baseMessage});
+
         res.responses.forEach((r, idx) => {
           if (
             !r.success &&
@@ -73,8 +97,10 @@ exports.onNewMessage = onDocumentCreated(
             recipientUids.forEach((uid) => {
               admin
                   .firestore()
-                  .collection("users").doc(uid)
-                  .collection("fcmTokens").doc(dead)
+                  .collection("users")
+                  .doc(uid)
+                  .collection("fcmTokens")
+                  .doc(dead)
                   .delete()
                   .catch(() => {});
             });
@@ -84,44 +110,62 @@ exports.onNewMessage = onDocumentCreated(
     },
 );
 
-// === פוש על פוסט חדש ב-feed ===
+// === פוש על פוסט חדש ב-feed — בלי senderUid ===
 exports.onNewFeedPost = onDocumentCreated(
     "communities/{communityId}/feed/{postId}",
     async (event) => {
       const snap = event.data;
-      const data = snap ? snap.data() : {};
-      const communityId = event.params.communityId;
-      const postId = event.params.postId;
+      if (!snap) return;
 
-      // בשדות הפוסט שלך השם הוא "sender name" עם רווח
-      const senderName = data.senderName || data["sender name"] || "Someone";
+      const data = snap.data() || {};
+      const {communityId, postId} = event.params;
+
+      // אצלך ב-Report השדה הוא "sender name" (עם רווח); משאירים fallback ל-senderName אם קיים
+      const senderName = data["sender name"] || data.senderName || "Someone";
       const subject = data.subject || "New post";
       const text = data.text || "";
 
-      // נמענים = כל המשתמשים שה-communityName שלהם הוא ה-communityId (אצלך ה-id הוא השם)
+      // 1) כל המשתמשים בקהילה
       const usersSnap = await admin
           .firestore()
           .collection("users")
-          .where("communityName", "==", communityId)
+          .where("communityName", "==", communityId) // אצלך ה-id של הקהילה הוא השם שלה
           .get();
 
-      const recipientUids = usersSnap.docs.map((d) => d.id);
-      if (recipientUids.length === 0) return;
+      const allUids = usersSnap.docs.map((d) => d.id);
 
-      // אוסף טוקנים מכל המשתמשים
-      const tokens = [];
-      for (const uid of recipientUids) {
-        const tokSnap = await admin
+      // 2) מציאת ה-Uids של השולח לפי שם (ייתכן יותר מאחד אם יש כפל שמות)
+      let excludeUids = [];
+      if (senderName) {
+        const authorSnap = await admin
             .firestore()
             .collection("users")
-            .doc(uid)
-            .collection("fcmTokens")
+            .where("communityName", "==", communityId)
+            .where("userName", "==", senderName) // התאמה לפי שם המשתמש
             .get();
-        tokSnap.forEach((doc) => tokens.push(doc.id));
+        excludeUids = authorSnap.docs.map((d) => d.id);
       }
-      if (tokens.length === 0) return;
 
-      // הודעת דאטה – תתופעל בצד הקליינט
+      // נמענים = כל חברי הקהילה למעט מי ששמם תואם לשולח
+      const recipientUids = allUids.filter((uid) => !excludeUids.includes(uid));
+      if (!recipientUids.length) return;
+
+      // 3) אוספים טוקנים מכל הנמענים
+      const tokenSnaps = await Promise.all(
+          recipientUids.map((uid) =>
+            admin
+                .firestore()
+                .collection("users")
+                .doc(uid)
+                .collection("fcmTokens")
+                .get(),
+          ),
+      );
+      const tokens = [];
+      tokenSnaps.forEach((qs) => qs.forEach((doc) => tokens.push(doc.id)));
+      if (!tokens.length) return;
+
+      // 4) הודעת דאטה – תוצג בצד האנדרואיד ב-MyFirebaseMessagingService
       const baseMessage = {
         data: {
           type: "feed_post",
@@ -134,13 +178,13 @@ exports.onNewFeedPost = onDocumentCreated(
         android: {priority: "high"},
       };
 
-      // שליחה במנות + ניקוי טוקנים מתים
+      // 5) שליחה במנות + ניקוי טוקנים מתים
       const chunk = 500;
       for (let i = 0; i < tokens.length; i += chunk) {
-        const res = await admin.messaging().sendEachForMulticast({
-          tokens: tokens.slice(i, i + chunk),
-          ...baseMessage,
-        });
+        const slice = tokens.slice(i, i + chunk);
+        const res = await admin
+            .messaging()
+            .sendEachForMulticast({tokens: slice, ...baseMessage});
 
         res.responses.forEach((r, idx) => {
           if (
@@ -148,7 +192,7 @@ exports.onNewFeedPost = onDocumentCreated(
           r.error &&
           r.error.code === "messaging/registration-token-not-registered"
           ) {
-            const dead = tokens[i + idx];
+            const dead = slice[idx];
             recipientUids.forEach((uid) => {
               admin
                   .firestore()
