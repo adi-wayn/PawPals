@@ -26,4 +26,8 @@
     <string name="remove_friend">Remove Friend</string>
     <string name="added_to_friends">Added to your friends</string>
     <string name="removed_from_friends">Removed from your friends</string>
+    <string name="add_images">Add images</string>
+    <string name="dog_menu">Dog menu</string>
+    <string name="post_image">Post image</string>
+    <string name="delete_dog">Delete Dog</string>
 </resources>

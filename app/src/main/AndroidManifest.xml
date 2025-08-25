@@ -105,6 +105,9 @@
             android:name=".CommunitySettingsActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".AddDogActivity"
+            android:exported="false" />
 
 
 
