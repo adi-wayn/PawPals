@@ -54,5 +54,14 @@
             android:textSize="14sp"
             android:textColor="#333333"
             android:lineSpacingExtra="4dp" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/postImagesRv"
+            android:layout_width="match_parent"
+            android:layout_height="180dp"
+            android:visibility="gone"
+            android:overScrollMode="never"
+            android:nestedScrollingEnabled="false"/>
+
     </LinearLayout>
 </androidx.cardview.widget.CardView>

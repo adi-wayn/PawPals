@@ -1,6 +1,8 @@
 package com.example.pawpals;
 
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -9,6 +11,8 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.splashscreen.SplashScreen;
 
 import com.google.android.gms.tasks.Tasks;
@@ -19,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 
 import model.User;
 import model.firebase.Authentication.AuthHelper;
-import model.firebase.firestore.UserRepository;
+import model.firebase.Firestore.UserRepository;
 
 public class LauncherActivity extends AppCompatActivity {
     private static final String TAG = "LauncherActivity";
@@ -42,6 +46,18 @@ public class LauncherActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         // מסך רקע/Progress קטן כדי שלא יהיה לבן גם לפני splash API:
         setContentView(R.layout.activity_splash);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(
+                    this, android.Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(
+                        this,
+                        new String[]{android.Manifest.permission.POST_NOTIFICATIONS},
+                        1001
+                );
+            }
+        }
 
         // failsafe אחרי 8 שניות
         handler.postDelayed(failSafe, 8000);

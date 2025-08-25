@@ -1,5 +1,7 @@
 package com.example.pawpals;
 
+import static androidx.core.content.ContextCompat.startActivity;
+
 import android.content.Intent; // ⬅️ חדש
 import android.os.Bundle;
 import android.util.Pair;
@@ -15,14 +17,18 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.ListenerRegistration;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import model.CommunityAdapter;
 import model.User;
-import model.firebase.firestore.UserRepository;
+import model.firebase.Firestore.UserRepository;
 
 public class CommunitySearchActivity extends AppCompatActivity {
 
@@ -34,17 +40,21 @@ public class CommunitySearchActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
     private CommunityAdapter adapter;
-
     private ChipGroup filterChipGroup;
     private SearchView searchView;
     private CircularProgressIndicator progressBar;
-
     private UserRepository userRepo;
+    @Nullable private String selfId;
+    private final Set<String> myFriendIds = new HashSet<>();
+    @Nullable private ListenerRegistration friendReg;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search_dog_owner);
+
+        selfId = FirebaseAuth.getInstance().getUid();
 
         bindViews();
         setupRecycler();
@@ -54,6 +64,20 @@ public class CommunitySearchActivity extends AppCompatActivity {
 
         // Try to get community from intent (via currentUser)
         currentUser = getIntent().getParcelableExtra("currentUser");
+
+        if (selfId != null) {
+            friendReg = userRepo.observeFriendsIds(selfId, (qs, err) -> {
+                myFriendIds.clear();
+                if (err == null && qs != null) {
+                    for (DocumentSnapshot d : qs.getDocuments()) {
+                        myFriendIds.add(d.getId()); // כל דוק הוא friendId
+                    }
+                }
+                // מרעננים את הסינון הנוכחי כדי לשקף עדכון חברים
+                filterProfiles(searchView.getQuery() != null ? searchView.getQuery().toString() : "");
+            });
+        }
+
 
         String communityFromIntent = (currentUser != null) ? currentUser.getCommunityName() : null;
         if (communityFromIntent != null && !communityFromIntent.isEmpty()) {
@@ -140,11 +164,18 @@ public class CommunitySearchActivity extends AppCompatActivity {
     private void filterProfiles(String query) {
         final String lowerQuery = (query == null ? "" : query).toLowerCase(Locale.ROOT);
         final List<Integer> checkedChipIds = filterChipGroup.getCheckedChipIds();
+        final boolean requireFriend = checkedChipIds != null && checkedChipIds.contains(R.id.chipFriends);
 
         allUsers.clear();
         allIds.clear();
 
         for (Pair<String, User> row : masterRows) {
+            // דילוג על עצמי
+            if (selfId != null && selfId.equals(row.first)) continue;
+
+            // אם נבחר "חברים" – חייב להיות ברשימת החברים
+            if (requireFriend && !myFriendIds.contains(row.first)) continue;
+
             User user = row.second;
             if (user == null || user.getUserName() == null) continue;
 
@@ -153,8 +184,8 @@ public class CommunitySearchActivity extends AppCompatActivity {
 
             if (!passesChipFilters(user, checkedChipIds)) continue;
 
-            allUsers.add(row.second);
-            allIds.add(row.first); // שמירת ה-id באותו אינדקס
+            allUsers.add(user);
+            allIds.add(row.first);
         }
 
         adapter.updateData(allUsers);
@@ -167,13 +198,8 @@ public class CommunitySearchActivity extends AppCompatActivity {
         int dogCount = (user.getDogs() != null) ? user.getDogs().size() : 0;
 
         for (int id : checkedChipIds) {
-            if (id == R.id.chipTwoPlusDogs && dogCount < 2) {
-                return false;
-            } else if (id == R.id.chipOneDog && dogCount != 1) {
-                return false;
-            } else if (id == R.id.chipHasPuppies) {
-                // TODO: implement when "friends" relation exists
-            }
+            if (id == R.id.chipTwoPlusDogs && dogCount < 2) return false;
+            else if (id == R.id.chipOneDog && dogCount != 1) return false;
         }
         return true;
     }
@@ -206,5 +232,16 @@ public class CommunitySearchActivity extends AppCompatActivity {
             i.putExtra(OtherUserProfileActivity.EXTRA_OTHER_USER_ID, targetId);
             startActivity(i);
         }
+    }
+
+    @Override
+    protected void onStop() {
+        if (friendReg != null) { friendReg.remove(); friendReg = null; }
+        super.onStop();
+    }
+    @Override
+    protected void onDestroy() {
+        if (friendReg != null) { friendReg.remove(); friendReg = null; }
+        super.onDestroy();
     }
 }

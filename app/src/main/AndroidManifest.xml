@@ -1,10 +1,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+
+
+
+
 
     <application
         android:allowBackup="true"
@@ -16,12 +20,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.PawPals"
         tools:targetApi="31">
-
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/maps_api_key"/>
 
-        <!-- מסך פתיחה -->
+
         <activity
             android:name=".LauncherActivity"
             android:exported="true"
@@ -32,11 +35,8 @@
             </intent-filter>
         </activity>
 
-        <!-- >>> הוספנו: מסך הוספת כלב <<< -->
-        <activity
-            android:name="com.example.pawpals.AddDogActivity"
-            android:exported="false"
-            android:parentActivityName=".ProfileActivity" />
+
+
 
         <!-- Report Form Screen -->
         <activity
@@ -105,6 +105,9 @@
             android:name=".CommunitySettingsActivity"
             android:exported="false" />
 
+
+
+
         <service
             android:name="model.firebase.CloudMessaging.MyFirebaseMessagingService"
             android:exported="false">
@@ -113,5 +116,8 @@
             </intent-filter>
         </service>
 
+
     </application>
+
+
 </manifest>

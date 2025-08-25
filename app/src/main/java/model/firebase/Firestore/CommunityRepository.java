@@ -1,4 +1,6 @@
-package model.firebase.firestore;
+
+package model.firebase.Firestore;
+
 
 import android.util.Log;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -262,7 +264,11 @@ public class CommunityRepository {
                 .addOnSuccessListener(query -> {
                     List<Report> posts = new ArrayList<>();
                     for (DocumentSnapshot doc : query.getDocuments()) {
-                        posts.add(doc.toObject(Report.class));
+
+                        Report r = doc.toObject(Report.class);
+                        if (r != null) r.setId(doc.getId()); // ← חשוב ליציבות ה-Recycler
+                        posts.add(r);
+
                     }
                     callback.onSuccess(posts);
                 })
@@ -360,6 +366,7 @@ public class CommunityRepository {
                 });
     }
 
+
     // הדגל: האם פתוח להגיש מועמדות
     public void setManagerApplicationsOpen(String communityId, boolean open, FirestoreCallback cb) {
         db.collection("communities").document(communityId)
@@ -386,6 +393,38 @@ public class CommunityRepository {
         b.update(newU, "isManager", true);
 
         b.commit().addOnSuccessListener(v -> cb.onSuccess(communityId))
+                .addOnFailureListener(cb::onFailure);
+    }
+
+    // עדכון תמונה/ות בתוך דו"ח בתור
+    public void updateReportImages(String communityId, String reportId,
+                                   @androidx.annotation.Nullable String imageUrl,
+                                   @androidx.annotation.Nullable java.util.List<String> imageUrls,
+                                   FirestoreCallback cb) {
+        java.util.Map<String,Object> m = new java.util.HashMap<>();
+        if (imageUrl != null) m.put("imageUrl", imageUrl);
+        if (imageUrls != null) m.put("imageUrls", imageUrls);
+
+        db.collection("communities").document(communityId)
+                .collection("reports").document(reportId)
+                .update(m)
+                .addOnSuccessListener(v -> cb.onSuccess(reportId))
+                .addOnFailureListener(cb::onFailure);
+    }
+
+    // עדכון תמונה/ות בתוך פוסט בפיד (אם תשתמש בהכנסה ישירה לפיד)
+    public void updateFeedImages(String communityId, String postId,
+                                 @androidx.annotation.Nullable String imageUrl,
+                                 @androidx.annotation.Nullable java.util.List<String> imageUrls,
+                                 FirestoreCallback cb) {
+        java.util.Map<String,Object> m = new java.util.HashMap<>();
+        if (imageUrl != null) m.put("imageUrl", imageUrl);
+        if (imageUrls != null) m.put("imageUrls", imageUrls);
+
+        db.collection("communities").document(communityId)
+                .collection("feed").document(postId)
+                .update(m)
+                .addOnSuccessListener(v -> cb.onSuccess(postId))
                 .addOnFailureListener(cb::onFailure);
     }
 
@@ -438,8 +477,10 @@ public class CommunityRepository {
         void onFailure(Exception e);
     }
 
+
     public interface FirestoreBooleanCallback {
         void onSuccess(boolean value);
         void onFailure(Exception e);
     }
+
 }

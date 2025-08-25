@@ -1,5 +1,7 @@
 package com.example.pawpals;
 
+import static androidx.core.content.ContextCompat.startActivity;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
@@ -15,7 +17,7 @@ import java.util.List;
 import model.FeedAdapter;
 import model.Report;
 import model.User;
-import model.firebase.firestore.CommunityRepository;
+import model.firebase.Firestore.CommunityRepository;
 
 public class ManagerCommunityActivity extends AppCompatActivity {
 

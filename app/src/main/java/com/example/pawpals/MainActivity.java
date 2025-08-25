@@ -34,9 +34,10 @@ import java.util.Map;
 
 import model.User;
 import model.firebase.Authentication.AuthHelper;
-import model.firebase.firestore.CommunityRepository;
-import model.firebase.firestore.MapRepository;
-import model.firebase.firestore.UserRepository;
+import model.firebase.CloudMessaging.FcmTokenManager;
+import model.firebase.Firestore.CommunityRepository;
+import model.firebase.Firestore.MapRepository;
+import model.firebase.Firestore.UserRepository;
 import model.maps.MapController;
 
 public class MainActivity extends AppCompatActivity {
@@ -72,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
             userRepo.getUserById(userId, new UserRepository.FirestoreUserCallback() {
                 @Override
                 public void onSuccess(User user) {
+                    FcmTokenManager.registerCurrentToken();
                     TextView greetingText = findViewById(R.id.greetingText);
                     TextView statusBar = findViewById(R.id.statusBar);
 

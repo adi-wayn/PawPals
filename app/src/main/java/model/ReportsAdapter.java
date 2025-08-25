@@ -17,7 +17,8 @@ import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.List;
 
-import model.firebase.firestore.CommunityRepository;
+import model.firebase.Firestore.CommunityRepository;
+import model.firebase.Storage.StorageRepository;
 
 public class ReportsAdapter extends RecyclerView.Adapter<ReportsAdapter.ReportViewHolder> {
 
@@ -178,6 +179,18 @@ public class ReportsAdapter extends RecyclerView.Adapter<ReportsAdapter.ReportVi
 
             repo.deleteReport(communityId, reportId, new CommunityRepository.FirestoreCallback() {
                 @Override public void onSuccess(String ignored) {
+                    // מחיקה מה־Storage (best-effort)
+                    StorageRepository s = new StorageRepository();
+                    java.util.List<String> urls = new java.util.ArrayList<>();
+                    if (report.getImageUrl() != null) urls.add(report.getImageUrl());
+                    if (report.getImageUrls() != null) urls.addAll(report.getImageUrls());
+                    for (String u : urls) {
+                        s.deleteByUrl(u, new StorageRepository.SimpleCallback() {
+                            @Override public void onSuccess() { /* no-op */ }
+                            @Override public void onFailure(@NonNull Exception e) { /* swallow */ }
+                        });
+                    }
+
                     Toast.makeText(context, "Report rejected and deleted.", Toast.LENGTH_SHORT).show();
                     removeAt(adapterPos, report);
                 }

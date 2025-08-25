@@ -1,13 +1,11 @@
-package model.firebase.firestore;
+package model.firebase.Firestore;
 
 import android.util.Log;
 import android.util.Pair;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FieldValue;
@@ -23,58 +21,51 @@ import java.util.List;
 import java.util.Map;
 
 import model.CommunityManager;
-import model.Dog;
 import model.User;
+import model.Dog;
 
 public class UserRepository {
     private static final String TAG = "UserRepository";
-
-    // --- Collection / doc helpers ---
-    private static final String COL_USERS   = "users";
-    private static final String COL_DOGS    = "dogs";
-    private static final String COL_FRIENDS = "friends";
-
     private final FirebaseFirestore db;
+    private CollectionReference friendsCol(String uid) {
+        return db.collection("users").document(uid).collection("friends");
+    }
 
     public UserRepository() {
         db = FirebaseFirestore.getInstance();
     }
 
-    private CollectionReference usersCol() { return db.collection(COL_USERS); }
-    private DocumentReference userDoc(@NonNull String uid) { return usersCol().document(uid); }
-    private CollectionReference dogsCol(@NonNull String uid) { return userDoc(uid).collection(COL_DOGS); }
-    private DocumentReference dogDoc(@NonNull String uid, @NonNull String dogId) { return dogsCol(uid).document(dogId); }
-    private CollectionReference friendsCol(@NonNull String uid) { return userDoc(uid).collection(COL_FRIENDS); }
-
     // ===== Users =====
 
-    /** יצירת/עדכון פרופיל (merge כדי לא לדרוס שדות קיימים) */
+    // יצירת/עדכון פרופיל
     public void createUserProfile(String userId, User user, FirestoreCallback callback) {
         Map<String, Object> userMap = user.toMap();
-        usersCol()
+        db.collection("users")
                 .document(userId)
-                .set(userMap, SetOptions.merge())
+                .set(userMap)
                 .addOnSuccessListener(aVoid -> {
-                    Log.d(TAG, "User profile created/updated for: " + userId);
+                    Log.d(TAG, "User profile created for: " + userId);
                     callback.onSuccess(userId);
                 })
                 .addOnFailureListener(e -> {
-                    Log.w(TAG, "Error creating/updating user profile", e);
+                    Log.w(TAG, "Error creating user profile", e);
                     callback.onFailure(e);
                 });
     }
 
-    /** בדיקה אם משתמש קיים */
+    // בדיקה אם משתמש קיים
     public void checkIfUserProfileExists(String userId, FirestoreExistCallback callback) {
-        userDoc(userId)
+        db.collection("users")
+                .document(userId)
                 .get()
                 .addOnSuccessListener(snapshot -> callback.onResult(snapshot.exists()))
                 .addOnFailureListener(callback::onError);
     }
 
-    /** קבלת משתמש לפי ID (כולל contactDetails + fieldsOfInterest) */
+    // קבלת משתמש לפי ID (כולל contactDetails + fieldsOfInterest)
     public void getUserById(String userId, FirestoreUserCallback callback) {
-        userDoc(userId)
+        db.collection("users")
+                .document(userId)
                 .get()
                 .addOnSuccessListener(snapshot -> {
                     if (!snapshot.exists()) {
@@ -127,9 +118,9 @@ public class UserRepository {
                 });
     }
 
-    /** קבלת כל המשתמשים */
+    // קבלת כל המשתמשים
     public void getAllUsers(FirestoreUsersListCallback callback) {
-        usersCol()
+        db.collection("users")
                 .get()
                 .addOnSuccessListener(query -> {
                     List<User> users = new ArrayList<>();
@@ -141,9 +132,9 @@ public class UserRepository {
                 .addOnFailureListener(callback::onFailure);
     }
 
-    /** קבלת כל המנהלים */
+    // קבלת כל המנהלים
     public void getAllManagers(FirestoreUsersListCallback callback) {
-        usersCol()
+        db.collection("users")
                 .whereEqualTo("isManager", true)
                 .get()
                 .addOnSuccessListener(query -> {
@@ -156,9 +147,9 @@ public class UserRepository {
                 .addOnFailureListener(callback::onFailure);
     }
 
-    /** קבלת משתמשים לפי קהילה */
+    // קבלת משתמשים לפי קהילה
     public void getUsersByCommunity(String communityName, FirestoreUsersListCallback callback) {
-        usersCol()
+        db.collection("users")
                 .whereEqualTo("communityName", communityName)
                 .get()
                 .addOnSuccessListener(query -> {
@@ -171,9 +162,9 @@ public class UserRepository {
                 .addOnFailureListener(callback::onFailure);
     }
 
-    /** קבלת משתמשים לפי קהילה + מזהים */
+    // קבלת משתמשים לפי קהילה + מזהים (מהגרסת dev)
     public void getUsersByCommunityWithIds(String communityName, FirestoreUsersWithIdsCallback callback) {
-        usersCol()
+        db.collection("users")
                 .whereEqualTo("communityName", communityName)
                 .get()
                 .addOnSuccessListener(query -> {
@@ -189,9 +180,9 @@ public class UserRepository {
                 .addOnFailureListener(callback::onFailure);
     }
 
-    /** מפת userId->userName עבור קהילה */
+    // מפת userId->userName עבור קהילה
     public void getUserNamesByCommunity(String communityName, FirestoreUserNamesCallback callback) {
-        usersCol()
+        db.collection("users")
                 .whereEqualTo("communityName", communityName)
                 .get()
                 .addOnSuccessListener(query -> {
@@ -208,49 +199,19 @@ public class UserRepository {
                 .addOnFailureListener(callback::onFailure);
     }
 
-    // ===== Dogs (תת־אוסף תחת המשתמש) =====
+    // ===== Dogs (תת־אוסף תחת המשתמש) — מהגרסת profil-dog =====
 
-    /** יצירת כלב חדש תחת המשתמש (users/{userId}/dogs/{autoId}) + ownerUid + createdAt */
+    /** יצירת כלב חדש תחת המשתמש (users/{userId}/dogs/{autoId}) */
     public void addDogToUser(String userId, Dog dog, FirestoreCallback callback) {
         if (userId == null || userId.isEmpty()) {
             callback.onFailure(new IllegalArgumentException("userId is empty"));
             return;
         }
-        DocumentReference newDogRef = dogsCol(userId).document(); // autoId
-
-        Map<String, Object> data = (dog != null ? dog.toMap() : new HashMap<>());
-        if (data == null) data = new HashMap<>();
-        data.put("ownerUid", userId);
-        data.put("createdAt", FieldValue.serverTimestamp());
-
-        newDogRef.set(data, SetOptions.merge())
-                .addOnSuccessListener(v -> callback.onSuccess(newDogRef.getId()))
-                .addOnFailureListener(callback::onFailure);
-    }
-
-    /** גרסה טרנזאקציונית: מוסיף כלב ומגדיל dogsCount באטומיות (תיקון: base final) */
-    public void addDogToUserWithCounter(String userId, Dog dog, FirestoreCallback callback) {
-        if (userId == null || userId.isEmpty()) {
-            callback.onFailure(new IllegalArgumentException("userId is empty"));
-            return;
-        }
-        DocumentReference userRef = userDoc(userId);
-        DocumentReference dogRef  = dogsCol(userId).document();
-
-        // בונים מפה final מראש (למניעת "effectively final" שגיאה)
-        final Map<String, Object> base = new HashMap<>();
-        if (dog != null) {
-            Map<String, Object> dogMap = dog.toMap();
-            if (dogMap != null) base.putAll(dogMap);
-        }
-        base.put("ownerUid", userId);
-        base.put("createdAt", FieldValue.serverTimestamp());
-
-        db.runTransaction(trx -> {
-                    trx.set(dogRef, base, SetOptions.merge());
-                    trx.update(userRef, "dogsCount", FieldValue.increment(1));
-                    return dogRef.getId();
-                }).addOnSuccessListener(callback::onSuccess)
+        db.collection("users")
+                .document(userId)
+                .collection("dogs")
+                .add(dog.toMap())
+                .addOnSuccessListener(ref -> callback.onSuccess(ref.getId()))
                 .addOnFailureListener(callback::onFailure);
     }
 
@@ -260,31 +221,27 @@ public class UserRepository {
             callback.onFailure(new IllegalArgumentException("userId is empty"));
             return;
         }
-        dogsCol(userId)
+        db.collection("users")
+                .document(userId)
+                .collection("dogs")
                 .get()
                 .addOnSuccessListener(qs -> {
                     List<Dog> list = new ArrayList<>();
                     for (DocumentSnapshot d : qs.getDocuments()) {
+                        // בונים ידנית מתוך המפה כדי לתמוך בשדות nullable
                         Map<String, Object> m = d.getData();
                         Dog dog = new Dog();
                         if (m != null) {
-                            Object name = m.get("name");
-                            Object breed = m.get("breed");
+                            dog.setName((String) m.get("name"));
+                            dog.setBreed((String) m.get("breed"));
                             Object age = m.get("age");
+                            if (age instanceof Number) dog.setAge(((Number) age).intValue());
                             Object neut = m.get("neutered");
-                            Object personality = m.get("personality");
-                            Object mood = m.get("mood");
-                            Object notes = m.get("notes");
-                            Object photoUrl = m.get("photoUrl");
-
-                            if (name instanceof String) dog.setName((String) name);
-                            if (breed instanceof String) dog.setBreed((String) breed);
-                            if (age instanceof Number)  dog.setAge(((Number) age).intValue()); // ודאי setAge(Integer)
                             if (neut instanceof Boolean) dog.setNeutered((Boolean) neut);
-                            if (personality instanceof String) dog.setPersonality((String) personality);
-                            if (mood instanceof String) dog.setMood((String) mood);
-                            if (notes instanceof String) dog.setNotes((String) notes);
-                            if (photoUrl instanceof String) dog.setPhotoUrl((String) photoUrl);
+                            dog.setPersonality((String) m.get("personality"));
+                            dog.setMood((String) m.get("mood"));
+                            dog.setNotes((String) m.get("notes"));
+                            dog.setPhotoUrl((String) m.get("photoUrl"));
                         }
                         list.add(dog);
                     }
@@ -299,10 +256,11 @@ public class UserRepository {
             callback.onFailure(new IllegalArgumentException("userId/dogId is empty"));
             return;
         }
-        Map<String, Object> map = (dog != null ? dog.toMap() : new HashMap<>());
-        if (map == null) map = new HashMap<>();
-        dogDoc(userId, dogId)
-                .update(map)
+        db.collection("users")
+                .document(userId)
+                .collection("dogs")
+                .document(dogId)
+                .update(dog.toMap())
                 .addOnSuccessListener(aVoid -> callback.onSuccess(dogId))
                 .addOnFailureListener(callback::onFailure);
     }
@@ -313,13 +271,16 @@ public class UserRepository {
             callback.onFailure(new IllegalArgumentException("userId/dogId is empty"));
             return;
         }
-        dogDoc(userId, dogId)
+        db.collection("users")
+                .document(userId)
+                .collection("dogs")
+                .document(dogId)
                 .delete()
                 .addOnSuccessListener(aVoid -> callback.onSuccess(dogId))
                 .addOnFailureListener(callback::onFailure);
     }
 
-    // ===== Friends =====
+    // ===== Friends (מהגרסת dev) =====
 
     public void addFriend(String meUserId, String otherUserId, FirestoreCallback cb) {
         Map<String, Object> doc = new HashMap<>();
@@ -418,11 +379,13 @@ public class UserRepository {
         void onFailure(Exception e);
     }
 
+    // מהגרסת profil-dog
     public interface FirestoreDogsListCallback {
         void onSuccess(List<Dog> dogs);
         void onFailure(Exception e);
     }
 
+    // מהגרסת dev
     public interface FirestoreUsersWithIdsCallback {
         void onSuccess(List<Pair<String, User>> rows);
         void onFailure(Exception e);

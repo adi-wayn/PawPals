@@ -2,6 +2,7 @@ package com.example.pawpals;
 
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -16,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +25,7 @@ import java.util.List;
 import model.Message;
 import model.MessagesAdapter;
 import model.User;
-import model.firebase.firestore.CommunityRepository;
+import model.firebase.Firestore.CommunityRepository;
 
 public class ChatActivity extends AppCompatActivity {
 

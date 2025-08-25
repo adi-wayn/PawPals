@@ -1,5 +1,7 @@
 package com.example.pawpals;
 
+import static android.content.Intent.getIntent;
+
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -15,7 +17,7 @@ import java.util.List;
 import model.FeedAdapter;
 import model.Report;
 import model.User;
-import model.firebase.firestore.CommunityRepository;
+import model.firebase.Firestore.CommunityRepository;
 
 public class CommunityActivity extends AppCompatActivity {
 

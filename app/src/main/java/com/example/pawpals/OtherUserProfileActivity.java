@@ -23,7 +23,7 @@ import java.util.List;
 
 import model.Dog;
 import model.User;
-import model.firebase.firestore.UserRepository;
+import model.firebase.Firestore.UserRepository;
 
 public class OtherUserProfileActivity extends AppCompatActivity {
 
