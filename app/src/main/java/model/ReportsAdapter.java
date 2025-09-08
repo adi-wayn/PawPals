@@ -17,7 +17,7 @@ import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.List;
 
-import model.firebase.Firestore.CommunityRepository;
+import model.firebase.firestore.CommunityRepository;
 import model.firebase.Storage.StorageRepository;
 
 public class ReportsAdapter extends RecyclerView.Adapter<ReportsAdapter.ReportViewHolder> {
