@@ -27,9 +27,9 @@ import java.util.List;
 import model.Community;
 import model.CommunityManager;
 import model.User;
-import model.firebase.Firestore.CommunityRepository;
-import model.firebase.Firestore.MapRepository;
-import model.firebase.Firestore.UserRepository;
+import model.firebase.firestore.CommunityRepository;
+import model.firebase.firestore.MapRepository;
+import model.firebase.firestore.UserRepository;
 
 public class RegistrationDetailsActivity extends AppCompatActivity {
 

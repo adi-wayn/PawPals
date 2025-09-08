@@ -21,7 +21,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import model.Report;
 import model.SelectedImagesAdapter;
 import model.User;
-import model.firebase.Firestore.CommunityRepository;
+import model.firebase.firestore.CommunityRepository;
 import model.firebase.Storage.StorageRepository;
 
 public class ReportFormActivity extends AppCompatActivity {

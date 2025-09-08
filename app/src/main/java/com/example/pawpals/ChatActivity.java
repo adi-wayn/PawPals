@@ -25,7 +25,7 @@ import java.util.List;
 import model.Message;
 import model.MessagesAdapter;
 import model.User;
-import model.firebase.Firestore.CommunityRepository;
+import model.firebase.firestore.CommunityRepository;
 
 public class ChatActivity extends AppCompatActivity {
 

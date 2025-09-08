@@ -14,7 +14,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import model.Dog;
-import model.firebase.Firestore.UserRepository;
+import model.firebase.firestore.UserRepository;
 
 public class AddDogActivity extends AppCompatActivity {
 

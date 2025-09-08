@@ -27,7 +27,7 @@ import java.util.List;
 import model.Dog;
 import model.FriendsAdapter;
 import model.User;
-import model.firebase.Firestore.UserRepository;
+import model.firebase.firestore.UserRepository;
 
 /**
  * ProfileActivity – מסך פרופיל משתמש (שלי או של משתמש אחר)
