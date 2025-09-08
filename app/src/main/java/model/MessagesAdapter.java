@@ -5,8 +5,10 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
@@ -18,19 +20,26 @@ import com.google.android.material.card.MaterialCardView;
 import java.util.ArrayList;
 import java.util.List;
 
-import model.Message;
+import model.firebase.firestore.CommunityRepository;
 
 public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.MessageViewHolder> {
 
     private List<Message> messageList;
     private final String currentUserId;
     private final Context context;
+    private final CommunityRepository repo;
+    private final String communityId;
+    private final boolean isManager;
 
-    public MessagesAdapter(List<Message> messageList, String currentUserId, Context context) {
+    public MessagesAdapter(List<Message> messageList, String currentUserId, Context context,
+                           String communityId, boolean isManager) {
         // כדי להימנע מ-NullPointer ולתמוך בהוספות דינמיות
         this.messageList = (messageList != null) ? messageList : new ArrayList<>();
         this.currentUserId = currentUserId;
         this.context = context;
+        this.communityId = communityId;
+        this.isManager = isManager;
+        this.repo = new CommunityRepository();
     }
 
     @NonNull
@@ -62,6 +71,35 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Messag
                 isOutgoing ? android.R.color.white : android.R.color.black);
         holder.textMessageBody.setTextColor(textColor);
 
+        // כפתור מחיקה - זמין רק למנהל
+        if (isManager) {
+            holder.buttonDelete.setVisibility(View.VISIBLE);
+            holder.buttonDelete.setOnClickListener(v -> {
+                if (msg.getId() == null || msg.getId().isEmpty()) {
+                    Toast.makeText(context, "Cannot delete: missing message id", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                int adapterPos = holder.getAdapterPosition();
+                if (adapterPos == RecyclerView.NO_POSITION) return;
+
+                repo.deleteMessage(communityId, msg.getId(), new CommunityRepository.FirestoreCallback() {
+                    @Override
+                    public void onSuccess(String ignored) {
+                        Toast.makeText(context, "Message deleted", Toast.LENGTH_SHORT).show();
+                        messageList.remove(adapterPos);
+                        notifyItemRemoved(adapterPos);
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        Toast.makeText(context, "Delete failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                });
+            });
+        } else {
+            holder.buttonDelete.setVisibility(View.GONE);
+        }
+
         // (אופציונלי) לחיצה ארוכה להעתקה
         holder.itemView.setOnLongClickListener(v -> {
             // אפשר להוסיף כאן העתקה ללוח/תפריט
@@ -92,6 +130,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Messag
         TextView textSenderName;            // text_sender_name
         MaterialCardView bubble;            // bubble
         TextView textMessageBody;           // text_message_body
+        ImageButton buttonDelete;           // כפתור מחיקה
 
         public MessageViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -99,6 +138,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Messag
             textSenderName = itemView.findViewById(R.id.text_sender_name);
             bubble = itemView.findViewById(R.id.bubble);
             textMessageBody = itemView.findViewById(R.id.text_message_body);
+            buttonDelete = itemView.findViewById(R.id.button_delete_message); // עכשיו מוגדר כ-ImageButton
         }
     }
 }

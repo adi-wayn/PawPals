@@ -82,16 +82,18 @@ public class ChatActivity extends AppCompatActivity {
         lm.setStackFromEnd(true); // הצגת הצ'אט מלמטה
         recyclerView.setLayoutManager(lm);
 
-        adapter = new MessagesAdapter(messages, currentUserId, this);
-        recyclerView.setAdapter(adapter);
 
-        // --- 4) השגת ה-communityId לפי שם הקהילה ואז התחלת טעינה/האזנה ---
+
         repo.getCommunityIdByName(communityName, new CommunityRepository.FirestoreIdCallback() {
             @Override
             public void onSuccess(String id) {
                 communityId = id;
-                loadMessagesAndListen(); // אחרי שיש ID אמיתי
+                adapter = new MessagesAdapter(messages, currentUserId, ChatActivity.this, communityId, currentUser.isManager());
+                recyclerView.setAdapter(adapter);
+
+                loadMessagesAndListen();
             }
+
 
             @Override
             public void onFailure(Exception e) {
@@ -101,6 +103,7 @@ public class ChatActivity extends AppCompatActivity {
                 finish();
             }
         });
+
 
         // --- 5) שליחה (כפתור או מקש Send במקלדת) ---
         btnSend.setOnClickListener(v -> sendMessageViaRepo());
