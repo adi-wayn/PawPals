@@ -8,6 +8,7 @@ import androidx.annotation.Nullable;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FieldPath;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import model.CommunityManager;
 import model.User;
@@ -26,6 +28,8 @@ import model.Dog;
 
 public class UserRepository {
     private static final String TAG = "UserRepository";
+    private static final int WHERE_IN_MAX = 10;
+
     private final FirebaseFirestore db;
     private CollectionReference friendsCol(String uid) {
         return db.collection("users").document(uid).collection("friends");
@@ -35,16 +39,30 @@ public class UserRepository {
         db = FirebaseFirestore.getInstance();
     }
 
+    // ===== Utils =====
+
+    private static <T> List<List<T>> chunk(List<T> src, int size) {
+        List<List<T>> out = new ArrayList<>();
+        if (src == null || src.isEmpty() || size <= 0) return out;
+        for (int i = 0; i < src.size(); i += size) {
+            out.add(new ArrayList<>(src.subList(i, Math.min(i + size, src.size()))));
+        }
+        return out;
+    }
+
     // ===== Users =====
 
     // יצירת/עדכון פרופיל
     public void createUserProfile(String userId, User user, FirestoreCallback callback) {
         Map<String, Object> userMap = user.toMap();
+        // נשמור גם את ה-uid במסמך (נוח לצריכה)
+        userMap.put("uid", userId);
+
         db.collection("users")
                 .document(userId)
-                .set(userMap)
+                .set(userMap, SetOptions.merge())
                 .addOnSuccessListener(aVoid -> {
-                    Log.d(TAG, "User profile created for: " + userId);
+                    Log.d(TAG, "User profile created/updated for: " + userId);
                     callback.onSuccess(userId);
                 })
                 .addOnFailureListener(e -> {
@@ -62,7 +80,7 @@ public class UserRepository {
                 .addOnFailureListener(callback::onError);
     }
 
-    // קבלת משתמש לפי ID (כולל contactDetails + fieldsOfInterest)
+    // קבלת משתמש לפי ID (כולל contactDetails + fieldsOfInterest + friendsIds + uid)
     public void getUserById(String userId, FirestoreUserCallback callback) {
         db.collection("users")
                 .document(userId)
@@ -106,11 +124,25 @@ public class UserRepository {
                         }
                     }
 
-                    if (user != null) {
-                        callback.onSuccess(user);
-                    } else {
+                    if (user == null) {
                         callback.onFailure(new Exception("Failed to parse user data"));
+                        return;
                     }
+
+                    // קבע UID באובייקט (גם אם שמור בשדה)
+                    user.setUid(snapshot.getId());
+
+                    // פריסת friendsIds בבטחה (יכול להיות null / לא קיים / לא רשימה)
+                    Object f = snapshot.get("friendsIds");
+                    if (f instanceof List) {
+                        @SuppressWarnings("unchecked")
+                        List<String> lst = (List<String>) f;
+                        user.setFriendsIds(new ArrayList<>(lst));
+                    } else {
+                        user.setFriendsIds(new ArrayList<>());
+                    }
+
+                    callback.onSuccess(user);
                 })
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Firestore access failure", e);
@@ -125,7 +157,12 @@ public class UserRepository {
                 .addOnSuccessListener(query -> {
                     List<User> users = new ArrayList<>();
                     for (DocumentSnapshot doc : query.getDocuments()) {
-                        users.add(doc.toObject(User.class));
+                        User u = doc.toObject(User.class);
+                        if (u != null) {
+                            u.setUid(doc.getId());
+                            // friendsIds לא ייקבע אוטומטית ע"י toObject אם חסר; נשאיר ככה
+                            users.add(u);
+                        }
                     }
                     callback.onSuccess(users);
                 })
@@ -140,7 +177,11 @@ public class UserRepository {
                 .addOnSuccessListener(query -> {
                     List<User> managers = new ArrayList<>();
                     for (DocumentSnapshot doc : query.getDocuments()) {
-                        managers.add(doc.toObject(CommunityManager.class));
+                        User u = doc.toObject(CommunityManager.class);
+                        if (u != null) {
+                            u.setUid(doc.getId());
+                            managers.add(u);
+                        }
                     }
                     callback.onSuccess(managers);
                 })
@@ -155,7 +196,11 @@ public class UserRepository {
                 .addOnSuccessListener(query -> {
                     List<User> members = new ArrayList<>();
                     for (DocumentSnapshot doc : query.getDocuments()) {
-                        members.add(doc.toObject(User.class));
+                        User u = doc.toObject(User.class);
+                        if (u != null) {
+                            u.setUid(doc.getId());
+                            members.add(u);
+                        }
                     }
                     callback.onSuccess(members);
                 })
@@ -172,6 +217,7 @@ public class UserRepository {
                     for (DocumentSnapshot doc : query.getDocuments()) {
                         User u = doc.toObject(User.class);
                         if (u != null) {
+                            u.setUid(doc.getId());
                             rows.add(new Pair<>(doc.getId(), u)); // userId + האובייקט
                         }
                     }
@@ -199,7 +245,36 @@ public class UserRepository {
                 .addOnFailureListener(callback::onFailure);
     }
 
-    // ===== Dogs (תת־אוסף תחת המשתמש) — מהגרסת profil-dog =====
+    // === חדש: קבלת משתמשים לפי רשימת IDs (עם chunking עד 10 בכל whereIn)
+    public void getUsersByIds(List<String> ids, FirestoreUsersListCallback cb) {
+        if (ids == null || ids.isEmpty()) { cb.onSuccess(new ArrayList<>()); return; }
+
+        List<List<String>> parts = chunk(ids, WHERE_IN_MAX);
+        List<User> acc = new ArrayList<>();
+        AtomicInteger pending = new AtomicInteger(parts.size());
+
+        for (List<String> part : parts) {
+            db.collection("users")
+                    .whereIn(FieldPath.documentId(), part)
+                    .get()
+                    .addOnSuccessListener(snap -> {
+                        for (DocumentSnapshot doc : snap.getDocuments()) {
+                            User u = doc.toObject(User.class);
+                            if (u != null) {
+                                u.setUid(doc.getId());
+                                acc.add(u);
+                            }
+                        }
+                        if (pending.decrementAndGet() == 0) cb.onSuccess(acc);
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e(TAG, "getUsersByIds part failed", e);
+                        if (pending.decrementAndGet() == 0) cb.onSuccess(acc); // אפשר גם cb.onFailure(e) אם רוצים להכשיל
+                    });
+        }
+    }
+
+    // ===== Dogs (תת־אוסף תחת המשתמש) =====
 
     /** יצירת כלב חדש תחת המשתמש (users/{userId}/dogs/{autoId}) */
     public void addDogToUser(String userId, Dog dog, FirestoreCallback callback) {
@@ -228,7 +303,6 @@ public class UserRepository {
                 .addOnSuccessListener(qs -> {
                     List<Dog> list = new ArrayList<>();
                     for (DocumentSnapshot d : qs.getDocuments()) {
-                        // בונים ידנית מתוך המפה כדי לתמוך בשדות nullable
                         Map<String, Object> m = d.getData();
                         Dog dog = new Dog();
                         if (m != null) {
@@ -280,22 +354,46 @@ public class UserRepository {
                 .addOnFailureListener(callback::onFailure);
     }
 
-    // ===== Friends (מהגרסת dev) =====
+    // ===== Friends =====
+    // נשמר גם בתת-האסופה users/{uid}/friends/{friendUid}
+    // וגם במערך friendsIds במסמך המשתמש (נוח לקריאות מרוכזות ולטעינה מהירה)
 
     public void addFriend(String meUserId, String otherUserId, FirestoreCallback cb) {
+        if (meUserId == null || meUserId.isEmpty() || otherUserId == null || otherUserId.isEmpty()) {
+            cb.onFailure(new IllegalArgumentException("meUserId/otherUserId is empty"));
+            return;
+        }
+
         Map<String, Object> doc = new HashMap<>();
         doc.put("createdAt", FieldValue.serverTimestamp());
 
         friendsCol(meUserId).document(otherUserId)
                 .set(doc, SetOptions.merge())
-                .addOnSuccessListener(v -> cb.onSuccess(otherUserId)) // מחזירים את ה-friendId
+                .addOnSuccessListener(v -> {
+                    // עדכני גם את מערך friendsIds במסמך
+                    db.collection("users").document(meUserId)
+                            .update("friendsIds", FieldValue.arrayUnion(otherUserId))
+                            .addOnSuccessListener(vv -> cb.onSuccess(otherUserId))
+                            .addOnFailureListener(cb::onFailure);
+                })
                 .addOnFailureListener(cb::onFailure);
     }
 
     public void removeFriend(String meUserId, String otherUserId, FirestoreCallback cb) {
+        if (meUserId == null || meUserId.isEmpty() || otherUserId == null || otherUserId.isEmpty()) {
+            cb.onFailure(new IllegalArgumentException("meUserId/otherUserId is empty"));
+            return;
+        }
+
         friendsCol(meUserId).document(otherUserId)
                 .delete()
-                .addOnSuccessListener(v -> cb.onSuccess(otherUserId))
+                .addOnSuccessListener(v -> {
+                    // עדכני גם את מערך friendsIds במסמך
+                    db.collection("users").document(meUserId)
+                            .update("friendsIds", FieldValue.arrayRemove(otherUserId))
+                            .addOnSuccessListener(vv -> cb.onSuccess(otherUserId))
+                            .addOnFailureListener(cb::onFailure);
+                })
                 .addOnFailureListener(cb::onFailure);
     }
 
@@ -319,6 +417,7 @@ public class UserRepository {
                 .addSnapshotListener(listener);
     }
 
+    // קבלת רשימת חברים כ-Users, עם טעינה מרוכזת
     public ListenerRegistration observeFriendsUsers(String uid, FirestoreUsersListCallback cb) {
         return observeFriendsIds(uid, (qs, err) -> {
             if (err != null) { cb.onFailure(err); return; }
@@ -327,29 +426,24 @@ public class UserRepository {
                 return;
             }
 
-            // אוספים את ה־IDs
             List<String> ids = new ArrayList<>();
             for (DocumentSnapshot d : qs) ids.add(d.getId());
 
-            // מושכים את המשתמשים לפי IDs
-            List<User> out = new ArrayList<>();
-            final int total = ids.size();
-            final int[] left = { total };
-            if (total == 0) { cb.onSuccess(out); return; }
-
-            for (String id : ids) {
-                getUserById(id, new FirestoreUserCallback() {
-                    @Override public void onSuccess(User u) {
-                        if (u != null) out.add(u);
-                        if (--left[0] == 0) cb.onSuccess(out);
-                    }
-                    @Override public void onFailure(Exception e) {
-                        // מתעלמים משגיאה נקודתית; סוגרים כשסיימנו את כולם
-                        if (--left[0] == 0) cb.onSuccess(out);
-                    }
-                });
-            }
+            // טעינה מרוכזת במקום N קריאות
+            getUsersByIds(ids, cb);
         });
+    }
+
+    // שליפה חד-פעמית של מזהי חברים מתוך תת-האוסף
+    public void getFriendIdsOnce(String uid, FirestoreIdsListCallback cb) {
+        friendsCol(uid).orderBy("createdAt", Query.Direction.DESCENDING)
+                .get()
+                .addOnSuccessListener(q -> {
+                    List<String> ids = new ArrayList<>();
+                    for (DocumentSnapshot d : q) ids.add(d.getId());
+                    cb.onSuccess(ids);
+                })
+                .addOnFailureListener(cb::onFailure);
     }
 
     // === ממשקי callback ===
@@ -379,15 +473,18 @@ public class UserRepository {
         void onFailure(Exception e);
     }
 
-    // מהגרסת profil-dog
     public interface FirestoreDogsListCallback {
         void onSuccess(List<Dog> dogs);
         void onFailure(Exception e);
     }
 
-    // מהגרסת dev
     public interface FirestoreUsersWithIdsCallback {
         void onSuccess(List<Pair<String, User>> rows);
+        void onFailure(Exception e);
+    }
+
+    public interface FirestoreIdsListCallback {
+        void onSuccess(List<String> ids);
         void onFailure(Exception e);
     }
 }
