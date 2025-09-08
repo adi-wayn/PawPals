@@ -30,4 +30,8 @@
     <string name="dog_menu">Dog menu</string>
     <string name="post_image">Post image</string>
     <string name="delete_dog">Delete Dog</string>
+    <string name="desc_next">Next</string>
+    <string name="friend_name_placeholder">Friend name</string>
+    <string name="friend_subtitle_placeholder">Community / contact</string>
+
 </resources>

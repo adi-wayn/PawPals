@@ -1,5 +1,6 @@
 package com.example.pawpals;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -24,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import model.Dog;
+import model.FriendsAdapter;
 import model.User;
 import model.firebase.Firestore.UserRepository;
 
@@ -194,7 +196,10 @@ public class ProfileActivity extends AppCompatActivity {
 
     private void setupFriendsList() {
         friendsRecycler.setLayoutManager(new LinearLayoutManager(this));
-        friendsAdapter = new model.CommunityAdapter(friends);
+
+        // ✅ החלפה ל-FriendsAdapter החדש
+        friendsAdapter = new FriendsAdapter(this, friends, FriendsAdapter.defaultNavigator(this));
+
         friendsRecycler.setAdapter(friendsAdapter);
 
         // אם יש לנו friendsIds על המשתמש שמוצג – נטען לפיהם
@@ -274,6 +279,7 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     /** רינדור + קליק על כרטיס כלב -> מסך פרטים */
+    @SuppressLint("MissingInflatedId")
     private void renderDogs(@Nullable List<Dog> dogs) {
         if (dogsContainer == null) {
             Log.e(TAG, "dogsContainer is null. בדקי את activity_profile_view.xml (id: dogs_container)");
