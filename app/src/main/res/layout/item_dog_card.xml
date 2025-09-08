@@ -1,12 +1,17 @@
 <!-- res/layout/item_dog_card.xml -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:gravity="center_vertical"
-    android:padding="8dp">
+    android:padding="12dp"
+    android:layout_marginVertical="4dp"
+
+    android:clickable="true"
+    android:focusable="true"
+    android:minHeight="?attr/listPreferredItemHeightSmall"
+    android:background="?attr/selectableItemBackground">
 
     <ImageView
         android:id="@+id/dog_profile_picture"
@@ -28,8 +33,8 @@
             android:id="@+id/dog_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="?attr/textAppearanceSubtitle1"
             android:textStyle="bold"
+            android:textAppearance="?attr/textAppearanceSubtitle1"
             tools:text="Rex" />
 
         <TextView
@@ -39,22 +44,13 @@
             android:textAppearance="?attr/textAppearanceBody2"
             tools:text="German Shepherd" />
 
-        <!-- גיל הכלב -->
         <TextView
             android:id="@+id/dog_age"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="?attr/textAppearanceBody2"
             android:layout_marginTop="2dp"
+            android:textAppearance="?attr/textAppearanceBody2"
             tools:text="Age: 3" />
     </LinearLayout>
 
-    <!-- כפתור תפריט (שלוש נקודות) -->
-    <ImageButton
-        android:id="@+id/btn_dog_menu"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:contentDescription="@string/dog_menu"
-        app:srcCompat="@drawable/ic_more_vert" />
 </LinearLayout>

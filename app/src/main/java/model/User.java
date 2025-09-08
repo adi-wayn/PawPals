@@ -15,8 +15,14 @@ import java.util.Map;
 @IgnoreExtraProperties
 public class User implements Parcelable {
 
+    // מזהה המסמך/משתמש (נוח שיהיה גם בשדה במסמך; אם אין לך צורך – אפשר להשמיט מה-toMap)
+    private String uid;
+
     private String userName;
     private String communityName;
+
+    // רשימת מזהי חברים (UIDs)
+    private ArrayList<String> friendsIds;
 
     // נכתוב את הכלבים גם ל-Firestore כשנרצה (אין @Exclude)
     private ArrayList<Dog> dogs;
@@ -27,8 +33,10 @@ public class User implements Parcelable {
     private String contactDetails;
     private String fieldsOfInterest;
 
+    // ====== בנאים ======
     public User() {
         this.dogs = new ArrayList<>();
+        this.friendsIds = new ArrayList<>();
         this.isManager = false;
     }
 
@@ -36,16 +44,30 @@ public class User implements Parcelable {
         this.userName = userName;
         this.communityName = communityName;
         this.dogs = new ArrayList<>();
+        this.friendsIds = new ArrayList<>();
         this.isManager = false;
         this.contactDetails = contactDetails;
         this.fieldsOfInterest = fieldsOfInterest;
     }
 
     protected User(Parcel in) {
+        uid = in.readString();
         userName = in.readString();
         communityName = in.readString();
+
+        // friendsIds
+        int fSize = in.readInt();
+        if (fSize >= 0) {
+            friendsIds = new ArrayList<>(fSize);
+            for (int i = 0; i < fSize; i++) friendsIds.add(in.readString());
+        } else {
+            friendsIds = new ArrayList<>();
+        }
+
+        // dogs
         dogs = in.createTypedArrayList(Dog.CREATOR);
         if (dogs == null) dogs = new ArrayList<>();
+
         isManager = in.readByte() != 0;
         contactDetails = in.readString();
         fieldsOfInterest = in.readString();
@@ -56,7 +78,12 @@ public class User implements Parcelable {
         @Override public User[] newArray(int size) { return new User[size]; }
     };
 
-    // ----- Getters/Setters -----
+    // ====== Getters / Setters ======
+
+    @PropertyName("uid")
+    public String getUid() { return uid; }
+    @PropertyName("uid")
+    public void setUid(String uid) { this.uid = uid; }
 
     @PropertyName("userName")
     public String getUserName() { return userName; }
@@ -67,6 +94,30 @@ public class User implements Parcelable {
     public String getCommunityName() { return communityName; }
     @PropertyName("communityName")
     public void setCommunityName(String communityName) { this.communityName = communityName; }
+
+    @PropertyName("friendsIds")
+    public ArrayList<String> getFriendsIds() {
+        if (friendsIds == null) friendsIds = new ArrayList<>();
+        return friendsIds;
+    }
+    @PropertyName("friendsIds")
+    public void setFriendsIds(ArrayList<String> friendsIds) { this.friendsIds = friendsIds; }
+
+    public void addFriend(String friendUid) {
+        if (friendUid == null || friendUid.isEmpty()) return;
+        ArrayList<String> list = getFriendsIds();
+        if (!list.contains(friendUid)) list.add(friendUid);
+    }
+
+    public void removeFriend(String friendUid) {
+        if (friendUid == null) return;
+        ArrayList<String> list = getFriendsIds();
+        list.remove(friendUid);
+    }
+
+    public boolean hasFriend(String friendUid) {
+        return friendUid != null && getFriendsIds().contains(friendUid);
+    }
 
     @PropertyName("dogs")
     public ArrayList<Dog> getDogs() {
@@ -92,13 +143,23 @@ public class User implements Parcelable {
     @PropertyName("fieldsOfInterest")
     public void setFieldsOfInterest(String fieldsOfInterest) { this.fieldsOfInterest = fieldsOfInterest; }
 
-    // ----- סיריאליזציה למפה -----
-    /** ברירת מחדל: בלי כלבים (כמו שהיה) */
+    // ====== סיריאליזציה למפה ======
+    /** ברירת מחדל: בלי כלבים; כן נוסיף friendsIds ו־uid אם קיימים */
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>();
+        if (uid != null && !uid.isEmpty()) map.put("uid", uid);
         map.put("userName", userName);
         map.put("communityName", communityName);
         map.put("isManager", isManager);
+
+        // רשימת חברים
+        if (friendsIds != null && !friendsIds.isEmpty()) {
+            map.put("friendsIds", new ArrayList<>(friendsIds));
+        } else {
+            // אם חשוב שתמיד יהיה שדה:
+            // map.put("friendsIds", new ArrayList<String>());
+        }
+
         if (contactDetails != null && !contactDetails.isEmpty()) map.put("contactDetails", contactDetails);
         if (fieldsOfInterest != null && !fieldsOfInterest.isEmpty()) map.put("fieldsOfInterest", fieldsOfInterest);
         return map;
@@ -117,17 +178,26 @@ public class User implements Parcelable {
             }
             if (!dogsList.isEmpty()) map.put("dogs", dogsList);
         } else {
-            // אם חשוב שתמיד יהיה שדה, אפשר לשים רשימה ריקה:
+            // אם חשוב שתמיד יהיה שדה:
             // map.put("dogs", new ArrayList<>());
         }
         return map;
     }
 
-    // ----- Parcelable -----
+    // ====== Parcelable ======
     @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
+        dest.writeString(uid);
         dest.writeString(userName);
         dest.writeString(communityName);
+
+        // friendsIds
+        ArrayList<String> f = getFriendsIds();
+        dest.writeInt(f != null ? f.size() : -1);
+        if (f != null) {
+            for (String s : f) dest.writeString(s);
+        }
+
         dest.writeTypedList(dogs);
         dest.writeByte((byte) (isManager ? 1 : 0));
         dest.writeString(contactDetails);
@@ -141,8 +211,10 @@ public class User implements Parcelable {
     @Override
     public String toString() {
         return "User{" +
-                "userName='" + userName + '\'' +
+                "uid='" + uid + '\'' +
+                ", userName='" + userName + '\'' +
                 ", communityName='" + communityName + '\'' +
+                ", friendsIds=" + (friendsIds != null ? friendsIds.size() : 0) +
                 ", dogs=" + (dogs != null ? dogs.size() : 0) +
                 ", isManager=" + isManager +
                 ", contactDetails='" + contactDetails + '\'' +

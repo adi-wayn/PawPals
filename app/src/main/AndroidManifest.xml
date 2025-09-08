@@ -1,14 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Permissions -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-
-
-
-
-
 
     <application
         android:allowBackup="true"
@@ -20,11 +17,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.PawPals"
         tools:targetApi="31">
+
+        <!-- Google Maps API key -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/maps_api_key"/>
 
-
+        <!-- Launcher -->
         <activity
             android:name=".LauncherActivity"
             android:exported="true"
@@ -35,82 +34,31 @@
             </intent-filter>
         </activity>
 
+        <!-- Activities -->
+        <activity android:name=".ReportFormActivity" android:exported="false" />
+        <activity android:name=".ProfileActivity" android:exported="false" />
+        <activity android:name=".MainActivity" android:exported="false" />
+        <activity android:name=".SettingsActivity" android:exported="false" />
+        <activity android:name=".CommunityActivity" android:exported="false"/>
+        <activity android:name=".ReportMapActivity" android:exported="false"/>
+        <activity android:name=".CommunitySearchActivity" android:exported="false"/>
+        <activity android:name=".ChatActivity" android:exported="false"/>
+        <activity android:name=".RegistrationDetailsActivity" android:exported="false"/>
+        <activity android:name=".LoginActivity" android:exported="false"/>
+        <activity android:name=".RegisterActivity" android:exported="false"/>
+        <activity android:name=".ManagerCommunityActivity" android:exported="false"/>
+        <activity android:name=".ReportsListActivity" android:exported="false"/>
+        <activity android:name=".WritePostManagerActivity" android:exported="false"/>
+        <activity android:name=".OtherUserProfileActivity" android:exported="false" />
+        <activity android:name=".CommunitySettingsActivity" android:exported="false" />
+        <activity android:name=".AddDogActivity" android:exported="false" />
 
-
-
-        <!-- Report Form Screen -->
+        <!-- ✅ נוספה ההכרזה למסך פרטי כלב -->
         <activity
-            android:name=".ReportFormActivity"
+            android:name=".DogDetailsActivity"
             android:exported="false" />
 
-        <!-- Profile Screen -->
-        <activity
-            android:name=".ProfileActivity"
-            android:exported="false" />
-
-        <!-- Main Screen -->
-        <activity
-            android:name=".MainActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".SettingsActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".CommunityActivity"
-            android:exported="false"/>
-
-        <activity
-            android:name=".ReportMapActivity"
-            android:exported="false"/>
-
-        <activity
-            android:name=".CommunitySearchActivity"
-            android:exported="false"/>
-
-        <activity
-            android:name=".ChatActivity"
-            android:exported="false"/>
-
-        <activity
-            android:name=".RegistrationDetailsActivity"
-            android:exported="false"/>
-
-        <activity
-            android:name=".LoginActivity"
-            android:exported="false"/>
-
-        <activity
-            android:name=".RegisterActivity"
-            android:exported="false"/>
-
-        <activity
-            android:name=".ManagerCommunityActivity"
-            android:exported="false"/>
-
-        <activity
-            android:name=".ReportsListActivity"
-            android:exported="false"/>
-
-        <activity
-            android:name=".WritePostManagerActivity"
-            android:exported="false"/>
-
-        <activity
-            android:name=".OtherUserProfileActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".CommunitySettingsActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".AddDogActivity"
-            android:exported="false" />
-
-
-
+        <!-- Firebase Messaging service -->
         <service
             android:name="model.firebase.CloudMessaging.MyFirebaseMessagingService"
             android:exported="false">
@@ -119,8 +67,5 @@
             </intent-filter>
         </service>
 
-
     </application>
-
-
 </manifest>
