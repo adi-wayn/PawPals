@@ -2,12 +2,15 @@
     <string name="app_name">PawPals</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
+
+    <!-- User / Profile -->
     <string name="profile_picture">User Profile Picture</string>
-    <string name="dogs">Dogs</string>
-    <string name="user_community">Your community is </string>
-    <string name="in_the_same_community">In the same community </string>
-    <string name="not_in_community">Not in the same community</string>
+    <string name="user_avatar">User avatar</string> <!-- ✅ נוסף -->
     <string name="user_name_placeholder">User Name</string>
+    <string name="username">Username</string> <!-- ✅ נוסף -->
+
+    <!-- Dogs -->
+    <string name="dogs">Dogs</string>
     <string name="dog_picture">Dog picture</string>
     <string name="dog_name_placeholder">Dog Name</string>
     <string name="dog_age_placeholder">Age: 3 years</string>
@@ -20,26 +23,39 @@
     <string name="mood_placeholder">Happy</string>
     <string name="notes">Notes</string>
     <string name="notes_placeholder">Loves to play fetch. Good with other dogs.</string>
-    <string name="add_dog" />
+    <string name="delete_dog">Delete Dog</string>
     <string name="no_dogs_to_show">No dogs to show.</string>
+    <string name="dog_menu">Dog menu</string>
+
+    <!-- Community -->
+    <string name="user_community">Your community is </string>
+    <string name="in_the_same_community">In the same community </string>
+    <string name="not_in_community">Not in the same community</string>
     <string name="add_friend">Add Friend</string>
     <string name="remove_friend">Remove Friend</string>
     <string name="added_to_friends">Added to your friends</string>
     <string name="removed_from_friends">Removed from your friends</string>
-    <string name="add_images">Add images</string>
-    <string name="dog_menu">Dog menu</string>
-    <string name="post_image">Post image</string>
-    <string name="delete_dog">Delete Dog</string>
-    <string name="desc_next">Next</string>
     <string name="friend_name_placeholder">Friend name</string>
     <string name="friend_subtitle_placeholder">Community / contact</string>
+
+    <!-- Posts / Reports -->
+    <string name="post_image">Post image</string>
+    <string name="post_type">Post type</string> <!-- ✅ נוסף -->
+    <string name="post_subject">Post subject</string> <!-- ✅ נוסף -->
+    <string name="post_preview">Post preview</string> <!-- ✅ נוסף -->
+    <string name="post_full_message">Full post message</string> <!-- ✅ נוסף -->
+
+    <!-- Chat -->
     <string name="delete_message">Delete</string>
     <string name="default_sender_name">Bella’s Owner</string>
     <string name="default_message_text">Hi! Anyone up for a walk in Park A at 18:00?</string>
+
+    <!-- Buttons -->
+    <string name="add_images">Add images</string>
+    <string name="desc_next">Next</string>
     <string name="approve">Approve</string>
     <string name="reject">Reject</string>
     <string name="delete">Delete</string>
-
-
+    <string name="add_dog">Add Dog</string>
 
 </resources>

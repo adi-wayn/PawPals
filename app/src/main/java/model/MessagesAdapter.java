@@ -1,4 +1,5 @@
-package model;
+
+        package model;
 
 import android.content.Context;
 import android.view.Gravity;
