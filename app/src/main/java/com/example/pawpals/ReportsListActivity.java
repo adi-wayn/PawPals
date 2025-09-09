@@ -76,7 +76,7 @@ public class ReportsListActivity extends AppCompatActivity {
                         allReports.clear();
                         allReports.addAll(reports);
 
-                        // ✅ שולחים ל־Adapter גם את isManager
+                        // שולחים ל־Adapter גם את isManager
                         adapter = new ReportsAdapter(
                                 filteredReports,
                                 communityId,
@@ -85,8 +85,11 @@ public class ReportsListActivity extends AppCompatActivity {
                         );
                         reportsRecyclerView.setAdapter(adapter);
 
-                        // שמירה על סנכרון הרשימות
-                        adapter.setOnReportRemovedListener(report -> allReports.remove(report));
+                        // ✅ סנכרון רשימות - גם למחוק וגם לעדכן את המסוננים
+                        adapter.setOnReportRemovedListener(report -> {
+                            allReports.remove(report);
+                            filterReports(searchEditText.getText().toString());
+                        });
 
                         // הצגת כל הדיווחים בהתחלה
                         filterReports("");

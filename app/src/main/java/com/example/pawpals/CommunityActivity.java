@@ -32,59 +32,71 @@ public class CommunityActivity extends AppCompatActivity {
         TextView textViewCommunityName = findViewById(R.id.textViewCommunityName);
         textViewCommunityName.setText(currentUser.getCommunityName());
 
-        communityRepo.getCommunityIdByName(currentUser.getCommunityName(), new CommunityRepository.FirestoreIdCallback() {
-            @Override
-            public void onSuccess(String communityId) {
-                communityRepo.getFeedPosts(communityId, new CommunityRepository.FirestoreReportsListCallback() {
+        // שליפת הפוסטים מה־feed
+        communityRepo.getCommunityIdByName(currentUser.getCommunityName(),
+                new CommunityRepository.FirestoreIdCallback() {
                     @Override
-                    public void onSuccess(List<Report> posts) {
-                        RecyclerView feedRecyclerView = findViewById(R.id.feedRecyclerView);
-                        feedRecyclerView.setLayoutManager(new LinearLayoutManager(CommunityActivity.this));
-                        FeedAdapter adapter = new FeedAdapter(posts);
-                        adapter.setCommunityData(communityId, currentUser.isManager()); // ✅ מתודה
-                        feedRecyclerView.setAdapter(adapter);
+                    public void onSuccess(String communityId) {
+                        communityRepo.getFeedPosts(communityId,
+                                new CommunityRepository.FirestoreReportsListCallback() {
+                                    @Override
+                                    public void onSuccess(List<Report> posts) {
+                                        RecyclerView feedRecyclerView = findViewById(R.id.feedRecyclerView);
+                                        feedRecyclerView.setLayoutManager(
+                                                new LinearLayoutManager(CommunityActivity.this));
+                                        FeedAdapter adapter = new FeedAdapter(posts);
+                                        adapter.setCommunityData(communityId, currentUser.isManager());
+                                        feedRecyclerView.setAdapter(adapter);
+                                    }
+
+                                    @Override
+                                    public void onFailure(Exception e) {
+                                        Toast.makeText(CommunityActivity.this,
+                                                "Failed to load bulletin: " + e.getMessage(),
+                                                Toast.LENGTH_LONG).show();
+                                    }
+                                });
                     }
 
                     @Override
                     public void onFailure(Exception e) {
-                        Toast.makeText(CommunityActivity.this, "Failed to load bulletin: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        Toast.makeText(CommunityActivity.this,
+                                "Community not found: " + e.getMessage(),
+                                Toast.LENGTH_LONG).show();
                     }
                 });
-            }
 
-            @Override
-            public void onFailure(Exception e) {
-                Toast.makeText(CommunityActivity.this, "Community not found: " + e.getMessage(), Toast.LENGTH_LONG).show();
-            }
-        });
-
-        // כפתורים
+        // מעבר למסך חברים
         Button membersButton = findViewById(R.id.buttonMembers);
         membersButton.setOnClickListener(v -> {
-            Intent intent = new Intent(CommunityActivity.this, CommunitySearchActivity.class);
+            Intent intent = new Intent(this, CommunitySearchActivity.class);
             intent.putExtra("currentUser", currentUser);
             startActivity(intent);
         });
 
+        // מעבר לצ'אט
         Button chatButton = findViewById(R.id.buttonChat);
         chatButton.setOnClickListener(v -> {
-            Intent intent = new Intent(CommunityActivity.this, ChatActivity.class);
+            Intent intent = new Intent(this, ChatActivity.class);
             intent.putExtra("currentUser", currentUser);
             startActivity(intent);
         });
 
+        // מעבר למסך יצירת דיווח
         Button reportButton = findViewById(R.id.buttonReportSystem);
         reportButton.setOnClickListener(v -> {
-            Intent intent = new Intent(CommunityActivity.this, ReportFormActivity.class);
+            Intent intent = new Intent(this, ReportFormActivity.class);
             intent.putExtra("currentUser", currentUser);
             startActivity(intent);
         });
 
+        // מעבר למפת האזור
         Button areaMapButton = findViewById(R.id.buttonAreaMap);
         areaMapButton.setOnClickListener(v -> {
-            Intent intent = new Intent(CommunityActivity.this, MainActivity.class);
-            intent.putExtra("EXTRA_FOCUS_COMMUNITY_NAME", currentUser.getCommunityName());
-            intent.putExtra("EXTRA_FOCUS_RADIUS", 1500);
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.putExtra(MainActivity.EXTRA_FOCUS_COMMUNITY_NAME,
+                    currentUser.getCommunityName());
+            intent.putExtra(MainActivity.EXTRA_FOCUS_RADIUS, 1500);
             startActivity(intent);
         });
     }
