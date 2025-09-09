@@ -1,5 +1,4 @@
-
-        package model;
+package model;
 
 import android.content.Context;
 import android.view.Gravity;
@@ -88,9 +87,10 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Messag
                 isOutgoing ? android.R.color.white : android.R.color.black);
         holder.textMessageBody.setTextColor(textColor);
 
-        // ❗ הצגת כפתור מחיקה – רק לשולח ההודעה או למנהל
+        // כפתור מחיקה – מוצג רק אם המשתמש מנהל או השולח עצמו
         if ((isManager || isOutgoing) && communityId != null) {
             holder.buttonDelete.setVisibility(View.VISIBLE);
+
             holder.buttonDelete.setOnClickListener(v -> {
                 int adapterPos = holder.getAdapterPosition();
                 if (adapterPos == RecyclerView.NO_POSITION) return;
@@ -100,12 +100,16 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Messag
                     return;
                 }
 
+                // מחיקה מה־Firebase
                 repo.deleteMessage(communityId, msg.getId(), new CommunityRepository.FirestoreCallback() {
                     @Override
                     public void onSuccess(String ignored) {
                         Toast.makeText(context, "Message deleted", Toast.LENGTH_SHORT).show();
+
+                        // מחיקה מה־RecyclerView
                         messageList.remove(adapterPos);
                         notifyItemRemoved(adapterPos);
+                        notifyItemRangeChanged(adapterPos, messageList.size());
                     }
 
                     @Override

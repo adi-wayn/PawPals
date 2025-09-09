@@ -74,9 +74,7 @@ public class ChatActivity extends AppCompatActivity {
         lm.setStackFromEnd(true);
         recyclerView.setLayoutManager(lm);
 
-        adapter = new MessagesAdapter(messages, currentUserId, this);
-        recyclerView.setAdapter(adapter);
-
+        // נטען את ה-communityId ורק אז נבנה את ה-Adapter
         repo.getCommunityIdByName(communityName, new CommunityRepository.FirestoreIdCallback() {
             @Override
             public void onSuccess(String id) {
