@@ -28,7 +28,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Messag
     private final String currentUserId;
     private final Context context;
     private final CommunityRepository repo;
-    private String communityId;    // מזהה קהילה
+    private String communityId;
     private boolean isManager;
 
     public MessagesAdapter(List<Message> messageList,
@@ -68,28 +68,36 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Messag
         Message msg = messageList.get(position);
         boolean isOutgoing = msg.getSenderId() != null && msg.getSenderId().equals(currentUserId);
 
+        // שם השולח
         holder.textSenderName.setText(isOutgoing ? "Me" : msg.getSenderName());
+
+        // טקסט ההודעה
         holder.textMessageBody.setText(msg.getText());
+
+        // מיקום ההודעה (שמאל/ימין)
         holder.rootItem.setGravity(isOutgoing ? Gravity.END : Gravity.START);
 
+        // צבע בועה
         int bubbleColor = ContextCompat.getColor(context,
                 isOutgoing ? R.color.bubble_outgoing : R.color.bubble_incoming);
         holder.bubble.setCardBackgroundColor(bubbleColor);
 
+        // צבע טקסט
         int textColor = ContextCompat.getColor(context,
                 isOutgoing ? android.R.color.white : android.R.color.black);
         holder.textMessageBody.setTextColor(textColor);
 
-        // ❗ הצגת כפתור מחיקה – רק למנהל או שולח ההודעה
+        // ❗ הצגת כפתור מחיקה – רק לשולח ההודעה או למנהל
         if ((isManager || isOutgoing) && communityId != null) {
             holder.buttonDelete.setVisibility(View.VISIBLE);
             holder.buttonDelete.setOnClickListener(v -> {
+                int adapterPos = holder.getAdapterPosition();
+                if (adapterPos == RecyclerView.NO_POSITION) return;
+
                 if (msg.getId() == null || msg.getId().isEmpty()) {
                     Toast.makeText(context, "Cannot delete: missing message id", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                int adapterPos = holder.getAdapterPosition();
-                if (adapterPos == RecyclerView.NO_POSITION) return;
 
                 repo.deleteMessage(communityId, msg.getId(), new CommunityRepository.FirestoreCallback() {
                     @Override

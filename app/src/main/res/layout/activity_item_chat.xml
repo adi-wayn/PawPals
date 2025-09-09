@@ -13,59 +13,69 @@
     android:gravity="start"
     android:layoutDirection="locale">
 
-    <!-- שם השולח -->
-    <TextView
-        android:id="@+id/text_sender_name"
+    <LinearLayout
+        android:id="@+id/message_container"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/default_sender_name"
-        android:textSize="12sp"
-        android:textStyle="bold"
-        android:textColor="@android:color/black"
-        android:layout_marginBottom="2dp"/>
+        android:orientation="vertical">
 
-    <!-- בועת ההודעה -->
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/bubble"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:cardCornerRadius="16dp"
-        app:cardUseCompatPadding="true"
-        app:strokeWidth="0dp"
-        app:cardBackgroundColor="@color/bubble_incoming">
-
-        <LinearLayout
+        <!-- שם השולח -->
+        <TextView
+            android:id="@+id/text_sender_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:text="@string/default_sender_name"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/darker_gray"
+            android:layout_marginBottom="2dp"/>
 
-            <!-- טקסט ההודעה -->
-            <TextView
-                android:id="@+id/text_message_body"
+        <!-- בועת ההודעה -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/bubble"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="16dp"
+            app:cardUseCompatPadding="true"
+            app:strokeWidth="0dp"
+            app:cardBackgroundColor="@color/bubble_incoming">
+
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/default_message_text"
-                android:padding="10dp"
-                android:textSize="16sp"
-                android:textColor="@android:color/black"
-                android:maxWidth="220dp"
-                android:autoLink="web"
-                android:linksClickable="true"
-                android:lineSpacingExtra="2dp"
-                android:textIsSelectable="true"/>
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
 
-            <!-- כפתור מחיקה -->
-            <ImageButton
-                android:id="@+id/button_delete_message"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:layout_marginStart="8dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="@string/delete_message"
-                android:src="@android:drawable/ic_menu_delete"
-                app:tint="@android:color/holo_red_dark"
-                android:visibility="gone"/>
-        </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
+                <!-- טקסט ההודעה -->
+                <TextView
+                    android:id="@+id/text_message_body"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/default_message_text"
+                    android:padding="10dp"
+                    android:textSize="16sp"
+                    android:textColor="@android:color/black"
+                    android:maxWidth="220dp"
+                    android:autoLink="web"
+                    android:linksClickable="true"
+                    android:lineSpacingExtra="2dp"
+                    android:textIsSelectable="true"/>
+
+                <!-- כפתור מחיקה -->
+                <ImageButton
+                    android:id="@+id/button_delete_message"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="8dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/delete_message"
+                    android:src="@android:drawable/ic_menu_delete"
+                    app:tint="@android:color/holo_red_dark"
+                    android:visibility="gone"/>
+
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+    </LinearLayout>
 </LinearLayout>

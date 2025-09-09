@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import model.Community;
 import model.Message;
 import model.Report;
 
@@ -202,6 +201,66 @@ public class CommunityRepository {
                 .addOnFailureListener(callback::onFailure);
     }
 
+    // ===================== מתודות שהיו חסרות =====================
+
+    // ✅ יצירת דיווח חדש
+    public void createReport(String communityId, Report report, FirestoreCallback callback) {
+        db.collection("communities")
+                .document(communityId)
+                .collection("reports")
+                .add(report.toMap())
+                .addOnSuccessListener(docRef -> callback.onSuccess(docRef.getId()))
+                .addOnFailureListener(callback::onFailure);
+    }
+
+    // ✅ עדכון תמונות של דיווח
+    public void updateReportImages(String communityId, String reportId, String field,
+                                   List<String> urls, FirestoreCallback callback) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("imageUrls", urls);
+        db.collection("communities")
+                .document(communityId)
+                .collection("reports")
+                .document(reportId)
+                .update(data)
+                .addOnSuccessListener(v -> callback.onSuccess(reportId))
+                .addOnFailureListener(callback::onFailure);
+    }
+
+    // ✅ העברת מנהל קהילה
+    public void transferManager(String communityId, String oldManagerId, String newManagerId,
+                                FirestoreCallback callback) {
+        db.collection("communities")
+                .document(communityId)
+                .update("managerId", newManagerId)
+                .addOnSuccessListener(v -> callback.onSuccess(communityId))
+                .addOnFailureListener(callback::onFailure);
+    }
+
+    // ✅ שליפת מרכז ורדיוס של קהילה (lat/lng + radius)
+    public void getCommunityCenterAndRadiusByName(String communityName, CommunityGeoCallback callback) {
+        db.collection("communities")
+                .whereEqualTo("name", communityName)
+                .limit(1)
+                .get()
+                .addOnSuccessListener(query -> {
+                    if (!query.isEmpty()) {
+                        DocumentSnapshot doc = query.getDocuments().get(0);
+                        Double lat = doc.getDouble("latitude");
+                        Double lng = doc.getDouble("longitude");
+                        Long radius = doc.getLong("radiusMeters");
+                        if (lat != null && lng != null) {
+                            callback.onSuccess(lat, lng, radius != null ? radius.intValue() : 1000);
+                        } else {
+                            callback.onFailure(new Exception("No geo data for community"));
+                        }
+                    } else {
+                        callback.onFailure(new Exception("Community not found"));
+                    }
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
     // ===================== ממשקי Callback =====================
     public interface FirestoreCallback {
         void onSuccess(String documentId);
@@ -225,6 +284,11 @@ public class CommunityRepository {
 
     public interface FirestoreBooleanCallback {
         void onSuccess(boolean value);
+        void onFailure(Exception e);
+    }
+
+    public interface CommunityGeoCallback {
+        void onSuccess(double lat, double lng, int radiusMeters);
         void onFailure(Exception e);
     }
 }
