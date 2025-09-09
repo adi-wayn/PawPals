@@ -28,18 +28,34 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Messag
     private final String currentUserId;
     private final Context context;
     private final CommunityRepository repo;
-    private final String communityId;
-    private final boolean isManager;
+    private String communityId;    // לא final כדי לאפשר עדכון מאוחר יותר
+    private boolean isManager;
 
-    public MessagesAdapter(List<Message> messageList, String currentUserId, Context context,
-                           String communityId, boolean isManager) {
-        // כדי להימנע מ-NullPointer ולתמוך בהוספות דינמיות
+    // --- בנאי מלא (5 פרמטרים) ---
+    public MessagesAdapter(List<Message> messageList,
+                           String currentUserId,
+                           Context context,
+                           String communityId,
+                           boolean isManager) {
         this.messageList = (messageList != null) ? messageList : new ArrayList<>();
         this.currentUserId = currentUserId;
         this.context = context;
         this.communityId = communityId;
         this.isManager = isManager;
         this.repo = new CommunityRepository();
+    }
+
+    // --- בנאי מקוצר (3 פרמטרים) לשימוש ב-ChatActivity ---
+    public MessagesAdapter(List<Message> messageList,
+                           String currentUserId,
+                           Context context) {
+        this(messageList, currentUserId, context, null, false);
+    }
+
+    // מאפשר עדכון communityId ו־isManager מאוחר יותר
+    public void setCommunityData(String communityId, boolean isManager) {
+        this.communityId = communityId;
+        this.isManager = isManager;
     }
 
     @NonNull
@@ -59,10 +75,10 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Messag
         holder.textSenderName.setText(isOutgoing ? "Me" : msg.getSenderName());
         holder.textMessageBody.setText(msg.getText());
 
-        // יישור לפי סוג ההודעה (ימין = יוצאת, שמאל = נכנסת)
+        // יישור
         holder.rootItem.setGravity(isOutgoing ? Gravity.END : Gravity.START);
 
-        // צבע רקע של הבועה + צבע טקסט
+        // צבעים
         int bubbleColor = ContextCompat.getColor(context,
                 isOutgoing ? R.color.bubble_outgoing : R.color.bubble_incoming);
         holder.bubble.setCardBackgroundColor(bubbleColor);
@@ -71,8 +87,8 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Messag
                 isOutgoing ? android.R.color.white : android.R.color.black);
         holder.textMessageBody.setTextColor(textColor);
 
-        // כפתור מחיקה - זמין רק למנהל
-        if (isManager) {
+        // כפתור מחיקה – רק למנהל ורק אם יש communityId
+        if (isManager && communityId != null) {
             holder.buttonDelete.setVisibility(View.VISIBLE);
             holder.buttonDelete.setOnClickListener(v -> {
                 if (msg.getId() == null || msg.getId().isEmpty()) {
@@ -99,12 +115,6 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Messag
         } else {
             holder.buttonDelete.setVisibility(View.GONE);
         }
-
-        // (אופציונלי) לחיצה ארוכה להעתקה
-        holder.itemView.setOnLongClickListener(v -> {
-            // אפשר להוסיף כאן העתקה ללוח/תפריט
-            return false;
-        });
     }
 
     @Override
@@ -112,8 +122,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Messag
         return messageList.size();
     }
 
-    // ----- עוזרים נוחים לניהול הרשימה -----
-
+    // ----- עוזרים -----
     public void setMessages(List<Message> newList) {
         this.messageList = (newList != null) ? newList : new ArrayList<>();
         notifyDataSetChanged();
@@ -126,11 +135,11 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Messag
     }
 
     static class MessageViewHolder extends RecyclerView.ViewHolder {
-        LinearLayout rootItem;              // root_message_item
-        TextView textSenderName;            // text_sender_name
-        MaterialCardView bubble;            // bubble
-        TextView textMessageBody;           // text_message_body
-        ImageButton buttonDelete;           // כפתור מחיקה
+        LinearLayout rootItem;
+        TextView textSenderName;
+        MaterialCardView bubble;
+        TextView textMessageBody;
+        ImageButton buttonDelete;
 
         public MessageViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -138,7 +147,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Messag
             textSenderName = itemView.findViewById(R.id.text_sender_name);
             bubble = itemView.findViewById(R.id.bubble);
             textMessageBody = itemView.findViewById(R.id.text_message_body);
-            buttonDelete = itemView.findViewById(R.id.button_delete_message); // עכשיו מוגדר כ-ImageButton
+            buttonDelete = itemView.findViewById(R.id.button_delete_message);
         }
     }
 }

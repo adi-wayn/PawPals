@@ -14,6 +14,9 @@ import androidx.annotation.NonNull;
 
 import com.example.pawpals.R;
 import com.google.firebase.auth.FirebaseAuth;
+import model.firebase.firestore.CommunityRepository;
+
+
 
 import java.util.List;
 
