@@ -56,6 +56,42 @@ public class CommunityRepository {
                 .addOnFailureListener(callback::onFailure);
     }
 
+    // ✅ יצירת Report חדש תחת קהילה
+    public void createReport(String communityId, Report report, FirestoreCallback callback) {
+        db.collection("communities")
+                .document(communityId)
+                .collection("reports")
+                .add(report.toMap())
+                .addOnSuccessListener(docRef -> {
+                    report.setId(docRef.getId()); // שומר את ה-id באובייקט
+                    callback.onSuccess(docRef.getId());
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
+    // ✅ עדכון תמונות בדו"ח
+    public void updateReportImages(String communityId,
+                                   String reportId,
+                                   String singleUrl,
+                                   List<String> urls,
+                                   FirestoreCallback callback) {
+        Map<String, Object> updateData = new HashMap<>();
+        if (singleUrl != null) {
+            updateData.put("imageUrl", singleUrl);
+        }
+        if (urls != null && !urls.isEmpty()) {
+            updateData.put("imageUrls", urls);
+        }
+
+        db.collection("communities")
+                .document(communityId)
+                .collection("reports")
+                .document(reportId)
+                .update(updateData)
+                .addOnSuccessListener(v -> callback.onSuccess(reportId))
+                .addOnFailureListener(callback::onFailure);
+    }
+
     // ✅ מחיקת הודעה מהצ'אט
     public void deleteMessage(String communityId, String messageId, FirestoreCallback callback) {
         db.collection("communities")
