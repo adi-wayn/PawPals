@@ -44,8 +44,8 @@ public class ChatActivity extends AppCompatActivity {
     // current user / community
     private String currentUserId = "";
     private String currentUserName;
-    private @Nullable String communityId = null;      // ייקבע אחרי חיפוש לפי שם
-    private @Nullable User currentUser = null;        // מתקבל ב-Intent (Parcelable)
+    private @Nullable String communityId = null;
+    private @Nullable User currentUser = null;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -78,30 +78,30 @@ public class ChatActivity extends AppCompatActivity {
         btnSend = findViewById(R.id.button_send);
 
         LinearLayoutManager lm = new LinearLayoutManager(this);
-        lm.setStackFromEnd(true); // הצגת הצ'אט מלמטה
+        lm.setStackFromEnd(true);
         recyclerView.setLayoutManager(lm);
 
-        // בשלב זה אין לנו communityId – משתמשים בבנאי הקצר
+        // כרגע עדיין אין לנו communityId, לכן נטען עם adapter זמני
         adapter = new MessagesAdapter(messages, currentUserId, this);
         recyclerView.setAdapter(adapter);
 
-        // אחרי שנביא את ה־communityId מה־Firestore – נעדכן את ה־adapter
+        // --- 4) נביא את ה-communityId ונעדכן את ה-adapter ---
         repo.getCommunityIdByName(communityName, new CommunityRepository.FirestoreIdCallback() {
             @Override
             public void onSuccess(String id) {
                 communityId = id;
 
-                // כאן נעדכן את ה־adapter עם כל הנתונים החדשים
+                // יצירת adapter חדש עם כל הנתונים (כולל isManager)
                 adapter = new MessagesAdapter(
                         messages,
                         currentUserId,
                         ChatActivity.this,
                         communityId,
-                        currentUser.isManager()
+                        currentUser.isManager() // ✅ כאן המנהל מקבל הרשאה למחיקה
                 );
                 recyclerView.setAdapter(adapter);
 
-                loadMessagesAndListen(); // אחרי שיש ID אמיתי
+                loadMessagesAndListen();
             }
 
             @Override
@@ -124,15 +124,14 @@ public class ChatActivity extends AppCompatActivity {
         });
     }
 
-    /** טוען הודעות קיימות ומתחיל האזנה בזמן אמת ל-communities/{communityId}/messages */
     private void loadMessagesAndListen() {
         if (TextUtils.isEmpty(communityId)) return;
 
         RecyclerView.LayoutManager layoutManager = recyclerView.getLayoutManager();
         if (layoutManager instanceof LinearLayoutManager) {
             LinearLayoutManager lm = (LinearLayoutManager) layoutManager;
-            lm.setReverseLayout(false); // ישן למעלה, חדש למטה
-            lm.setStackFromEnd(true);   // גלילה לסוף
+            lm.setReverseLayout(false);
+            lm.setStackFromEnd(true);
         }
 
         if (registration != null) {
@@ -192,7 +191,6 @@ public class ChatActivity extends AppCompatActivity {
         );
     }
 
-    /** שולח הודעה חדשה ל-communities/{communityId}/messages דרך createMessage */
     private void sendMessageViaRepo() {
         if (TextUtils.isEmpty(communityId)) return;
 
