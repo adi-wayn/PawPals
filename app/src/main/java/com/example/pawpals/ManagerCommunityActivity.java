@@ -43,6 +43,10 @@ public class ManagerCommunityActivity extends AppCompatActivity {
                         RecyclerView feedRecyclerView = findViewById(R.id.feedRecyclerView);
                         feedRecyclerView.setLayoutManager(new LinearLayoutManager(ManagerCommunityActivity.this));
                         FeedAdapter adapter = new FeedAdapter(posts);
+                        adapter.setCommunityData(communityId, currentUser.isManager());
+                        feedRecyclerView.setAdapter(adapter);
+
+
                         feedRecyclerView.setAdapter(adapter);
                     }
 

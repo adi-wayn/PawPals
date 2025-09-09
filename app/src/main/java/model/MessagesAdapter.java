@@ -28,10 +28,9 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Messag
     private final String currentUserId;
     private final Context context;
     private final CommunityRepository repo;
-    private String communityId;    // מתעדכן מאוחר יותר
+    private String communityId;    // מזהה קהילה
     private boolean isManager;
 
-    // --- בנאי מלא (5 פרמטרים) ---
     public MessagesAdapter(List<Message> messageList,
                            String currentUserId,
                            Context context,
@@ -45,14 +44,12 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Messag
         this.repo = new CommunityRepository();
     }
 
-    // --- בנאי מקוצר (3 פרמטרים) לשימוש ראשוני ב-ChatActivity ---
     public MessagesAdapter(List<Message> messageList,
                            String currentUserId,
                            Context context) {
         this(messageList, currentUserId, context, null, false);
     }
 
-    // מאפשר לעדכן מאוחר יותר את ה־communityId והאם המשתמש מנהל
     public void setCommunityData(String communityId, boolean isManager) {
         this.communityId = communityId;
         this.isManager = isManager;
@@ -71,14 +68,10 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Messag
         Message msg = messageList.get(position);
         boolean isOutgoing = msg.getSenderId() != null && msg.getSenderId().equals(currentUserId);
 
-        // שם השולח + טקסט הודעה
         holder.textSenderName.setText(isOutgoing ? "Me" : msg.getSenderName());
         holder.textMessageBody.setText(msg.getText());
-
-        // יישור (ימין לשולח, שמאל לאחרים)
         holder.rootItem.setGravity(isOutgoing ? Gravity.END : Gravity.START);
 
-        // צבעים לבועות
         int bubbleColor = ContextCompat.getColor(context,
                 isOutgoing ? R.color.bubble_outgoing : R.color.bubble_incoming);
         holder.bubble.setCardBackgroundColor(bubbleColor);
@@ -87,8 +80,8 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Messag
                 isOutgoing ? android.R.color.white : android.R.color.black);
         holder.textMessageBody.setTextColor(textColor);
 
-        // כפתור מחיקה – מוצג רק למנהל ובתוך קהילה אמיתית
-        if (isManager && communityId != null) {
+        // ❗ הצגת כפתור מחיקה – רק למנהל או שולח ההודעה
+        if ((isManager || isOutgoing) && communityId != null) {
             holder.buttonDelete.setVisibility(View.VISIBLE);
             holder.buttonDelete.setOnClickListener(v -> {
                 if (msg.getId() == null || msg.getId().isEmpty()) {
@@ -122,7 +115,6 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Messag
         return messageList.size();
     }
 
-    // ----- עוזרים -----
     public void setMessages(List<Message> newList) {
         this.messageList = (newList != null) ? newList : new ArrayList<>();
         notifyDataSetChanged();

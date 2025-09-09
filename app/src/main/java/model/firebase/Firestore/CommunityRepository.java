@@ -44,7 +44,7 @@ public class CommunityRepository {
                 .addOnFailureListener(callback::onFailure);
     }
 
-    // יצירת הודעה בצ'אט
+    // ✅ יצירת הודעה בצ'אט (שומר את ה-id)
     public void createMessage(String communityId, Message message, FirestoreCallback callback) {
         Map<String, Object> messageMap = message.toMap();
 
@@ -52,43 +52,10 @@ public class CommunityRepository {
                 .document(communityId)
                 .collection("messages")
                 .add(messageMap)
-                .addOnSuccessListener(docRef -> callback.onSuccess(docRef.getId()))
-                .addOnFailureListener(callback::onFailure);
-    }
-
-    // ✅ יצירת Report חדש תחת קהילה
-    public void createReport(String communityId, Report report, FirestoreCallback callback) {
-        db.collection("communities")
-                .document(communityId)
-                .collection("reports")
-                .add(report.toMap())
                 .addOnSuccessListener(docRef -> {
-                    report.setId(docRef.getId()); // שומר את ה-id באובייקט
+                    message.setId(docRef.getId());
                     callback.onSuccess(docRef.getId());
                 })
-                .addOnFailureListener(callback::onFailure);
-    }
-
-    // ✅ עדכון תמונות בדו"ח
-    public void updateReportImages(String communityId,
-                                   String reportId,
-                                   String singleUrl,
-                                   List<String> urls,
-                                   FirestoreCallback callback) {
-        Map<String, Object> updateData = new HashMap<>();
-        if (singleUrl != null) {
-            updateData.put("imageUrl", singleUrl);
-        }
-        if (urls != null && !urls.isEmpty()) {
-            updateData.put("imageUrls", urls);
-        }
-
-        db.collection("communities")
-                .document(communityId)
-                .collection("reports")
-                .document(reportId)
-                .update(updateData)
-                .addOnSuccessListener(v -> callback.onSuccess(reportId))
                 .addOnFailureListener(callback::onFailure);
     }
 
@@ -157,7 +124,7 @@ public class CommunityRepository {
                 .addOnFailureListener(callback::onFailure);
     }
 
-    // 🔹 שליפת פוסטים מהפיד
+    // 🔹 שליפת פוסטים מה־feed
     public void getFeedPosts(String communityId, FirestoreReportsListCallback callback) {
         db.collection("communities")
                 .document(communityId)
@@ -175,53 +142,29 @@ public class CommunityRepository {
                 .addOnFailureListener(callback::onFailure);
     }
 
-    // 🔹 בדיקת אפשרות הגשת מועמדות לניהול
-    public void getManagerApplicationsOpen(String communityId, FirestoreBooleanCallback cb) {
-        db.collection("communities").document(communityId).get()
-                .addOnSuccessListener(s -> cb.onSuccess(Boolean.TRUE.equals(s.getBoolean("managerApplicationsOpen"))))
-                .addOnFailureListener(cb::onFailure);
-    }
-
-    public void setManagerApplicationsOpen(String communityId, boolean open, FirestoreCallback cb) {
-        db.collection("communities").document(communityId)
-                .update("managerApplicationsOpen", open)
-                .addOnSuccessListener(v -> cb.onSuccess(communityId))
-                .addOnFailureListener(cb::onFailure);
-    }
-
-    // 🔹 שליפת מיקום קהילה לפי שם
-    public void getCommunityCenterAndRadiusByName(String communityName, CommunityGeoCallback cb) {
+    // 🔹 בדיקת האם פתוח להגשת מועמדויות
+    public void getManagerApplicationsOpen(String communityId, FirestoreBooleanCallback callback) {
         db.collection("communities")
-                .whereEqualTo("name", communityName)
-                .limit(1)
+                .document(communityId)
                 .get()
-                .addOnSuccessListener(qs -> {
-                    if (!qs.isEmpty()) {
-                        DocumentSnapshot doc = qs.getDocuments().get(0);
-                        Double lat = doc.getDouble("centerLat");
-                        Double lng = doc.getDouble("centerLng");
-                        Long radius = doc.getLong("radiusMeters");
-                        if (lat != null && lng != null) {
-                            cb.onSuccess(lat, lng, radius != null ? radius.intValue() : 1500);
-                        } else {
-                            cb.onFailure(new Exception("Missing lat/lng"));
-                        }
+                .addOnSuccessListener(doc -> {
+                    if (doc.exists()) {
+                        Boolean val = doc.getBoolean("applicationsOpen");
+                        callback.onSuccess(val != null && val);
                     } else {
-                        cb.onFailure(new Exception("Community not found"));
+                        callback.onSuccess(false);
                     }
                 })
-                .addOnFailureListener(cb::onFailure);
+                .addOnFailureListener(callback::onFailure);
     }
 
-    // 🔹 העברת ניהול
-    public void transferManager(String communityId, String oldManagerUid, String newManagerUid, FirestoreCallback cb) {
-        com.google.firebase.firestore.WriteBatch b = db.batch();
-        b.update(db.collection("communities").document(communityId), "managerId", newManagerUid);
-        b.update(db.collection("users").document(oldManagerUid), "isManager", false);
-        b.update(db.collection("users").document(newManagerUid), "isManager", true);
-
-        b.commit().addOnSuccessListener(v -> cb.onSuccess(communityId))
-                .addOnFailureListener(cb::onFailure);
+    // 🔹 שינוי מצב קבלת מועמדויות
+    public void setManagerApplicationsOpen(String communityId, boolean open, FirestoreCallback callback) {
+        db.collection("communities")
+                .document(communityId)
+                .update("applicationsOpen", open)
+                .addOnSuccessListener(v -> callback.onSuccess(communityId))
+                .addOnFailureListener(callback::onFailure);
     }
 
     // 🔹 יצירת פוסט בפיד
@@ -236,12 +179,6 @@ public class CommunityRepository {
 
     // 🔹 מחיקת פוסט מה-Feed
     public void deleteFeedPost(String communityId, String postId, FirestoreCallback callback) {
-        if (communityId == null || communityId.isEmpty() ||
-                postId == null || postId.isEmpty()) {
-            callback.onFailure(new IllegalArgumentException("communityId or postId is empty"));
-            return;
-        }
-
         db.collection("communities")
                 .document(communityId)
                 .collection("feed")
@@ -251,10 +188,7 @@ public class CommunityRepository {
                     Log.d(TAG, "Feed post deleted: " + postId);
                     callback.onSuccess(postId);
                 })
-                .addOnFailureListener(e -> {
-                    Log.w(TAG, "Failed to delete feed post: " + postId, e);
-                    callback.onFailure(e);
-                });
+                .addOnFailureListener(callback::onFailure);
     }
 
     // 🔹 מחיקת דיווח
@@ -274,24 +208,9 @@ public class CommunityRepository {
         void onFailure(Exception e);
     }
 
-    public interface FirestoreMessagesListCallback {
-        void onSuccess(List<Message> messages);
-        void onFailure(Exception e);
-    }
-
     public interface FirestoreMessagesChangeCallback {
         void onChanges(List<com.google.firebase.firestore.DocumentChange> changes);
         void onError(Exception e);
-    }
-
-    public interface FirestoreCommunityCallback {
-        void onSuccess(Community community);
-        void onFailure(Exception e);
-    }
-
-    public interface FirestoreCommunitiesListCallback {
-        void onSuccess(List<Community> communities);
-        void onFailure(Exception e);
     }
 
     public interface FirestoreIdCallback {
@@ -304,18 +223,8 @@ public class CommunityRepository {
         void onFailure(Exception e);
     }
 
-    public interface FirestoreExistCallback {
-        void onResult(boolean exists);
-        void onError(Exception e);
-    }
-
     public interface FirestoreBooleanCallback {
         void onSuccess(boolean value);
-        void onFailure(Exception e);
-    }
-
-    public interface CommunityGeoCallback {
-        void onSuccess(double lat, double lng, int radiusMeters);
         void onFailure(Exception e);
     }
 }
