@@ -27,21 +27,17 @@ import model.firebase.firestore.CommunityRepository;
 
 public class ChatActivity extends AppCompatActivity {
 
-    // UI
     private RecyclerView recyclerView;
     private EditText editMessage;
     private ImageButton btnSend;
 
-    // Data
     private final List<Message> messages = new ArrayList<>();
     private MessagesAdapter adapter;
 
-    // Firebase/Repo
     private FirebaseAuth auth;
     private CommunityRepository repo;
     private ListenerRegistration registration;
 
-    // current user / community
     private String currentUserId = "";
     private String currentUserName;
     private @Nullable String communityId = null;
@@ -52,7 +48,6 @@ public class ChatActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_community_chat);
 
-        // --- 1) קבלת המשתמש ושם הקהילה מה-Intent ---
         currentUser = getIntent().getParcelableExtra("currentUser");
         if (currentUser == null || TextUtils.isEmpty(currentUser.getCommunityName())) {
             Toast.makeText(this, "Missing user or community name", Toast.LENGTH_SHORT).show();
@@ -62,7 +57,6 @@ public class ChatActivity extends AppCompatActivity {
         currentUserName = currentUser.getUserName();
         final String communityName = currentUser.getCommunityName();
 
-        // --- 2) Firebase/Auth + Repo ---
         auth = FirebaseAuth.getInstance();
         repo = new CommunityRepository();
         if (auth.getCurrentUser() != null) {
@@ -72,7 +66,6 @@ public class ChatActivity extends AppCompatActivity {
             }
         }
 
-        // --- 3) Views + RecyclerView ---
         recyclerView = findViewById(R.id.chat_recycler_view);
         editMessage = findViewById(R.id.edit_text_message);
         btnSend = findViewById(R.id.button_send);
@@ -81,23 +74,20 @@ public class ChatActivity extends AppCompatActivity {
         lm.setStackFromEnd(true);
         recyclerView.setLayoutManager(lm);
 
-        // כרגע עדיין אין לנו communityId, לכן נטען עם adapter זמני
         adapter = new MessagesAdapter(messages, currentUserId, this);
         recyclerView.setAdapter(adapter);
 
-        // --- 4) נביא את ה-communityId ונעדכן את ה-adapter ---
         repo.getCommunityIdByName(communityName, new CommunityRepository.FirestoreIdCallback() {
             @Override
             public void onSuccess(String id) {
                 communityId = id;
 
-                // יצירת adapter חדש עם כל הנתונים (כולל isManager)
                 adapter = new MessagesAdapter(
                         messages,
                         currentUserId,
                         ChatActivity.this,
                         communityId,
-                        currentUser.isManager() // ✅ כאן המנהל מקבל הרשאה למחיקה
+                        currentUser.isManager()
                 );
                 recyclerView.setAdapter(adapter);
 
@@ -113,7 +103,6 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
 
-        // --- 5) שליחה (כפתור או מקש Send במקלדת) ---
         btnSend.setOnClickListener(v -> sendMessageViaRepo());
         editMessage.setOnEditorActionListener((TextView v, int actionId, android.view.KeyEvent event) -> {
             if (actionId == EditorInfo.IME_ACTION_SEND) {
@@ -127,9 +116,8 @@ public class ChatActivity extends AppCompatActivity {
     private void loadMessagesAndListen() {
         if (TextUtils.isEmpty(communityId)) return;
 
-        RecyclerView.LayoutManager layoutManager = recyclerView.getLayoutManager();
-        if (layoutManager instanceof LinearLayoutManager) {
-            LinearLayoutManager lm = (LinearLayoutManager) layoutManager;
+        LinearLayoutManager lm = (LinearLayoutManager) recyclerView.getLayoutManager();
+        if (lm != null) {
             lm.setReverseLayout(false);
             lm.setStackFromEnd(true);
         }
@@ -155,6 +143,7 @@ public class ChatActivity extends AppCompatActivity {
 
                         for (DocumentChange dc : changes) {
                             Message m = dc.getDocument().toObject(Message.class);
+                            m.setId(dc.getDocument().getId()); // ✅ שמירה של ה-id
                             switch (dc.getType()) {
                                 case ADDED:
                                     messages.add(m);
