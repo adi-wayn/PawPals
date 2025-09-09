@@ -30,8 +30,6 @@ public class ReportsAdapter extends RecyclerView.Adapter<ReportsAdapter.ReportVi
     private final Context context;
     private final CommunityRepository repo;
     private final boolean isManager;
-    private int expandedPosition = -1;
-
     private OnReportRemovedListener removedListener;
 
     public ReportsAdapter(List<Report> reportList, String communityId, Context context, boolean isManager) {
@@ -63,6 +61,7 @@ public class ReportsAdapter extends RecyclerView.Adapter<ReportsAdapter.ReportVi
 
         boolean isManagerApp = report.isManagerApplication();
 
+        // ✅ כפתור אישור
         holder.buttonApprove.setOnClickListener(v -> {
             if (isManagerApp) {
                 String oldManagerUid = FirebaseAuth.getInstance().getUid();
@@ -97,15 +96,25 @@ public class ReportsAdapter extends RecyclerView.Adapter<ReportsAdapter.ReportVi
             }
         });
 
+        // ✅ כפתור דחייה/מחיקה
         holder.buttonReject.setOnClickListener(v -> {
             repo.deleteReport(communityId, report.getId(), new CommunityRepository.FirestoreCallback() {
                 @Override public void onSuccess(String ignored) {
-                    Toast.makeText(context, "Report rejected and deleted.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "Report deleted.", Toast.LENGTH_SHORT).show();
                     removeAt(holder.getAdapterPosition());
                 }
-                @Override public void onFailure(Exception e) { }
+                @Override public void onFailure(Exception e) {
+                    Toast.makeText(context, "Delete failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                }
             });
         });
+
+        // ✅ הצגת כפתורים רק למנהל
+        if (isManager) {
+            holder.actionButtonsLayout.setVisibility(View.VISIBLE);
+        } else {
+            holder.actionButtonsLayout.setVisibility(View.GONE);
+        }
     }
 
     private void removeAt(int position) {
