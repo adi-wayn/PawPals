@@ -21,6 +21,10 @@ public class CommunityRepository {
     public CommunityRepository() {
         db = FirebaseFirestore.getInstance();
     }
+    // 🔹 קונסטרקטור נוסף – מיוחד ל־Unit Tests
+    public CommunityRepository(FirebaseFirestore db) {
+        this.db = db;
+    }
 
     // יצירת קהילה חדשה
     public void createCommunity(String communityName, String managerUserId,

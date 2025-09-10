@@ -38,6 +38,9 @@ public class UserRepository {
     public UserRepository() {
         db = FirebaseFirestore.getInstance();
     }
+    public UserRepository(FirebaseFirestore db) {
+        this.db = db;
+    }
 
     // ===== Utils =====
 

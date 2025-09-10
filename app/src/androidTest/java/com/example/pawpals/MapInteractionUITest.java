@@ -27,12 +27,12 @@ public class MapInteractionUITest {
 
     @Before
     public void setUp() {
-        // Create a fake User with a dog named "Bobby"
+        // Create a fake User with a dog named "בובי"
         User fakeUser = new User("TestUser", "TestCommunity", "contact", "dogs");
         fakeUser.setUid("testUid");
 
         Dog dog = new Dog();
-        dog.setName("Bobby");
+        dog.setName("בובי");   // Hebrew name
         dog.setBreed("Husky");
         dog.setAge(3);
 
@@ -56,7 +56,7 @@ public class MapInteractionUITest {
 
     @Test
     public void testOpenDogProfile_fromCommunity() {
-        // Click on the dog name "Bobby"
+        // Click on the dog name "בובי"
         onView(withText("Bobby")).perform(click());
 
         // Verify that the dog name is displayed in the profile
