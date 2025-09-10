@@ -22,14 +22,14 @@ public class ExampleUnitTest {
 
     @Before
     public void setUp() {
-        // Create a mock of CommunityManager
+        // יצירת Mock של CommunityManager
         mockManager = mock(CommunityManager.class);
 
-        // Define behavior for the mock
+        // נגדיר התנהגות: תמיד יחזיר true עבור isManager
         when(mockManager.isManager()).thenReturn(true);
 
-        // Use the mock in the Community constructor
-        community = new Community("MockCommunity", mockManager);
+        // נשתמש בבנאי הקיים שדורש lat/lng בנוסף לשם ול־manager
+        community = new Community("MockCommunity", 0.0, 0.0, mockManager);
     }
 
     @Test
@@ -38,6 +38,7 @@ public class ExampleUnitTest {
         assertEquals(mockManager, community.getManager());
         assertTrue(community.getManager().isManager());  // As mocked
     }
+
     @Test
     public void testAddMockedMember() {
         // יצירת אובייקט מדומה של User בעזרת Mockito
