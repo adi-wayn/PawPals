@@ -1,4 +1,4 @@
-package model.firebase.Firestore;
+package model.firebase.firestore;
 
 import android.util.Log;
 import android.util.Pair;
@@ -37,6 +37,9 @@ public class UserRepository {
 
     public UserRepository() {
         db = FirebaseFirestore.getInstance();
+    }
+    public UserRepository(FirebaseFirestore db) {
+        this.db = db;
     }
 
     // ===== Utils =====

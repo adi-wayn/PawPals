@@ -2,6 +2,7 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/root_message_item"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -24,7 +25,7 @@
             android:id="@+id/text_sender_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Bella’s Owner"
+            android:text="@string/default_sender_name"
             android:textSize="12sp"
             android:textStyle="bold"
             android:textColor="@android:color/darker_gray"
@@ -40,20 +41,41 @@
             app:strokeWidth="0dp"
             app:cardBackgroundColor="@color/bubble_incoming">
 
-            <TextView
-                android:id="@+id/text_message_body"
+            <RelativeLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Hi! Anyone up for a walk in Park A at 18:00?"
-                android:padding="10dp"
-                android:textSize="16sp"
-                android:textColor="@android:color/black"
-                android:maxWidth="280dp"
-                android:autoLink="web"
-                android:linksClickable="true"
-                android:lineSpacingExtra="2dp"
-                android:textIsSelectable="true"/>
-        </com.google.android.material.card.MaterialCardView>
+                android:padding="4dp">
 
+                <!-- טקסט ההודעה -->
+                <TextView
+                    android:id="@+id/text_message_body"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_toStartOf="@id/button_delete_message"
+                    android:layout_alignParentStart="true"
+                    android:autoLink="web"
+                    android:lineSpacingExtra="2dp"
+                    android:linksClickable="true"
+                    android:maxWidth="220dp"
+                    android:padding="10dp"
+                    android:text="@string/default_message_text"
+                    android:textColor="@android:color/black"
+                    android:textIsSelectable="true"
+                    android:textSize="16sp" />
+
+                <!-- כפתור מחיקה -->
+                <ImageButton
+                    android:id="@+id/button_delete_message"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_alignParentEnd="true"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/delete_message"
+                    android:src="@drawable/delete"
+                    android:visibility="visible"
+                    app:tint="@android:color/holo_red_dark" />
+
+            </RelativeLayout>
+        </com.google.android.material.card.MaterialCardView>
     </LinearLayout>
 </LinearLayout>

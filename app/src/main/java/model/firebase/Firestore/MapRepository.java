@@ -1,4 +1,4 @@
-package model.firebase.Firestore;
+package model.firebase.firestore;
 
 import android.util.Log;
 import android.util.Pair;

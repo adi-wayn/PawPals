@@ -1,4 +1,5 @@
 package com.example.pawpals;
+
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
@@ -35,37 +36,37 @@ import java.util.Map;
 import model.User;
 import model.firebase.Authentication.AuthHelper;
 import model.firebase.CloudMessaging.FcmTokenManager;
-import model.firebase.Firestore.CommunityRepository;
-import model.firebase.Firestore.MapRepository;
-import model.firebase.Firestore.UserRepository;
+import model.firebase.firestore.CommunityRepository;
+import model.firebase.firestore.MapRepository;
+import model.firebase.firestore.UserRepository;
 import model.maps.MapController;
 
 public class MainActivity extends AppCompatActivity {
     public static final String EXTRA_FOCUS_COMMUNITY_NAME = "EXTRA_FOCUS_COMMUNITY_NAME";
     public static final String EXTRA_FOCUS_RADIUS = "EXTRA_FOCUS_RADIUS";
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
-    private MapController mapController;
     private static final int REQUEST_MAP_REPORT = 2001;
+
+    private MapController mapController;
+    private User currentUser;
+
     private float initialTouchY = 0;
     private float lastProgress = 0f;
     private boolean isDragging = false;
-    private boolean isDrawerOpen = false;
-    private User currentUser;
+
     @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         currentUser = getIntent().getParcelableExtra("currentUser");
 
-
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
         AuthHelper authHelper = new AuthHelper();
-
-        // שליפת מזהה משתמש נוכחי מ־FirebaseAuth
         FirebaseUser firebaseUser = authHelper.getCurrentUser();
 
+        // === בדיקת משתמש מחובר ===
         if (firebaseUser != null) {
             String userId = firebaseUser.getUid();
 
@@ -73,48 +74,45 @@ public class MainActivity extends AppCompatActivity {
             userRepo.getUserById(userId, new UserRepository.FirestoreUserCallback() {
                 @Override
                 public void onSuccess(User user) {
+                    currentUser = user;
                     FcmTokenManager.registerCurrentToken();
+
                     TextView greetingText = findViewById(R.id.greetingText);
                     TextView statusBar = findViewById(R.id.statusBar);
-
-                    greetingText.setText("Hello, " + user.getUserName() + "!");
-                    statusBar.setText("You are part of the community: " + user.getCommunityName());
-
                     TextView communityStats = findViewById(R.id.communityStats);
                     TextView activeUsersStat = findViewById(R.id.activeUsersStat);
                     TextView totalDogs = findViewById(R.id.totalDogs);
 
+                    greetingText.setText("Hello, " + user.getUserName() + "!");
+                    statusBar.setText("You are part of the community: " + user.getCommunityName());
+
                     String communityName = user.getCommunityName();
 
-
+                    // Active users
                     MapRepository locationRepo = new MapRepository();
-                    locationRepo.getUserLocationsWithNamesByCommunity(communityName, new MapRepository.FirestoreUserLocationsWithNamesCallback() {
-                        @Override
-                        public void onSuccess(Map<String, Pair<LatLng, String>> userLocationsWithNames) {
-                            int count = userLocationsWithNames.size();
-                            activeUsersStat.setText("Active users nearby: " + count);
-                        }
+                    locationRepo.getUserLocationsWithNamesByCommunity(communityName,
+                            new MapRepository.FirestoreUserLocationsWithNamesCallback() {
+                                @Override
+                                public void onSuccess(Map<String, Pair<LatLng, String>> userLocationsWithNames) {
+                                    activeUsersStat.setText("Active users nearby: " + userLocationsWithNames.size());
+                                }
 
-                        @Override
-                        public void onFailure(Exception e) {
-                            Log.e("MainActivity", "Error fetching active users", e);
-                        }
-                    });
+                                @Override
+                                public void onFailure(Exception e) {
+                                    Log.e("MainActivity", "Error fetching active users", e);
+                                }
+                            });
 
-                    // מספר משתמשים בקהילה
+                    // Community members & dogs
                     userRepo.getUsersByCommunity(communityName, new UserRepository.FirestoreUsersListCallback() {
                         @Override
                         public void onSuccess(List<User> users) {
                             communityStats.setText("Community members: " + users.size());
-
-                            // סכימת כמות הכלבים
-                            int dogs_count = 0;
+                            int dogsCount = 0;
                             for (User u : users) {
-                                if (u.getDogs() != null) {
-                                    dogs_count += u.getDogs().size();
-                                }
+                                if (u.getDogs() != null) dogsCount += u.getDogs().size();
                             }
-                            totalDogs.setText("Total dogs in community: " + dogs_count);
+                            totalDogs.setText("Total dogs in community: " + dogsCount);
                         }
 
                         @Override
@@ -133,14 +131,12 @@ public class MainActivity extends AppCompatActivity {
             Log.w("MainActivity", "No logged-in Firebase user");
         }
 
-
+        // === MapView ===
         MapView mapView = findViewById(R.id.mapView);
-
         if (firebaseUser != null) {
             String currentUserId = firebaseUser.getUid();
             mapController = new MapController(mapView, this, currentUserId);
 
-            // בקשת הרשאה והפעלת המפה
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                     != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this,
@@ -149,24 +145,13 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 mapController.initializeMap(savedInstanceState);
             }
-        } else {
-            Log.e("MainActivity", "FirebaseAuth.getCurrentUser() returned null. Cannot initialize map.");
-            // אפשר להחזיר למסך התחברות או להציג שגיאה
         }
 
-
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
-        } else {
-            mapController.initializeMap(savedInstanceState);
-        }
-
-        // --- Handle "Area Map" focusing ---
+        // === Focus on specific community area ===
         String focusCommunity = getIntent().getStringExtra(EXTRA_FOCUS_COMMUNITY_NAME);
         int focusRadius = getIntent().getIntExtra(EXTRA_FOCUS_RADIUS, 1500);
 
         if (focusCommunity != null && !focusCommunity.isEmpty()) {
-            // שלוף מרכז ורדיוס לפי שם קהילה
             CommunityRepository communityRepo = new CommunityRepository();
             communityRepo.getCommunityCenterAndRadiusByName(focusCommunity,
                     new CommunityRepository.CommunityGeoCallback() {
@@ -175,6 +160,7 @@ public class MainActivity extends AppCompatActivity {
                             int r = (focusRadius > 0) ? focusRadius : radiusMeters;
                             mapController.focusOnArea(lat, lng, r);
                         }
+
                         @Override
                         public void onFailure(Exception e) {
                             Log.e("MainActivity", "Failed to get community center: " + e.getMessage());
@@ -182,10 +168,9 @@ public class MainActivity extends AppCompatActivity {
                     });
         }
 
+        // === Visibility toggle ===
         TextView labelInvisible = findViewById(R.id.labelInvisible);
         TextView labelVisible = findViewById(R.id.labelVisible);
-
-        // מצב התחלה: משתמש נראה
         labelVisible.setAlpha(1f);
         labelInvisible.setAlpha(0.5f);
 
@@ -201,7 +186,13 @@ public class MainActivity extends AppCompatActivity {
             labelInvisible.setAlpha(0.5f);
         });
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.rootLayout), (v, insets) -> {
+        // === Drawer & BottomSheet ===
+        setupDrawerAndBottomSheet();
+    }
+
+    private void setupDrawerAndBottomSheet() {
+        View root = findViewById(R.id.rootLayout);
+        ViewCompat.setOnApplyWindowInsetsListener(root, (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
@@ -212,78 +203,36 @@ public class MainActivity extends AppCompatActivity {
         View bottomSheet = findViewById(R.id.bottomSheet);
         View menuButton = findViewById(R.id.imageButton);
         View overlay = drawerMotion.findViewById(R.id.overlay);
-        View root = findViewById(R.id.rootLayout);
 
-        // קבע כיוון
+        // RTL support
         boolean isRtl = ViewCompat.getLayoutDirection(root) == ViewCompat.LAYOUT_DIRECTION_RTL;
-
-        // מזהי סטים ותנועה לפי כיוון
         final int CLOSED_ID = isRtl ? R.id.closed_rtl : R.id.closed_ltr;
         final int OPEN_ID   = isRtl ? R.id.open_rtl   : R.id.open_ltr;
         final int TRANS_ID  = isRtl ? R.id.t_rtl      : R.id.t_ltr;
 
-        // בחר את התנועה הנכונה וודא שמתחילים מסגור
         drawerMotion.setTransition(TRANS_ID);
         drawerMotion.setState(CLOSED_ID, -1, -1);
 
-        // רוחב המגרה (מ-@dimen/drawer_width), המרווח ההתחלתי של הכפתור, ורווח קטן ליד המגרה
-        drawerMotion.setState(CLOSED_ID, -1, -1);
-
-        // רוחב המגירה מה־dimen
         final float drawerW = getResources().getDimension(R.dimen.drawer_width);
-
-        // marginStart האמיתי של הכפתור (לפי LayoutParams)
         final ViewGroup.MarginLayoutParams mbLp =
                 (ViewGroup.MarginLayoutParams) menuButton.getLayoutParams();
         final int marginStartPx = mbLp.getMarginStart();
-
-        // מרחק קטן מהשפה (שחק עם המספר כדי לקרב/להרחיק את הכפתור מהמגירה)
         final float gapPx = TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, -4, getResources().getDisplayMetrics());
 
-        // מאזין לתנועה של המגירה – מזיז את הכפתור בהתאם להתקדמות האנימציה
         drawerMotion.setTransitionListener(new MotionLayout.TransitionListener() {
-            @Override public void onTransitionStarted(MotionLayout ml, int startId, int endId) {
-                // הכפתור תמיד נראה ומעל הכל בזמן אנימציה
-                menuButton.setVisibility(View.VISIBLE);
-                menuButton.setAlpha(1f);
-                menuButton.bringToFront();
-                if (startId == CLOSED_ID) ml.setVisibility(View.VISIBLE);
-            }
-
+            @Override public void onTransitionStarted(MotionLayout ml, int s, int e) {}
             @Override public void onTransitionChange(MotionLayout ml, int s, int e, float p) {
-                boolean isRtl = root.getLayoutDirection() == View.LAYOUT_DIRECTION_RTL;
                 float dir = isRtl ? -1f : 1f;
                 float delta = (drawerW - marginStartPx - gapPx) * p * dir;
                 menuButton.setTranslationX(delta);
             }
-
-            @Override public void onTransitionCompleted(MotionLayout ml, int currentId) {
-                if (currentId == CLOSED_ID) {
-                    // כשנסגר: ודא שהכפתור חוזר למקום ונשאר נראה מעל הכל
-                    menuButton.setTranslationX(0f);
-                    menuButton.setVisibility(View.VISIBLE);
-                    menuButton.setAlpha(1f);
-                    menuButton.bringToFront();
-
-                    // המגירה ל-GONE כדי שלא תחסום טאצ'ים
-                    ml.setVisibility(View.GONE);
-                } else if (currentId == OPEN_ID) {
-                    menuButton.setVisibility(View.VISIBLE);
-                    menuButton.setAlpha(1f);
-                    menuButton.bringToFront();
-                    ml.setVisibility(View.VISIBLE);
-                }
-            }
-
-            @Override public void onTransitionTrigger(MotionLayout ml, int id, boolean p1, float p2) {}
+            @Override public void onTransitionCompleted(MotionLayout ml, int id) {}
+            @Override public void onTransitionTrigger(MotionLayout ml, int id, boolean b, float v) {}
         });
 
-        // Handle Bottom Sheet dragging
+        // BottomSheet drag
         bottomSheet.setOnTouchListener((v, event) -> {
-            if (drawerMotion.getVisibility() == View.VISIBLE && drawerMotion.getCurrentState() == OPEN_ID) {
-                return false; // אל תגרור את הסדין כשהמגירה פתוחה
-            }
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     initialTouchY = event.getRawY();
@@ -302,108 +251,67 @@ public class MainActivity extends AppCompatActivity {
                 case MotionEvent.ACTION_UP:
                 case MotionEvent.ACTION_CANCEL:
                     isDragging = false;
-                    if (mainMotion.getProgress() > 0.5f) {
-                        mainMotion.transitionToEnd();
-                    } else {
-                        mainMotion.transitionToStart();
-                    }
+                    if (mainMotion.getProgress() > 0.5f) mainMotion.transitionToEnd();
+                    else mainMotion.transitionToStart();
                     return true;
             }
             return false;
         });
 
-        // Handle drawer open/close from hamburger menu
+        // Menu button toggle
         menuButton.setOnClickListener(v -> {
-            // האם הכוונה לפתוח או לסגור? (טוגל)
             final boolean wantOpen = drawerMotion.getCurrentState() != OPEN_ID;
-
-            Runnable openOrCloseDrawer = () -> {
-                if (drawerMotion.getVisibility() != View.VISIBLE) {
-                    drawerMotion.setVisibility(View.VISIBLE);
-                    drawerMotion.setState(CLOSED_ID, -1, -1); // להתחיל מסגור
-                }
-                drawerMotion.transitionToState(wantOpen ? OPEN_ID : CLOSED_ID);
-            };
-
-            // אם ה-Bottom Sheet פתוח/באמצע – סגור אותו קודם ואז בצע את הפעולה
-            if (mainMotion.getProgress() > 0f) {
-                mainMotion.setTransitionListener(new MotionLayout.TransitionListener() {
-                    @Override public void onTransitionCompleted(MotionLayout ml, int id) {
-                        ml.setTransitionListener(null);
-                        openOrCloseDrawer.run();
-                    }
-                    @Override public void onTransitionStarted(MotionLayout m, int s, int e) {}
-                    @Override public void onTransitionChange(MotionLayout m, int s, int e, float p) {}
-                    @Override public void onTransitionTrigger(MotionLayout m, int id, boolean b, float v) {}
-                });
-                mainMotion.transitionToStart(); // סוגר את הסדין
-            } else {
-                openOrCloseDrawer.run();
-            }
+            drawerMotion.transitionToState(wantOpen ? OPEN_ID : CLOSED_ID);
         });
 
-        // Handle drawer close on overlay tap
+        // Close drawer on overlay tap
         overlay.setOnClickListener(v -> drawerMotion.transitionToState(CLOSED_ID));
 
-        View communityCard = findViewById(R.id.communityButtonContainer);
-        communityCard.setOnClickListener(v -> {
-            if (currentUser.isManager()) {
-                // If the user is a manager, go to the community management screen
-                Intent intent = new Intent(MainActivity.this, ManagerCommunityActivity.class);
-                intent.putExtra("currentUser", currentUser);
-                startActivity(intent);
-            } else {
-                // If the user is not a manager, go to the community activity screen
-                Intent intent = new Intent(MainActivity.this, CommunityActivity.class);
-                intent.putExtra("currentUser", currentUser);
-                startActivity(intent);
+        // === Buttons in drawer ===
+        findViewById(R.id.communityButtonContainer).setOnClickListener(v -> {
+            if (currentUser != null) {
+                if (currentUser.isManager()) {
+                    Intent intent = new Intent(MainActivity.this, ManagerCommunityActivity.class);
+                    intent.putExtra("currentUser", currentUser);
+                    startActivity(intent);
+                } else {
+                    Intent intent = new Intent(MainActivity.this, CommunityActivity.class);
+                    intent.putExtra("currentUser", currentUser);
+                    startActivity(intent);
+                }
             }
         });
 
-        View newReportButton = findViewById(R.id.newReportButtonContainer);
-        newReportButton.setOnClickListener(v -> {
-            openReportMapPicker(); // יפתח את הפעילות עם startActivityForResult
-        });
+        findViewById(R.id.newReportButtonContainer).setOnClickListener(v -> openReportMapPicker());
 
-        View myProfileButton = findViewById(R.id.myProfileButton);
-        myProfileButton.setOnClickListener(v -> {
-            // סגירת התפריט
+        findViewById(R.id.myProfileButton).setOnClickListener(v -> {
             drawerMotion.transitionToState(CLOSED_ID);
-
-            // מעבר לעמוד הפרופיל
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
                 Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
                 intent.putExtra("currentUser", currentUser);
                 startActivity(intent);
-            }, 300); // עיכוב של 300 מילישניות
+            }, 300);
         });
 
-        View settingsButton = findViewById(R.id.settingsButton);
-        settingsButton.setOnClickListener(v -> {
-            // סגירת התפריט הצדדי
+        findViewById(R.id.settingsButton).setOnClickListener(v -> {
             drawerMotion.transitionToState(CLOSED_ID);
-
-            // מעבר לעמוד ההגדרות
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
                 Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
                 intent.putExtra("currentUser", currentUser);
                 startActivity(intent);
-            }, 300); // עיכוב של 300 מילישניות כדי לאפשר לאנימציית הסגירה לרוץ
+            }, 300);
         });
 
-        View logoutButton = findViewById(R.id.logoutButton);
-        logoutButton.setOnClickListener(v -> {
-            // סגירת התפריט
+        findViewById(R.id.logoutButton).setOnClickListener(v -> {
             drawerMotion.transitionToState(CLOSED_ID);
-
-            // יציאה מהאפליקציה
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
                 Intent intent = new Intent(MainActivity.this, LoginActivity.class);
                 startActivity(intent);
-            }, 300); // עיכוב של 300 מילישניות
+            }, 300);
         });
     }
 
+    // === Report Map Picker ===
     private final ActivityResultLauncher<Intent> mapReportPickerLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
                     result -> {
@@ -411,7 +319,6 @@ public class MainActivity extends AppCompatActivity {
                             String type = result.getData().getStringExtra("selectedType");
                             if (type != null) {
                                 mapController.enterReportMode(type);
-                                // קריסת הגלילה כך שהמפה תהיה גלויה כולה
                                 MotionLayout mainMotion = findViewById(R.id.main);
                                 mainMotion.transitionToStart();
                             }
@@ -423,35 +330,13 @@ public class MainActivity extends AppCompatActivity {
         mapReportPickerLauncher.launch(intent);
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (mapController != null) mapController.onResume();
-    }
-
-    @Override
-    protected void onPause() {
-        if (mapController != null) mapController.onPause();
-        super.onPause();
-    }
-
-    @Override
-    protected void onDestroy() {
-        if (mapController != null) mapController.onDestroy();
-        super.onDestroy();
-    }
-
-    @Override
-    public void onLowMemory() {
-        super.onLowMemory();
-        if (mapController != null) mapController.onLowMemory();
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
+    // === Lifecycle ===
+    @Override protected void onResume() { super.onResume(); if (mapController != null) mapController.onResume(); }
+    @Override protected void onPause() { if (mapController != null) mapController.onPause(); super.onPause(); }
+    @Override protected void onDestroy() { if (mapController != null) mapController.onDestroy(); super.onDestroy(); }
+    @Override public void onLowMemory() { super.onLowMemory(); if (mapController != null) mapController.onLowMemory(); }
+    @Override protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         if (mapController != null) mapController.onSaveInstanceState(outState);
     }
-
-
 }

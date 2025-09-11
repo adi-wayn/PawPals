@@ -5,10 +5,11 @@ import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 
 import model.User;
-import model.firebase.Firestore.CommunityRepository;
+import model.firebase.firestore.CommunityRepository;
 
 public class CommunitySettingsActivity extends AppCompatActivity {
     public static final String EXTRA_CURRENT_USER = "currentUser";
@@ -33,36 +34,46 @@ public class CommunitySettingsActivity extends AppCompatActivity {
 
         tvCommunity.setText(currentUser.getCommunityName());
 
-        // הבא את communityId לפי שם
-        repo.getCommunityIdByName(currentUser.getCommunityName(), new CommunityRepository.FirestoreIdCallback() {
-            @Override public void onSuccess(String id) {
-                communityId = id;
-                // מצב התחלתי של הסוויץ'
-                repo.getManagerApplicationsOpen(communityId, new CommunityRepository.FirestoreBooleanCallback() {
-                    @Override public void onSuccess(boolean value) { swOpenApplications.setChecked(value); }
-                    @Override public void onFailure(Exception e) { /* ignore, ברירת מחדל false */ }
+        // שליפת ה־communityId לפי שם
+        repo.getCommunityIdByName(currentUser.getCommunityName(),
+                new CommunityRepository.FirestoreIdCallback() {
+                    @Override public void onSuccess(String id) {
+                        communityId = id;
+                        // מצב התחלתי של ה־switch
+                        repo.getManagerApplicationsOpen(communityId,
+                                new CommunityRepository.FirestoreBooleanCallback() {
+                                    @Override public void onSuccess(boolean value) {
+                                        swOpenApplications.setChecked(value);
+                                    }
+                                    @Override public void onFailure(Exception e) {
+                                        swOpenApplications.setChecked(false);
+                                    }
+                                });
+                    }
+                    @Override public void onFailure(Exception e) {
+                        Toast.makeText(CommunitySettingsActivity.this,
+                                "Community not found", Toast.LENGTH_LONG).show();
+                        finish();
+                    }
                 });
-            }
-            @Override public void onFailure(Exception e) {
-                Toast.makeText(CommunitySettingsActivity.this, "Community not found", Toast.LENGTH_LONG).show();
-                finish();
-            }
-        });
 
-        // שינוי הדגל
-        swOpenApplications.setOnCheckedChangeListener((CompoundButton btn, boolean isChecked) -> {
-            if (communityId == null) return;
-            repo.setManagerApplicationsOpen(communityId, isChecked, new CommunityRepository.FirestoreCallback() {
-                @Override public void onSuccess(String documentId) {
-                    Toast.makeText(CommunitySettingsActivity.this,
-                            isChecked ? "Applications opened" : "Applications closed",
-                            Toast.LENGTH_SHORT).show();
-                }
-                @Override public void onFailure(Exception e) {
-                    Toast.makeText(CommunitySettingsActivity.this, "Failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                    swOpenApplications.setChecked(!isChecked);
-                }
-            });
-        });
+        // שינוי מצב קבלת מועמדויות
+        swOpenApplications.setOnCheckedChangeListener(
+                (CompoundButton btn, boolean isChecked) -> {
+                    if (communityId == null) return;
+                    repo.setManagerApplicationsOpen(communityId, isChecked,
+                            new CommunityRepository.FirestoreCallback() {
+                                @Override public void onSuccess(String documentId) {
+                                    Toast.makeText(CommunitySettingsActivity.this,
+                                            isChecked ? "Applications opened" : "Applications closed",
+                                            Toast.LENGTH_SHORT).show();
+                                }
+                                @Override public void onFailure(Exception e) {
+                                    Toast.makeText(CommunitySettingsActivity.this,
+                                            "Failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                                    swOpenApplications.setChecked(!isChecked);
+                                }
+                            });
+                });
     }
 }

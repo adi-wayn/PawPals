@@ -5,8 +5,10 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
@@ -18,19 +20,39 @@ import com.google.android.material.card.MaterialCardView;
 import java.util.ArrayList;
 import java.util.List;
 
-import model.Message;
+import model.firebase.firestore.CommunityRepository;
 
 public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.MessageViewHolder> {
 
     private List<Message> messageList;
     private final String currentUserId;
     private final Context context;
+    private final CommunityRepository repo;
+    private String communityId;
+    private boolean isManager;
 
-    public MessagesAdapter(List<Message> messageList, String currentUserId, Context context) {
-        // כדי להימנע מ-NullPointer ולתמוך בהוספות דינמיות
+    public MessagesAdapter(List<Message> messageList,
+                           String currentUserId,
+                           Context context,
+                           String communityId,
+                           boolean isManager) {
         this.messageList = (messageList != null) ? messageList : new ArrayList<>();
         this.currentUserId = currentUserId;
         this.context = context;
+        this.communityId = communityId;
+        this.isManager = isManager;
+        this.repo = new CommunityRepository();
+    }
+
+    public MessagesAdapter(List<Message> messageList,
+                           String currentUserId,
+                           Context context) {
+        this(messageList, currentUserId, context, null, false);
+    }
+
+    public void setCommunityData(String communityId, boolean isManager) {
+        this.communityId = communityId;
+        this.isManager = isManager;
     }
 
     @NonNull
@@ -46,35 +68,65 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Messag
         Message msg = messageList.get(position);
         boolean isOutgoing = msg.getSenderId() != null && msg.getSenderId().equals(currentUserId);
 
-        // שם שולח + גוף הודעה
+        // שם השולח
         holder.textSenderName.setText(isOutgoing ? "Me" : msg.getSenderName());
+
+        // טקסט ההודעה
         holder.textMessageBody.setText(msg.getText());
 
-        // יישור לפי סוג ההודעה (ימין = יוצאת, שמאל = נכנסת)
+        // מיקום ההודעה (שמאל/ימין)
         holder.rootItem.setGravity(isOutgoing ? Gravity.END : Gravity.START);
 
-        // צבע רקע של הבועה + צבע טקסט
+        // צבע בועה
         int bubbleColor = ContextCompat.getColor(context,
                 isOutgoing ? R.color.bubble_outgoing : R.color.bubble_incoming);
         holder.bubble.setCardBackgroundColor(bubbleColor);
 
+        // צבע טקסט
         int textColor = ContextCompat.getColor(context,
                 isOutgoing ? android.R.color.white : android.R.color.black);
         holder.textMessageBody.setTextColor(textColor);
 
-        // (אופציונלי) לחיצה ארוכה להעתקה
-        holder.itemView.setOnLongClickListener(v -> {
-            // אפשר להוסיף כאן העתקה ללוח/תפריט
-            return false;
-        });
+        // כפתור מחיקה – מוצג רק אם המשתמש מנהל או השולח עצמו
+        if ((isManager || isOutgoing) && communityId != null) {
+            holder.buttonDelete.setVisibility(View.VISIBLE);
+
+            holder.buttonDelete.setOnClickListener(v -> {
+                int adapterPos = holder.getAdapterPosition();
+                if (adapterPos == RecyclerView.NO_POSITION) return;
+
+                if (msg.getId() == null || msg.getId().isEmpty()) {
+                    Toast.makeText(context, "Cannot delete: missing message id", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                // מחיקה מה־Firebase
+                repo.deleteMessage(communityId, msg.getId(), new CommunityRepository.FirestoreCallback() {
+                    @Override
+                    public void onSuccess(String ignored) {
+                        Toast.makeText(context, "Message deleted", Toast.LENGTH_SHORT).show();
+
+                        // מחיקה מה־RecyclerView
+                        messageList.remove(adapterPos);
+                        notifyItemRemoved(adapterPos);
+                        notifyItemRangeChanged(adapterPos, messageList.size());
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        Toast.makeText(context, "Delete failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                });
+            });
+        } else {
+            holder.buttonDelete.setVisibility(View.GONE);
+        }
     }
 
     @Override
     public int getItemCount() {
         return messageList.size();
     }
-
-    // ----- עוזרים נוחים לניהול הרשימה -----
 
     public void setMessages(List<Message> newList) {
         this.messageList = (newList != null) ? newList : new ArrayList<>();
@@ -88,10 +140,11 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Messag
     }
 
     static class MessageViewHolder extends RecyclerView.ViewHolder {
-        LinearLayout rootItem;              // root_message_item
-        TextView textSenderName;            // text_sender_name
-        MaterialCardView bubble;            // bubble
-        TextView textMessageBody;           // text_message_body
+        LinearLayout rootItem;
+        TextView textSenderName;
+        MaterialCardView bubble;
+        TextView textMessageBody;
+        ImageButton buttonDelete;
 
         public MessageViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -99,6 +152,7 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Messag
             textSenderName = itemView.findViewById(R.id.text_sender_name);
             bubble = itemView.findViewById(R.id.bubble);
             textMessageBody = itemView.findViewById(R.id.text_message_body);
+            buttonDelete = itemView.findViewById(R.id.button_delete_message);
         }
     }
 }
