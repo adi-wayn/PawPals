@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp"
-    android:background="#FFFFFF"
+    android:background="@color/app_background"
     tools:context=".ReportMapActivity">
 
     <!-- כותרת -->
@@ -13,84 +14,104 @@
         android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="24dp"
         android:text="What do you see?"
-        android:textSize="24sp"
         android:textStyle="bold"
+        android:textSize="24sp"
+        android:textColor="?attr/colorOnSurface"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- שורה עליונה -->
+    <!-- קו הפרדה טורקיז עדין -->
+    <com.google.android.material.divider.MaterialDivider
+        android:id="@+id/headerDivider"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_marginTop="8dp"
+        app:dividerColor="@color/pp_colorPrimary"
+        app:thickness="1dp"
+        app:layout_constraintTop_toBottomOf="@id/textView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- שורה עליונה: שני כפתורים ברוחב שווה -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/button_inspector"
-        android:layout_width="138dp"
+        android:layout_width="0dp"
         android:layout_height="114dp"
-        android:layout_marginTop="40dp"
-        android:layout_marginEnd="16dp"
-        android:backgroundTint="@color/white"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="8dp"
         android:text="Dog Patrol"
-        android:textColor="@color/black"
+        android:textColor="?attr/colorOnSurface"
         app:icon="@drawable/ic_inspector"
-        app:iconGravity="top"
+        app:iconGravity="textTop"
         app:iconSize="60dp"
         app:iconTint="@null"
-        style="@style/Widget.PawPals.Button"
-        app:layout_constraintTop_toBottomOf="@id/textView"
+        app:backgroundTint="@color/white"
+        app:layout_constraintTop_toBottomOf="@id/headerDivider"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@id/button_bin"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintHorizontal_weight="1"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        style="@style/Widget.PawPals.Button" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/button_bin"
-        android:layout_width="138dp"
-        android:layout_height="114dp"
-        android:layout_marginTop="40dp"
-        android:backgroundTint="@color/white"
-        android:text="Trash Bin"
-        android:textColor="@color/black"
-        app:icon="@drawable/trash_bin"
-        app:iconGravity="top"
-        app:iconSize="60dp"
-        app:iconTint="@null"
-        style="@style/Widget.PawPals.Button"
-        app:layout_constraintTop_toBottomOf="@id/textView"
-        app:layout_constraintStart_toEndOf="@id/button_inspector"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <!-- שורה תחתונה -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/button_danger"
-        android:layout_width="138dp"
+        android:layout_width="0dp"
         android:layout_height="114dp"
         android:layout_marginTop="24dp"
-        android:layout_marginEnd="16dp"
-        android:backgroundTint="@color/white"
-        android:text="Danger"
-        android:textColor="@color/black"
-        app:icon="@drawable/ic_danger"
-        app:iconGravity="top"
+        android:layout_marginStart="8dp"
+        android:text="Trash Bin"
+        android:textColor="?attr/colorOnSurface"
+        app:icon="@drawable/trash_bin"
+        app:iconGravity="textTop"
         app:iconSize="60dp"
         app:iconTint="@null"
-        style="@style/Widget.PawPals.Button"
+        app:backgroundTint="@color/white"
+        app:layout_constraintTop_toBottomOf="@id/headerDivider"
+        app:layout_constraintStart_toEndOf="@id/button_inspector"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_weight="1"
+        style="@style/Widget.PawPals.Button" />
+
+    <!-- שורה תחתונה: שני כפתורים ברוחב שווה -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/button_danger"
+        android:layout_width="0dp"
+        android:layout_height="114dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="8dp"
+        android:text="Danger"
+        android:textColor="?attr/colorOnSurface"
+        app:icon="@drawable/ic_danger"
+        app:iconGravity="textTop"
+        app:iconSize="60dp"
+        app:iconTint="@null"
+        app:backgroundTint="@color/white"
         app:layout_constraintTop_toBottomOf="@id/button_inspector"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@id/button_help"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintHorizontal_weight="1"
+        style="@style/Widget.PawPals.Button" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/button_help"
-        android:layout_width="138dp"
+        android:layout_width="0dp"
         android:layout_height="114dp"
-        android:layout_marginTop="24dp"
-        android:backgroundTint="@color/white"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="8dp"
         android:text="Help"
-        android:textColor="@color/black"
+        android:textColor="?attr/colorOnSurface"
         app:icon="@drawable/ic_help"
-        app:iconGravity="top"
+        app:iconGravity="textTop"
         app:iconSize="60dp"
         app:iconTint="@null"
-        style="@style/Widget.PawPals.Button"
+        app:backgroundTint="@color/white"
         app:layout_constraintTop_toBottomOf="@id/button_bin"
         app:layout_constraintStart_toEndOf="@id/button_danger"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_weight="1"
+        style="@style/Widget.PawPals.Button" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
