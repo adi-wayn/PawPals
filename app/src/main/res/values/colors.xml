@@ -49,4 +49,12 @@
     <color name="pp_colorErrorDark">#FFB4AB</color>
     <color name="pp_colorOnErrorDark">#690005</color>
 
+    <color name="toggle_dogs_bg">#E6F7F7</color>        <!-- טורקיז רך -->
+    <color name="toggle_dogs_text">#1F3B3D</color>
+    <color name="toggle_dogs_stroke">#6FB7B3</color>
+
+    <color name="toggle_friends_bg">#FFF1E8</color>     <!-- אפרסק רך -->
+    <color name="toggle_friends_text">#1F3B3D</color>
+    <color name="toggle_friends_stroke">#F29E70</color>
+
 </resources>
