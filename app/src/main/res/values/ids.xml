@@ -11,4 +11,5 @@
     <item name="et_dog_age" type="id" />
     <item name="et_dog_breed" type="id" />
     <item name="et_dog_name" type="id" />
+    <item name="progress" type="id" />
 </resources>

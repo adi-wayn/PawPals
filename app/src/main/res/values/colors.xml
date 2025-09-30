@@ -1,10 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="app_background">#FAF7FF</color>
+
+    <!-- בסיסיים -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="light_gray">#DDDDDD</color>
-    <color name="bubble_incoming">#F1F1F1</color>   <!-- אפור בהיר -->
-    <color name="bubble_outgoing">#3A7AFE</color>   <!-- כחול -->
+
+    <!-- PawPals: Light (מבוסס על הלוגו + רקע טורקיז רך) -->
+    <color name="pp_colorPrimary">#22949B</color>        <!-- טורקיז עמוק -->
+    <color name="pp_colorOnPrimary">#FFFFFF</color>
+
+    <color name="pp_colorSecondary">#D97136</color>      <!-- כתום/חום חמים -->
+    <color name="pp_colorOnSecondary">#FFFFFF</color>
+
+    <color name="pp_colorTertiary">#6FB7B3</color>       <!-- טורקיז בהיר רך -->
+    <color name="pp_colorOnTertiary">#1B2C2D</color>
+
+    <color name="pp_colorBackground">#EAF6F6</color>     <!-- רקע טורקיז בהיר ונעים -->
+    <color name="pp_colorOnBackground">#0F2A2C</color>   <!-- טקסט כהה לקריאות -->
+    <color name="pp_colorSurface">#F5FBFB</color>        <!-- משטח טיפה בהיר מהרקע -->
+    <color name="pp_colorOnSurface">#0F2A2C</color>
+    <color name="pp_colorOutline">#B5C7C9</color>
+
+    <color name="pp_colorError">#BA1A1A</color>
+    <color name="pp_colorOnError">#FFFFFF</color>
+
+    <!-- התאמות UI ספציפיות (Light) -->
+    <color name="app_background">@color/pp_colorBackground</color>
+    <color name="bubble_incoming">@color/pp_colorSurface</color>
+    <color name="bubble_outgoing">@color/pp_colorPrimary</color>
+
+    <!-- PawPals: Dark -->
+    <color name="pp_colorPrimaryDark">#6FB7B3</color>
+    <color name="pp_colorOnPrimaryDark">#0D1A1B</color>
+
+    <color name="pp_colorSecondaryDark">#F29E70</color>
+    <color name="pp_colorOnSecondaryDark">#2D1607</color>
+
+    <color name="pp_colorTertiaryDark">#93D1CD</color>
+    <color name="pp_colorOnTertiaryDark">#0D1A1B</color>
+
+    <color name="pp_colorBackgroundDark">#101414</color>
+    <color name="pp_colorOnBackgroundDark">#E9F1F0</color>
+    <color name="pp_colorSurfaceDark">#0D1213</color>
+    <color name="pp_colorOnSurfaceDark">#E9F1F0</color>
+    <color name="pp_colorOutlineDark">#3E5052</color>
+
+    <color name="pp_colorErrorDark">#FFB4AB</color>
+    <color name="pp_colorOnErrorDark">#690005</color>
+
+    <color name="toggle_dogs_bg">#E6F7F7</color>        <!-- טורקיז רך -->
+    <color name="toggle_dogs_text">#1F3B3D</color>
+    <color name="toggle_dogs_stroke">#6FB7B3</color>
+
+    <color name="toggle_friends_bg">#FFF1E8</color>     <!-- אפרסק רך -->
+    <color name="toggle_friends_text">#1F3B3D</color>
+    <color name="toggle_friends_stroke">#F29E70</color>
 
 </resources>
