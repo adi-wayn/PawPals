@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="24dp"
+    android:background="#FFFDF7">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Edit Profile"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="#1F3B3D"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Profile Picture -->
+        <ImageView
+            android:id="@+id/image_profile"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:src="@drawable/ic_profile_placeholder"
+            android:scaleType="centerCrop"
+            android:background="@drawable/circle_background"
+            android:contentDescription="Profile Picture"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Change Picture Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_change_picture"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Change Picture"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Full Name (read-only) -->
+        <EditText
+            android:id="@+id/input_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Full Name"
+            android:enabled="false"
+            android:padding="12dp"
+            android:background="@drawable/bg_input"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Community -->
+        <EditText
+            android:id="@+id/input_community"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Community"
+            android:padding="12dp"
+            android:background="@drawable/bg_input"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Contact Details -->
+        <EditText
+            android:id="@+id/input_contact_details"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Contact Details (phone, email...)"
+            android:inputType="textEmailAddress|textMultiLine"
+            android:padding="12dp"
+            android:background="@drawable/bg_input"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Fields of Interest -->
+        <EditText
+            android:id="@+id/input_fields_of_interest"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Fields of Interest"
+            android:inputType="textMultiLine"
+            android:minLines="3"
+            android:maxLines="5"
+            android:gravity="top"
+            android:padding="12dp"
+            android:background="@drawable/bg_input"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Save Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_save"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Save Changes"
+            android:padding="14dp"
+            style="@style/Widget.PawPals.Button"
+            android:layout_marginTop="16dp" />
+    </LinearLayout>
+</ScrollView>
