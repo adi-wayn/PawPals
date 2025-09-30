@@ -158,7 +158,9 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void onSuccess(double lat, double lng, int radiusMeters) {
                             int r = (focusRadius > 0) ? focusRadius : radiusMeters;
-                            mapController.focusOnArea(lat, lng, r);
+                            if (mapController != null) {
+                                mapController.focusOnArea(lat, lng, r);
+                            }
                         }
 
                         @Override
@@ -175,13 +177,13 @@ public class MainActivity extends AppCompatActivity {
         labelInvisible.setAlpha(0.5f);
 
         labelInvisible.setOnClickListener(v -> {
-            mapController.setVisibleToOthers(false);
+            if (mapController != null) mapController.setVisibleToOthers(false);
             labelInvisible.setAlpha(1f);
             labelVisible.setAlpha(0.5f);
         });
 
         labelVisible.setOnClickListener(v -> {
-            mapController.setVisibleToOthers(true);
+            if (mapController != null) mapController.setVisibleToOthers(true);
             labelVisible.setAlpha(1f);
             labelInvisible.setAlpha(0.5f);
         });
@@ -267,8 +269,8 @@ public class MainActivity extends AppCompatActivity {
         // Close drawer on overlay tap
         overlay.setOnClickListener(v -> drawerMotion.transitionToState(CLOSED_ID));
 
-        // === Buttons in drawer ===
-        findViewById(R.id.communityButtonContainer).setOnClickListener(v -> {
+        // === Buttons in bottom sheet ===
+        findViewById(R.id.btnCommunityPage).setOnClickListener(v -> {
             if (currentUser != null) {
                 if (currentUser.isManager()) {
                     Intent intent = new Intent(MainActivity.this, ManagerCommunityActivity.class);
@@ -282,8 +284,9 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        findViewById(R.id.newReportButtonContainer).setOnClickListener(v -> openReportMapPicker());
+        findViewById(R.id.btnNewReport).setOnClickListener(v -> openReportMapPicker());
 
+        // === Buttons in drawer ===
         findViewById(R.id.myProfileButton).setOnClickListener(v -> {
             drawerMotion.transitionToState(CLOSED_ID);
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
@@ -317,7 +320,7 @@ public class MainActivity extends AppCompatActivity {
                     result -> {
                         if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                             String type = result.getData().getStringExtra("selectedType");
-                            if (type != null) {
+                            if (type != null && mapController != null) {
                                 mapController.enterReportMode(type);
                                 MotionLayout mainMotion = findViewById(R.id.main);
                                 mainMotion.transitionToStart();
@@ -328,6 +331,22 @@ public class MainActivity extends AppCompatActivity {
     private void openReportMapPicker() {
         Intent intent = new Intent(this, ReportMapActivity.class);
         mapReportPickerLauncher.launch(intent);
+    }
+
+    // === Permissions callback ===
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                if (mapController != null) {
+                    // אין לנו כאן savedInstanceState, וזה בסדר להעביר null
+                    mapController.initializeMap(null);
+                }
+            } else {
+                Log.w("MainActivity", "Location permission denied");
+            }
+        }
     }
 
     // === Lifecycle ===

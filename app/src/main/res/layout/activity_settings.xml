@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layoutDirection="locale"
     android:padding="16dp"
-    android:background="#FFFFFF">
+    android:background="@color/app_background">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -12,150 +14,233 @@
 
         <!-- Title -->
         <TextView
+            android:id="@+id/settings_title"
+            style="@style/TextAppearance.Material3.TitleLarge"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Settings:"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:layout_gravity="start"
-            android:layout_marginBottom="16dp" />
+            android:textColor="?attr/colorOnSurface"
+            android:layout_marginBottom="8dp" />
 
-        <!-- Profile Area -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical|start">
-
-            <!-- Name -->
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:gravity="start">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Dog Owner1"
-                    android:textSize="18sp"
-                    android:textAlignment="viewStart" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Edit name"
-                    android:textSize="14sp"
-                    android:textColor="#888888"
-                    android:textAlignment="viewStart" />
-            </LinearLayout>
-
-            <!-- Image -->
-            <ImageView
-                android:layout_width="64dp"
-                android:layout_height="64dp"
-                android:layout_marginEnd="16dp"
-                android:src="@drawable/ic_profile_placeholder"
-                android:background="@drawable/circle_background"
-                android:scaleType="centerCrop"
-                android:contentDescription="Profile picture" />
-        </LinearLayout>
-
-        <!-- Divider -->
-        <View
+        <!-- Divider טורקיז קטן אחרי הכותרת -->
+        <com.google.android.material.divider.MaterialDivider
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:layout_marginVertical="16dp"
-            android:background="#CCCCCC" />
+            android:layout_marginBottom="12dp"
+            app:dividerColor="@color/pp_colorPrimary"
+            app:thickness="1dp" />
 
-        <!-- Account Category -->
-        <TextView
+        <!-- Profile Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/profile_card"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Account:"
-            android:textStyle="bold"
-            android:gravity="start" />
+            android:layout_marginBottom="16dp"
+            app:cardBackgroundColor="?attr/colorSurface"
+            app:strokeColor="@color/pp_colorOutline"
+            app:strokeWidth="1dp"
+            app:shapeAppearance="@style/Shape.Round16">
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="• Account &amp; registration"
-            android:gravity="start"
-            android:paddingTop="8dp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="• Privacy"
-            android:gravity="start"
-            android:paddingTop="4dp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="• Restrictions &amp; Reports"
-            android:gravity="start"
-            android:paddingTop="4dp" />
-
-        <!-- Profile Category -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Profile:"
-            android:textStyle="bold"
-            android:gravity="start"
-            android:layout_marginTop="16dp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="• Edit Profile"
-            android:gravity="start"
-            android:paddingTop="8dp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="• Edit Dogs"
-            android:gravity="start"
-            android:paddingTop="4dp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="• Map settings"
-            android:gravity="start"
-            android:paddingTop="4dp" />
-
-        <!-- Dark Mode Toggle -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="start"
-            android:layout_marginTop="16dp">
-
-            <TextView
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Enable Visability"
-                android:layout_marginEnd="8dp" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="16dp">
 
-            <Switch
-                android:id="@+id/switch_dark_mode"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
+                <!-- Name -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tv_owner_name"
+                        style="@style/TextAppearance.Material3.TitleMedium"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Dog Owner1"
+                        android:textColor="?attr/colorOnSurface" />
+
+                    <TextView
+                        android:id="@+id/tv_edit_name"
+                        style="@style/TextAppearance.Material3.BodyMedium"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Edit name"
+                        android:textColor="?attr/colorOnSurface"
+                        android:alpha="0.7"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
+
+                <!-- Image (מעוגל עם מסגרת טורקיז דקה) -->
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:id="@+id/iv_profile"
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:contentDescription="Profile picture"
+                    android:scaleType="centerCrop"
+                    app:shapeAppearanceOverlay="@style/Shape.Round24"
+                    app:strokeColor="@color/pp_colorPrimary"
+                    app:strokeWidth="1dp"
+                    android:src="@drawable/ic_profile_placeholder" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Account Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/account_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardBackgroundColor="?attr/colorSurface"
+            app:strokeColor="@color/pp_colorOutline"
+            app:strokeWidth="1dp"
+            app:shapeAppearance="@style/Shape.Round16">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:id="@+id/account_title"
+                    style="@style/TextAppearance.Material3.LabelLarge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Account:"
+                    android:textStyle="bold"
+                    android:textColor="?attr/colorOnSurface" />
+
+                <TextView
+                    android:id="@+id/account_item_1"
+                    style="@style/TextAppearance.Material3.BodyLarge"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="• Account &amp; registration"
+                    android:textColor="?attr/colorOnSurface"
+                    android:layout_marginTop="8dp" />
+
+                <TextView
+                    android:id="@+id/account_item_2"
+                    style="@style/TextAppearance.Material3.BodyLarge"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="• Privacy"
+                    android:textColor="?attr/colorOnSurface"
+                    android:layout_marginTop="4dp" />
+
+                <TextView
+                    android:id="@+id/account_item_3"
+                    style="@style/TextAppearance.Material3.BodyLarge"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="• Restrictions &amp; Reports"
+                    android:textColor="?attr/colorOnSurface"
+                    android:layout_marginTop="4dp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Profile Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/profile_section_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardBackgroundColor="?attr/colorSurface"
+            app:strokeColor="@color/pp_colorOutline"
+            app:strokeWidth="1dp"
+            app:shapeAppearance="@style/Shape.Round16">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:id="@+id/profile_title"
+                    style="@style/TextAppearance.Material3.LabelLarge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Profile:"
+                    android:textStyle="bold"
+                    android:textColor="?attr/colorOnSurface" />
+
+                <TextView
+                    android:id="@+id/profile_item_1"
+                    style="@style/TextAppearance.Material3.BodyLarge"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="• Edit Profile"
+                    android:textColor="?attr/colorOnSurface"
+                    android:layout_marginTop="8dp" />
+
+                <TextView
+                    android:id="@+id/profile_item_2"
+                    style="@style/TextAppearance.Material3.BodyLarge"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="• Edit Dogs"
+                    android:textColor="?attr/colorOnSurface"
+                    android:layout_marginTop="4dp" />
+
+                <TextView
+                    android:id="@+id/profile_item_3"
+                    style="@style/TextAppearance.Material3.BodyLarge"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="• Map settings"
+                    android:textColor="?attr/colorOnSurface"
+                    android:layout_marginTop="4dp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Visibility Toggle Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/visibility_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardBackgroundColor="?attr/colorSurface"
+            app:strokeColor="@color/pp_colorOutline"
+            app:strokeWidth="1dp"
+            app:shapeAppearance="@style/Shape.Round16">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:id="@+id/visibility_label"
+                    style="@style/TextAppearance.Material3.BodyLarge"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Enable Visability"
+                    android:textColor="?attr/colorOnSurface" />
+
+                <!-- Material Switch (אפשר להשאיר גם android:Switch אם מעדיפים) -->
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/switch_dark_mode"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
         <!-- Back Button -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button_back"
+            style="@style/Widget.PawPals.Button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Back"
-            style="@style/Widget.PawPals.Button"
             android:layout_gravity="end"
             android:layout_marginTop="24dp" />
+
     </LinearLayout>
 </ScrollView>
