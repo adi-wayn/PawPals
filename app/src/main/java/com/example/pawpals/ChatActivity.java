@@ -111,6 +111,15 @@ public class ChatActivity extends AppCompatActivity {
         });
     }
 
+    /** חיפוש הודעה לפי ה-id שלה ברשימה המקומית */
+    private int indexOfMessageId(@Nullable String id) {
+        if (id == null) return -1;
+        for (int i = 0; i < messages.size(); i++) {
+            if (id.equals(messages.get(i).getId())) return i;
+        }
+        return -1;
+    }
+
     private void loadMessagesAndListen() {
         if (TextUtils.isEmpty(communityId)) return;
 
@@ -141,30 +150,53 @@ public class ChatActivity extends AppCompatActivity {
 
                         for (DocumentChange dc : changes) {
                             Message m = dc.getDocument().toObject(Message.class);
-                            m.setId(dc.getDocument().getId()); // ✅ שמירה של ה-id
+                            m.setId(dc.getDocument().getId()); // נשמור מזהה יציב
+
                             switch (dc.getType()) {
-                                case ADDED:
-                                    messages.add(m);
-                                    adapter.notifyItemInserted(messages.size() - 1);
-                                    recyclerView.scrollToPosition(Math.max(0, adapter.getItemCount() - 1));
-                                    break;
-                                case MODIFIED:
-                                    int idxM = dc.getNewIndex();
-                                    if (idxM >= 0 && idxM < messages.size()) {
-                                        messages.set(idxM, m);
-                                        adapter.notifyItemChanged(idxM);
+                                case ADDED: {
+                                    // הוסף אם לא קיים; ננסה לשמור על סדר אם newIndex תקין
+                                    int existing = indexOfMessageId(m.getId());
+                                    if (existing == -1) {
+                                        int insertAt = dc.getNewIndex();
+                                        if (insertAt >= 0 && insertAt <= messages.size()) {
+                                            messages.add(insertAt, m);
+                                            adapter.notifyItemInserted(insertAt);
+                                        } else {
+                                            messages.add(m);
+                                            adapter.notifyItemInserted(messages.size() - 1);
+                                        }
+                                        recyclerView.scrollToPosition(Math.max(0, adapter.getItemCount() - 1));
                                     } else {
-                                        messages.add(m);
-                                        adapter.notifyItemInserted(messages.size() - 1);
+                                        messages.set(existing, m);
+                                        adapter.notifyItemChanged(existing);
                                     }
                                     break;
-                                case REMOVED:
-                                    int idxR = dc.getOldIndex();
-                                    if (idxR >= 0 && idxR < messages.size()) {
-                                        messages.remove(idxR);
-                                        adapter.notifyItemRemoved(idxR);
+                                }
+                                case MODIFIED: {
+                                    int idx = indexOfMessageId(m.getId());
+                                    if (idx != -1) {
+                                        messages.set(idx, m);
+                                        adapter.notifyItemChanged(idx);
+                                    } else {
+                                        int insertAt = dc.getNewIndex();
+                                        if (insertAt >= 0 && insertAt <= messages.size()) {
+                                            messages.add(insertAt, m);
+                                            adapter.notifyItemInserted(insertAt);
+                                        } else {
+                                            messages.add(m);
+                                            adapter.notifyItemInserted(messages.size() - 1);
+                                        }
                                     }
                                     break;
+                                }
+                                case REMOVED: {
+                                    int idx = indexOfMessageId(m.getId());
+                                    if (idx != -1) {
+                                        messages.remove(idx);
+                                        adapter.notifyItemRemoved(idx);
+                                    }
+                                    break;
+                                }
                             }
                         }
                     }
