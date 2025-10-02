@@ -100,16 +100,12 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Messag
                     return;
                 }
 
-                // מחיקה מה־Firebase
+                // מחיקה ב-Firestore בלבד; ה-UI יתעדכן ע"י SnapshotListener ב-ChatActivity
                 repo.deleteMessage(communityId, msg.getId(), new CommunityRepository.FirestoreCallback() {
                     @Override
                     public void onSuccess(String ignored) {
                         Toast.makeText(context, "Message deleted", Toast.LENGTH_SHORT).show();
-
-                        // מחיקה מה־RecyclerView
-                        messageList.remove(adapterPos);
-                        notifyItemRemoved(adapterPos);
-                        notifyItemRangeChanged(adapterPos, messageList.size());
+                        // אל תמחק מקומית ואל תקרא notify... כאן
                     }
 
                     @Override
