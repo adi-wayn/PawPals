@@ -75,28 +75,29 @@
             android:layout_height="wrap_content"
             android:text="Account:"
             android:textStyle="bold"
-            android:gravity="start" />
+            android:gravity="start"
+            android:layout_marginTop="16dp" />
 
-        <TextView
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_account_registration"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="• Account &amp; registration"
-            android:gravity="start"
-            android:paddingTop="8dp" />
+            android:text="Account &amp; Registration"
+            style="@style/Widget.PawPals.TextButton" />
 
-        <TextView
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_privacy_policy"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="• Privacy"
-            android:gravity="start"
-            android:paddingTop="4dp" />
+            android:text="Privacy Policy"
+            style="@style/Widget.PawPals.TextButton" />
 
-        <TextView
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_alerts"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="• Restrictions &amp; Reports"
-            android:gravity="start"
-            android:paddingTop="4dp" />
+            android:text="Alerts"
+            style="@style/Widget.PawPals.TextButton" />
 
         <!-- Profile Category -->
         <TextView
@@ -107,19 +108,20 @@
             android:gravity="start"
             android:layout_marginTop="16dp" />
 
-        <TextView
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_edit_profile"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="• Edit Profile"
-            android:gravity="start"
-            android:paddingTop="8dp" />
+            android:text="Edit Profile"
+            style="@style/Widget.PawPals.TextButton" />
 
-        <TextView
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_edit_dogs"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="• Edit Dogs"
-            android:gravity="start"
-            android:paddingTop="4dp" />
+            android:text="Edit Dogs"
+            style="@style/Widget.PawPals.TextButton" />
+
 
         <TextView
             android:layout_width="match_parent"

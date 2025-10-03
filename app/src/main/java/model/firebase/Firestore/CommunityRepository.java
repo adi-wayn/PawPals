@@ -116,6 +116,48 @@ public class CommunityRepository {
                 .addOnFailureListener(callback::onFailure);
     }
 
+    public void findCommunityNearby(double userLat, double userLng, int radiusMeters, FirestoreCommunityCallback callback) {
+        db.collection("communities")
+                .get()
+                .addOnSuccessListener(query -> {
+                    Community closest = null;
+                    double closestDistance = Double.MAX_VALUE;
+
+                    for (DocumentSnapshot doc : query.getDocuments()) {
+                        Double lat = doc.getDouble("latitude");
+                        Double lng = doc.getDouble("longitude");
+                        if (lat != null && lng != null) {
+                            double distance = distanceInMeters(userLat, userLng, lat, lng);
+                            if (distance <= radiusMeters && distance < closestDistance) {
+                                closestDistance = distance;
+                                closest = doc.toObject(Community.class);
+                                if (closest != null) closest.setName(doc.getId());
+                            }
+                        }
+                    }
+
+                    if (closest != null) {
+                        callback.onSuccess(closest);
+                    } else {
+                        callback.onFailure(new Exception("No nearby community found"));
+                    }
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
+    // Haversine formula to calculate distance between two coordinates
+    private double distanceInMeters(double lat1, double lon1, double lat2, double lon2) {
+        int R = 6371000; // radius of Earth in meters
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
+                        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    }
+
+
 
     // יצירת דיווח בתוך קהילה
     public void createReport(String communityId, Report report, FirestoreCallback callback) {

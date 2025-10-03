@@ -3,8 +3,6 @@ package model.firebase.Firestore;
 import android.util.Log;
 import android.util.Pair;
 
-import androidx.annotation.Nullable;
-
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
@@ -390,4 +388,29 @@ public class UserRepository {
         void onSuccess(List<Pair<String, User>> rows);
         void onFailure(Exception e);
     }
+
+    /** עדכון שדות בפרופיל המשתמש */
+    public void updateUserProfile(String userId, Map<String, Object> updates, FirestoreCallback callback) {
+        if (userId == null || userId.isEmpty()) {
+            callback.onFailure(new IllegalArgumentException("userId is empty"));
+            return;
+        }
+        if (updates == null || updates.isEmpty()) {
+            callback.onFailure(new IllegalArgumentException("updates map is empty"));
+            return;
+        }
+
+        db.collection("users")
+                .document(userId)
+                .update(updates)
+                .addOnSuccessListener(aVoid -> {
+                    Log.d(TAG, "User profile updated for: " + userId);
+                    callback.onSuccess(userId);
+                })
+                .addOnFailureListener(e -> {
+                    Log.w(TAG, "Error updating user profile", e);
+                    callback.onFailure(e);
+                });
+    }
+
 }

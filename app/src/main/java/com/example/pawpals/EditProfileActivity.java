@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import model.User;
-import model.firebase.firestore.UserRepository;
+import model.firebase.Firestore.UserRepository;
 
 public class EditProfileActivity extends AppCompatActivity {
 
@@ -72,26 +72,69 @@ public class EditProfileActivity extends AppCompatActivity {
         String name = safeText(inputName);
         String contactDetails = safeText(inputContactDetails);
         String fieldsOfInterest = safeText(inputFieldsOfInterest);
-        String communityName = safeText(inputCommunity);
+        String communityNameInput = safeText(inputCommunity);
 
         Map<String, Object> updates = new HashMap<>();
         if (!name.isEmpty()) updates.put("userName", name);
         if (!contactDetails.isEmpty()) updates.put("contactDetails", contactDetails);
         if (!fieldsOfInterest.isEmpty()) updates.put("fieldsOfInterest", fieldsOfInterest);
 
-        if (!isManager && !communityName.isEmpty()) {
-            updates.put("communityName", communityName);
-        }
+        if (!isManager && !communityNameInput.isEmpty()) {
+            // Use user's current location (replace with actual GPS)
+            double userLat = ...;
+            double userLng = ...;
+            int radiusMeters = 5000; // 5 km radius
 
-        if (updates.isEmpty()) {
-            Toast.makeText(this, "Nothing to update", Toast.LENGTH_SHORT).show();
-            return;
-        }
+            CommunityRepository communityRepo = new CommunityRepository();
 
+            // 1️⃣ Try to find a nearby community first
+            communityRepo.findCommunityNearby(userLat, userLng, radiusMeters, new CommunityRepository.FirestoreCommunityCallback() {
+                @Override
+                public void onSuccess(Community community) {
+                    // Found a nearby community → join it
+                    updates.put("communityName", community.getName());
+                    updateUserProfile(updates, "Joined existing community nearby!");
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                    // No nearby community → create new
+                    communityRepo.createCommunity(
+                            communityNameInput,
+                            userId, // user becomes manager
+                            userLat,
+                            userLng,
+                            new ArrayList<>(),
+                            new CommunityRepository.FirestoreCallback() {
+                                @Override
+                                public void onSuccess(String newCommunityId) {
+                                    updates.put("communityName", newCommunityId);
+                                    updateUserProfile(updates, "New community created!");
+                                }
+
+                                @Override
+                                public void onFailure(Exception e) {
+                                    Toast.makeText(EditProfileActivity.this, "Failed to create community", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                    );
+                }
+            });
+
+        } else {
+            if (!updates.isEmpty()) {
+                updateUserProfile(updates, "Profile updated!");
+            } else {
+                Toast.makeText(this, "Nothing to update", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private void updateUserProfile(Map<String, Object> updates, String successMsg) {
         userRepository.updateUserProfile(userId, updates, new UserRepository.FirestoreCallback() {
             @Override
             public void onSuccess(String id) {
-                Toast.makeText(EditProfileActivity.this, "Profile updated!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(EditProfileActivity.this, successMsg, Toast.LENGTH_SHORT).show();
                 finish();
             }
 
@@ -101,6 +144,7 @@ public class EditProfileActivity extends AppCompatActivity {
             }
         });
     }
+
 
     private String safeText(EditText et) {
         return et == null || et.getText() == null ? "" : et.getText().toString().trim();
