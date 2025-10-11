@@ -35,20 +35,15 @@
                 android:orientation="vertical"
                 android:gravity="start">
 
+                <!-- User name (dynamic) -->
                 <TextView
+                    android:id="@+id/text_user_name"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Dog Owner1"
                     android:textSize="18sp"
                     android:textAlignment="viewStart" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Edit name"
-                    android:textSize="14sp"
-                    android:textColor="#888888"
-                    android:textAlignment="viewStart" />
             </LinearLayout>
 
             <!-- Image -->
@@ -79,11 +74,14 @@
             android:layout_marginTop="16dp" />
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/button_account_registration"
+            android:id="@+id/button_delete_account"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Account &amp; Registration"
-            style="@style/Widget.PawPals.TextButton" />
+            android:text="Delete Account"
+            style="@style/Widget.PawPals.TextButton"
+            android:textColor="#FF0000"
+            android:layout_marginTop="16dp"/>
+
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button_privacy_policy"

@@ -350,7 +350,13 @@ public class UserRepository {
         });
     }
 
-    // === ממשקי callback ===
+    public void deleteUser(String userId, FirestoreCallback callback) {
+        db.collection("users")
+                .document(userId)
+                .delete()
+                .addOnSuccessListener(aVoid -> callback.onSuccess(userId))
+                .addOnFailureListener(callback::onFailure);
+    }
 
     public interface FirestoreUserNamesCallback {
         void onSuccess(Map<String, String> userNamesById);

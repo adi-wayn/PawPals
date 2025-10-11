@@ -3,8 +3,12 @@ package model.firebase.Firestore;
 
 
 import android.util.Log;
+
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -40,6 +44,14 @@ public class CommunityRepository {
                     Log.w(TAG, "Failed to create community", e);
                     callback.onFailure(e);
                 });
+    }
+
+    public void updateCommunityManager(String communityName, String newManagerId, FirestoreCallback callback){
+        db.collection("communities")
+                .document(communityName)
+                .update("managerId", newManagerId)
+                .addOnSuccessListener(aVoid -> callback.onSuccess(newManagerId))
+                .addOnFailureListener(callback::onFailure);
     }
 
     // קבלת קהילה לפי ID (שם)
@@ -144,6 +156,58 @@ public class CommunityRepository {
                 })
                 .addOnFailureListener(callback::onFailure);
     }
+
+    public void findCommunitiesNearby(double userLat, double userLng, double radiusKm, FirestoreCommunitiesListCallback callback) {
+        db.collection("communities").get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                List<Community> nearbyCommunities = new ArrayList<>();
+
+                for (QueryDocumentSnapshot doc : task.getResult()) {
+                    Double lat = doc.getDouble("latitude");
+                    Double lng = doc.getDouble("longitude");
+
+                    if (lat != null && lng != null) {
+                        double distanceKm = haversineDistance(userLat, userLng, lat, lng) / 1000.0; // convert to km
+
+                        Log.d("CommunityRepo", "Community: " + doc.getId() + " distance: " + distanceKm + "km");
+
+                        if (distanceKm <= radiusKm) {
+                            Community community = doc.toObject(Community.class);
+                            if (community != null) {
+                                community.setName(doc.getId()); // in case name is missing
+                                nearbyCommunities.add(community);
+                            }
+                        }
+                    }
+                }
+
+                Log.d("CommunityRepo", "Nearby communities found: " + nearbyCommunities.size());
+                callback.onSuccess(nearbyCommunities);
+            } else {
+                Log.e("CommunityRepo", "Error fetching communities", task.getException());
+                callback.onFailure(task.getException());
+            }
+        });
+    }
+
+
+    // Haversine formula (distance in meters)
+    private double haversineDistance(double lat1, double lon1, double lat2, double lon2) {
+        double R = 6371000; // Earth radius in meters
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    }
+
+    public interface FirestoreCommunitiesListCallback {
+        void onSuccess(List<Community> communities);
+        void onFailure(Exception e);
+    }
+
 
     // Haversine formula to calculate distance between two coordinates
     private double distanceInMeters(double lat1, double lon1, double lat2, double lon2) {
@@ -501,11 +565,6 @@ public class CommunityRepository {
 
     public interface FirestoreCommunityCallback {
         void onSuccess(Community community);
-        void onFailure(Exception e);
-    }
-
-    public interface FirestoreCommunitiesListCallback {
-        void onSuccess(List<Community> communities);
         void onFailure(Exception e);
     }
 

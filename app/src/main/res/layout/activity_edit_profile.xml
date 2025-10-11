@@ -51,13 +51,31 @@
             android:layout_marginBottom="16dp" />
 
         <!-- Community -->
-        <EditText
-            android:id="@+id/input_community"
+        <TextView
+            android:id="@+id/text_community_label"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Community"
+            android:text="Select Community"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <Spinner
+            android:id="@+id/spinner_communities"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_input"
+            android:layout_marginBottom="16dp" />
+
+        <!-- This only shows if no nearby communities exist -->
+        <EditText
+            android:id="@+id/input_new_community"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Enter new community name"
             android:padding="12dp"
             android:background="@drawable/bg_input"
+            android:visibility="gone"
             android:layout_marginBottom="16dp" />
 
         <!-- Contact Details -->

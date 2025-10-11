@@ -57,7 +57,7 @@ public class Community implements Parcelable {
     };
 
     public String getName() {
-        return name;
+        return name != null ? name : "";
     }
 
     public CommunityManager getManager() {
@@ -136,4 +136,15 @@ public class Community implements Parcelable {
         dest.writeDouble(latitude);
         dest.writeDouble(longitude);
     }
+
+    public void setName(String id) {
+    }
+
+    public Community() {
+        // Needed for Firestore
+        this.messages = new ArrayList<>();
+        this.members = new ArrayList<>();
+        this.reports = new ArrayList<>();
+    }
+
 }
