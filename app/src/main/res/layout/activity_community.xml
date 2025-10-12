@@ -43,6 +43,7 @@
         app:constraint_referenced_ids="textViewCommunityName,imageViewProfile"
         app:barrierAllowsGoneWidgets="true"
         app:barrierMargin="8dp" />
+
     <!-- קו הפרדה טורקיז עדין -->
     <com.google.android.material.divider.MaterialDivider
         android:id="@+id/headerDivider"
