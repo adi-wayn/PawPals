@@ -34,12 +34,15 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Barrier כדי לקבע את הקו מתחת לשניהם -->
+    <!-- Barrier שממקם את הקו מתחת לשם+תמונה -->
     <androidx.constraintlayout.widget.Barrier
         android:id="@+id/headerBarrier"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         app:barrierDirection="bottom"
-        app:constraint_referenced_ids="textViewCommunityName,imageViewProfile" />
-
+        app:constraint_referenced_ids="textViewCommunityName,imageViewProfile"
+        app:barrierAllowsGoneWidgets="true"
+        app:barrierMargin="8dp" />
     <!-- קו הפרדה טורקיז עדין -->
     <com.google.android.material.divider.MaterialDivider
         android:id="@+id/headerDivider"
