@@ -230,20 +230,18 @@
         android:gravity="center"
         android:padding="8dp">
 
-        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/fab_add_dog"
+            style="?attr/materialButtonOutlinedStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/add_dog"
-            android:contentDescription="@string/add_dog"
-            app:icon="@drawable/ic_add"
-            app:iconPadding="8dp"
-            app:iconGravity="textStart"
+            android:paddingHorizontal="24dp"
+            android:paddingVertical="10dp"
+            app:cornerRadius="16dp"
             app:backgroundTint="?attr/colorPrimary"
-            android:textColor="?attr/colorOnPrimary"
-            app:iconTint="?attr/colorOnPrimary"
-            app:showMotionSpec="@animator/mtrl_extended_fab_show_motion_spec"
-            app:hideMotionSpec="@animator/mtrl_extended_fab_hide_motion_spec" />
+            android:textColor="?attr/colorOnPrimary"/>
+
     </LinearLayout>
 
     <!-- סטטוס קהילה -->

@@ -17,7 +17,6 @@ public class CommunitySettingsActivity extends AppCompatActivity {
     private User currentUser;
     private String communityId;
     private CommunityRepository repo;
-
     private TextView tvCommunity;
     private Switch swOpenApplications;
 
