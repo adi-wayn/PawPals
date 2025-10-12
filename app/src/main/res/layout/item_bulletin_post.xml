@@ -115,16 +115,6 @@
                 app:backgroundTint="@android:color/holo_green_light"
                 android:textColor="@color/black" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/buttonReject"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/reject"
-                style="@style/Widget.MaterialComponents.Button"
-                app:backgroundTint="@android:color/holo_red_light"
-                android:textColor="@color/black"
-                android:layout_marginStart="8dp" />
-
             <!-- ✅ כפתור Delete חדש -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/buttonDelete"
@@ -132,7 +122,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/delete"
                 style="@style/Widget.MaterialComponents.Button"
-                app:backgroundTint="@android:color/holo_orange_light"
+                app:backgroundTint="@android:color/holo_red_light"
                 android:textColor="@color/black"
                 android:layout_marginStart="8dp" />
         </LinearLayout>

@@ -1,5 +1,7 @@
 package com.example.pawpals;
 
+import static android.content.ContentValues.TAG;
+
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
@@ -32,7 +34,9 @@ import com.google.firebase.auth.FirebaseUser;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import model.Dog;
 import model.User;
 import model.firebase.Authentication.AuthHelper;
 import model.firebase.CloudMessaging.FcmTokenManager;
@@ -88,9 +92,10 @@ public class MainActivity extends AppCompatActivity {
 
                     String communityName = user.getCommunityName();
 
-                    // Active users
+                    // === Active users ===
                     MapRepository locationRepo = new MapRepository();
-                    locationRepo.getUserLocationsWithNamesByCommunity(communityName,
+                    locationRepo.getUserLocationsWithNamesByCommunity(
+                            communityName,
                             new MapRepository.FirestoreUserLocationsWithNamesCallback() {
                                 @Override
                                 public void onSuccess(Map<String, Pair<LatLng, String>> userLocationsWithNames) {
@@ -101,25 +106,51 @@ public class MainActivity extends AppCompatActivity {
                                 public void onFailure(Exception e) {
                                     Log.e("MainActivity", "Error fetching active users", e);
                                 }
-                            });
-
-                    // Community members & dogs
-                    userRepo.getUsersByCommunity(communityName, new UserRepository.FirestoreUsersListCallback() {
-                        @Override
-                        public void onSuccess(List<User> users) {
-                            communityStats.setText("Community members: " + users.size());
-                            int dogsCount = 0;
-                            for (User u : users) {
-                                if (u.getDogs() != null) dogsCount += u.getDogs().size();
                             }
-                            totalDogs.setText("Total dogs in community: " + dogsCount);
-                        }
+                    );
 
-                        @Override
-                        public void onFailure(Exception e) {
-                            Log.e("MainActivity", "Error fetching users in community", e);
-                        }
-                    });
+                    // === Community members & dogs ===
+                    userRepo.getUsersByCommunityWithIds(
+                            communityName,
+                            new UserRepository.FirestoreUsersWithIdsCallback() {
+                                @Override
+                                public void onSuccess(List<Pair<String, User>> rows) {
+                                    communityStats.setText("Community members: " + rows.size());
+                                    AtomicInteger dogsCount = new AtomicInteger(0);
+                                    AtomicInteger completed = new AtomicInteger(0);
+
+                                    for (Pair<String, User> pair : rows) {
+                                        String uid = pair.first;
+                                        userRepo.getDogsForUser(
+                                                uid,
+                                                new UserRepository.FirestoreDogsListCallback() {
+                                                    @Override
+                                                    public void onSuccess(List<Dog> dogs) {
+                                                        Log.w(TAG, "user: " + pair.second.getUserName() + " dogs: " + dogs);
+                                                        dogsCount.addAndGet(dogs.size());
+                                                        if (completed.incrementAndGet() == rows.size()) {
+                                                            totalDogs.setText("Total dogs in the community: " + dogsCount.get());
+                                                        }
+                                                    }
+
+                                                    @Override
+                                                    public void onFailure(Exception e) {
+                                                        Log.w(TAG, "Failed to get dogs for user " + uid, e);
+                                                        if (completed.incrementAndGet() == rows.size()) {
+                                                            totalDogs.setText("Total dogs in the community: " + dogsCount.get());
+                                                        }
+                                                    }
+                                                }
+                                        );
+                                    }
+                                }
+
+                                @Override
+                                public void onFailure(Exception e) {
+                                    Log.e("MainActivity", "Error fetching users in community", e);
+                                }
+                            }
+                    );
                 }
 
                 @Override
@@ -127,6 +158,8 @@ public class MainActivity extends AppCompatActivity {
                     Log.e("MainActivity", "Failed to fetch user info", e);
                 }
             });
+
+
         } else {
             Log.w("MainActivity", "No logged-in Firebase user");
         }
@@ -137,11 +170,8 @@ public class MainActivity extends AppCompatActivity {
             String currentUserId = firebaseUser.getUid();
             mapController = new MapController(mapView, this, currentUserId);
 
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                    != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                        LOCATION_PERMISSION_REQUEST_CODE);
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
             } else {
                 mapController.initializeMap(savedInstanceState);
             }
@@ -153,19 +183,18 @@ public class MainActivity extends AppCompatActivity {
 
         if (focusCommunity != null && !focusCommunity.isEmpty()) {
             CommunityRepository communityRepo = new CommunityRepository();
-            communityRepo.getCommunityCenterAndRadiusByName(focusCommunity,
-                    new CommunityRepository.CommunityGeoCallback() {
-                        @Override
-                        public void onSuccess(double lat, double lng, int radiusMeters) {
-                            int r = (focusRadius > 0) ? focusRadius : radiusMeters;
-                            mapController.focusOnArea(lat, lng, r);
-                        }
+            communityRepo.getCommunityCenterAndRadiusByName(focusCommunity, new CommunityRepository.CommunityGeoCallback() {
+                @Override
+                public void onSuccess(double lat, double lng, int radiusMeters) {
+                    int r = (focusRadius > 0) ? focusRadius : radiusMeters;
+                    mapController.focusOnArea(lat, lng, r);
+                }
 
-                        @Override
-                        public void onFailure(Exception e) {
-                            Log.e("MainActivity", "Failed to get community center: " + e.getMessage());
-                        }
-                    });
+                @Override
+                public void onFailure(Exception e) {
+                    Log.e("MainActivity", "Failed to get community center: " + e.getMessage());
+                }
+            });
         }
 
         // === Visibility toggle ===
@@ -207,28 +236,36 @@ public class MainActivity extends AppCompatActivity {
         // RTL support
         boolean isRtl = ViewCompat.getLayoutDirection(root) == ViewCompat.LAYOUT_DIRECTION_RTL;
         final int CLOSED_ID = isRtl ? R.id.closed_rtl : R.id.closed_ltr;
-        final int OPEN_ID   = isRtl ? R.id.open_rtl   : R.id.open_ltr;
-        final int TRANS_ID  = isRtl ? R.id.t_rtl      : R.id.t_ltr;
+        final int OPEN_ID = isRtl ? R.id.open_rtl : R.id.open_ltr;
+        final int TRANS_ID = isRtl ? R.id.t_rtl : R.id.t_ltr;
 
         drawerMotion.setTransition(TRANS_ID);
         drawerMotion.setState(CLOSED_ID, -1, -1);
 
         final float drawerW = getResources().getDimension(R.dimen.drawer_width);
-        final ViewGroup.MarginLayoutParams mbLp =
-                (ViewGroup.MarginLayoutParams) menuButton.getLayoutParams();
+        final ViewGroup.MarginLayoutParams mbLp = (ViewGroup.MarginLayoutParams) menuButton.getLayoutParams();
         final int marginStartPx = mbLp.getMarginStart();
-        final float gapPx = TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, -4, getResources().getDisplayMetrics());
+        final float gapPx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, -4, getResources().getDisplayMetrics());
 
         drawerMotion.setTransitionListener(new MotionLayout.TransitionListener() {
-            @Override public void onTransitionStarted(MotionLayout ml, int s, int e) {}
-            @Override public void onTransitionChange(MotionLayout ml, int s, int e, float p) {
+            @Override
+            public void onTransitionStarted(MotionLayout ml, int s, int e) {
+            }
+
+            @Override
+            public void onTransitionChange(MotionLayout ml, int s, int e, float p) {
                 float dir = isRtl ? -1f : 1f;
                 float delta = (drawerW - marginStartPx - gapPx) * p * dir;
                 menuButton.setTranslationX(delta);
             }
-            @Override public void onTransitionCompleted(MotionLayout ml, int id) {}
-            @Override public void onTransitionTrigger(MotionLayout ml, int id, boolean b, float v) {}
+
+            @Override
+            public void onTransitionCompleted(MotionLayout ml, int id) {
+            }
+
+            @Override
+            public void onTransitionTrigger(MotionLayout ml, int id, boolean b, float v) {
+            }
         });
 
         // BottomSheet drag
@@ -312,18 +349,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // === Report Map Picker ===
-    private final ActivityResultLauncher<Intent> mapReportPickerLauncher =
-            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
-                    result -> {
-                        if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                            String type = result.getData().getStringExtra("selectedType");
-                            if (type != null) {
-                                mapController.enterReportMode(type);
-                                MotionLayout mainMotion = findViewById(R.id.main);
-                                mainMotion.transitionToStart();
-                            }
-                        }
-                    });
+    private final ActivityResultLauncher<Intent> mapReportPickerLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+        if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+            String type = result.getData().getStringExtra("selectedType");
+            if (type != null) {
+                mapController.enterReportMode(type);
+                MotionLayout mainMotion = findViewById(R.id.main);
+                mainMotion.transitionToStart();
+            }
+        }
+    });
 
     private void openReportMapPicker() {
         Intent intent = new Intent(this, ReportMapActivity.class);
@@ -331,11 +366,32 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // === Lifecycle ===
-    @Override protected void onResume() { super.onResume(); if (mapController != null) mapController.onResume(); }
-    @Override protected void onPause() { if (mapController != null) mapController.onPause(); super.onPause(); }
-    @Override protected void onDestroy() { if (mapController != null) mapController.onDestroy(); super.onDestroy(); }
-    @Override public void onLowMemory() { super.onLowMemory(); if (mapController != null) mapController.onLowMemory(); }
-    @Override protected void onSaveInstanceState(Bundle outState) {
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (mapController != null) mapController.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        if (mapController != null) mapController.onPause();
+        super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (mapController != null) mapController.onDestroy();
+        super.onDestroy();
+    }
+
+    @Override
+    public void onLowMemory() {
+        super.onLowMemory();
+        if (mapController != null) mapController.onLowMemory();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         if (mapController != null) mapController.onSaveInstanceState(outState);
     }

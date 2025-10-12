@@ -69,6 +69,7 @@ dependencies {
     implementation(libs.constraintlayout)
     implementation(libs.play.services.maps)
     implementation(libs.androidx.espresso.core)
+    implementation(libs.androidx.junit)
 
     // Testing
     testImplementation(libs.junit)

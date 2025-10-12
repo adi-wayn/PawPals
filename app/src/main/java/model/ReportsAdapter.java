@@ -97,7 +97,7 @@ public class ReportsAdapter extends RecyclerView.Adapter<ReportsAdapter.ReportVi
         });
 
         // ✅ כפתור דחייה/מחיקה
-        holder.buttonReject.setOnClickListener(v -> {
+        holder.buttonDelete.setOnClickListener(v -> {
             repo.deleteReport(communityId, report.getId(), new CommunityRepository.FirestoreCallback() {
                 @Override public void onSuccess(String ignored) {
                     Toast.makeText(context, "Report deleted.", Toast.LENGTH_SHORT).show();
@@ -133,7 +133,7 @@ public class ReportsAdapter extends RecyclerView.Adapter<ReportsAdapter.ReportVi
 
     static class ReportViewHolder extends RecyclerView.ViewHolder {
         TextView textPostSender, textPostType, textPostSubject;
-        Button buttonApprove, buttonReject;
+        Button buttonApprove, buttonDelete;
         LinearLayout actionButtonsLayout;
 
         ReportViewHolder(View itemView) {
@@ -142,7 +142,7 @@ public class ReportsAdapter extends RecyclerView.Adapter<ReportsAdapter.ReportVi
             textPostType = itemView.findViewById(R.id.text_post_type);
             textPostSubject = itemView.findViewById(R.id.text_post_subject);
             buttonApprove = itemView.findViewById(R.id.buttonApprove);
-            buttonReject = itemView.findViewById(R.id.buttonReject);
+            buttonDelete = itemView.findViewById(R.id.buttonDelete);
             actionButtonsLayout = itemView.findViewById(R.id.actionButtonsLayout);
         }
     }

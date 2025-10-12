@@ -14,13 +14,13 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import model.Dog;
+import model.User;
 import model.firebase.firestore.UserRepository;
 
 public class AddDogActivity extends AppCompatActivity {
 
     public static final String EXTRA_USER_ID = "userId";
     private static final String TAG = "AddDogActivity";
-
     private EditText etName, etBreed, etAge;
     private Button btnSave;
     private final UserRepository repo = new UserRepository();
