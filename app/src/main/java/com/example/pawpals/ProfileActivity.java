@@ -59,7 +59,7 @@ public class ProfileActivity extends AppCompatActivity {
     private LinearLayout dogsContainer;
 
     // Add dog (Extended FAB בתחתית)
-    private ExtendedFloatingActionButton fabAddDog;
+    private MaterialButton fabAddDog;
 
     // Data
     private User displayedUser;              // האובייקט של המשתמש שמוצג

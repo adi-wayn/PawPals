@@ -1,5 +1,7 @@
 package com.example.pawpals;
 
+import static android.content.ContentValues.TAG;
+
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -25,6 +27,8 @@ import model.firebase.firestore.CommunityRepository;
 import model.firebase.Storage.StorageRepository;
 
 public class ReportFormActivity extends AppCompatActivity {
+    private static final String TAG = "ReportFormActivity";
+
     private RadioGroup typeTabs;
     private EditText inputSenderName, inputSubject, inputText;
     private Button buttonSubmit;
@@ -67,6 +71,43 @@ public class ReportFormActivity extends AppCompatActivity {
             }
         }));
 
+        CommunityRepository repo = new CommunityRepository();
+
+        repo.getCommunityIdByName(currentUser.getCommunityName(), new CommunityRepository.FirestoreIdCallback() {
+            @Override
+            public void onSuccess(String communityId) {
+                repo.getManagerApplicationsOpen(communityId,
+                        new CommunityRepository.FirestoreBooleanCallback() {
+                            @Override
+                            public void onSuccess(boolean value) {
+                                // רק אם יש בקשה פתוחה – הראה את האפשרות "Manager Application"
+                                Log.d(TAG, "getManagerApplicationsOpen success. value=" + value
+                                        + ", tabManagerAppExists=" + (tabManagerApp != null));
+
+                                if (tabManagerApp != null) {
+                                    tabManagerApp.setVisibility(value ? View.VISIBLE : View.GONE);
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Exception e) {
+                                Log.e(TAG, "Failed to check manager applications", e);
+                                // במקרה של שגיאה – עדיף להציג את האפשרות (לא לחסום)
+                                RadioButton tabManagerApp = findViewById(R.id.tab_manager_application);
+                                if (tabManagerApp != null) {
+                                    tabManagerApp.setVisibility(View.VISIBLE);
+                                }
+                            }
+                        }
+                );
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Toast.makeText(ReportFormActivity.this, "Community not found: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
+
         buttonSubmit.setOnClickListener(v -> {
             String type = getSelectedType();
             String senderName = inputSenderName.getText().toString();
@@ -85,12 +126,16 @@ public class ReportFormActivity extends AppCompatActivity {
                 report.setType(Report.TYPE_MANAGER_APPLICATION);
             }
 
-            CommunityRepository repo = new CommunityRepository();
             repo.getCommunityIdByName(currentUser.getCommunityName(), new CommunityRepository.FirestoreIdCallback() {
-                @Override public void onSuccess(String communityId) {
+                @Override
+                public void onSuccess(String communityId) {
                     repo.createReport(communityId, report, new CommunityRepository.FirestoreCallback() {
-                        @Override public void onSuccess(String reportId) {
-                            if (selectedUris.isEmpty()) { finishAfterSubmit(); return; }
+                        @Override
+                        public void onSuccess(String reportId) {
+                            if (selectedUris.isEmpty()) {
+                                finishAfterSubmit();
+                                return;
+                            }
 
                             StorageRepository storageRepo = new StorageRepository();
                             java.util.List<String> urls = new java.util.ArrayList<>();
@@ -98,35 +143,58 @@ public class ReportFormActivity extends AppCompatActivity {
                                     (u, c) -> storageRepo.uploadReportImageCompressed(
                                             ReportFormActivity.this, communityId, reportId, u, 1280, 82, null, c),
                                     () -> repo.updateReportImages(communityId, reportId, null, urls, new CommunityRepository.FirestoreCallback() {
-                                        @Override public void onSuccess(String id) { finishAfterSubmit(); }
-                                        @Override public void onFailure(Exception e) { finishAfterSubmit(); }
+                                        @Override
+                                        public void onSuccess(String id) {
+                                            finishAfterSubmit();
+                                        }
+
+                                        @Override
+                                        public void onFailure(Exception e) {
+                                            finishAfterSubmit();
+                                        }
                                     }),
                                     e -> Toast.makeText(ReportFormActivity.this, "Image upload failed: " + e.getMessage(), Toast.LENGTH_LONG).show());
                         }
-                        @Override public void onFailure(Exception e) {
+
+                        @Override
+                        public void onFailure(Exception e) {
                             Toast.makeText(ReportFormActivity.this, "Error saving report: " + e.getMessage(), Toast.LENGTH_LONG).show();
                         }
                     });
                 }
-                @Override public void onFailure(Exception e) {
+
+                @Override
+                public void onFailure(Exception e) {
                     Toast.makeText(ReportFormActivity.this, "Community not found: " + e.getMessage(), Toast.LENGTH_LONG).show();
                 }
             });
         });
     }
 
-    private interface Uploader { @Nullable com.google.firebase.storage.UploadTask go(Uri u, StorageRepository.UploadCallback cb); }
+    private interface Uploader {
+        @Nullable
+        com.google.firebase.storage.UploadTask go(Uri u, StorageRepository.UploadCallback cb);
+    }
+
     private void uploadAllImagesSequentially(int idx, java.util.List<Uri> uris, java.util.List<String> outUrls,
                                              Uploader uploader, Runnable onDone,
                                              java.util.function.Consumer<Exception> onError) {
-        if (idx >= uris.size()) { onDone.run(); return; }
+        if (idx >= uris.size()) {
+            onDone.run();
+            return;
+        }
         Uri u = uris.get(idx);
         uploader.go(u, new StorageRepository.UploadCallback() {
-            @Override public void onSuccess(@NonNull String downloadUrl) {
+            @Override
+            public void onSuccess(@NonNull String downloadUrl) {
                 outUrls.add(downloadUrl);
-                uploadAllImagesSequentially(idx+1, uris, outUrls, uploader, onDone, onError);
+                uploadAllImagesSequentially(idx + 1, uris, outUrls, uploader, onDone, onError);
             }
-            @Override public void onFailure(@NonNull Exception e) { onError.accept(e); }
+
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                onError.accept(e);
+            }
         });
     }
 
