@@ -4,6 +4,8 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -54,8 +56,8 @@ public class RegistrationDetailsActivity extends AppCompatActivity {
 
         inputName = findViewById(R.id.input_name);
         inputCommunity = findViewById(R.id.input_community);
-        inputContactDetails = findViewById(R.id.input_contact_details); // ← חדשים ב-XML
-        inputBio = findViewById(R.id.input_bio);                         // ← חדשים ב-XML
+        inputContactDetails = findViewById(R.id.input_contact_details);
+        inputBio = findViewById(R.id.input_bio);
         checkboxCreateCommunity = findViewById(R.id.checkbox_create_community);
         buttonContinue = findViewById(R.id.button_continue);
         spinnerCommunities = findViewById(R.id.spinner_communities);
@@ -138,8 +140,8 @@ public class RegistrationDetailsActivity extends AppCompatActivity {
 
     private void handleRegistrationDetails() {
         String name = safeText(inputName);
-        String contactDetails = safeText(inputContactDetails); // ← חדש
-        String bio = safeText(inputBio);                       // ← חדש
+        String contactDetails = safeText(inputContactDetails);
+        String bio = safeText(inputBio);
         boolean wantsToCreate = checkboxCreateCommunity.isChecked();
         String communityName;
 
@@ -179,46 +181,25 @@ public class RegistrationDetailsActivity extends AppCompatActivity {
                         Toast.makeText(this, "Community already exists!", Toast.LENGTH_SHORT).show();
                     } else if (!exists && !wantsToCreate) {
                         Toast.makeText(this, "Community doesn't exist. Please check 'create' to create it.", Toast.LENGTH_SHORT).show();
+                    } else if (wantsToCreate) {
+                        Intent intent = new Intent(RegistrationDetailsActivity.this, CommunityCreationDetailsActivity.class);
+                        intent.putExtra("communityName", communityName);
+                        intent.putExtra("userId", userId);
+                        intent.putExtra("userName", name);
+                        intent.putExtra("contactDetails", contactDetails);
+                        intent.putExtra("bio", bio);
+                        intent.putExtra("lat", currentLat);
+                        intent.putExtra("lng", currentLng);
+                        startActivity(intent);
+                        new Handler(Looper.getMainLooper()).postDelayed(this::finish, 300);
                     } else {
-                        saveUserAndCommunity(name, contactDetails, bio, communityName, wantsToCreate);
+                        // הצטרפות לקהילה קיימת
+                        saveUser(name, contactDetails, bio, communityName, false);
                     }
                 })
                 .addOnFailureListener(e ->
                         Toast.makeText(this, "Error checking community", Toast.LENGTH_SHORT).show()
                 );
-    }
-
-    private void saveUserAndCommunity(String name,
-                                      String contactDetails,
-                                      String bio,
-                                      String communityName,
-                                      boolean isManager) {
-        CommunityRepository communityRepository = new CommunityRepository();
-
-//        if (isManager) {
-//            communityRepository.createCommunity(
-//                    communityName,
-//                    userId,
-//                    currentLat,
-//                    currentLng,
-//                    String description, String imageUrl,
-//                    new ArrayList<>(),
-//                    new CommunityRepository.FirestoreCallback() {
-//                        @Override
-//                        public void onSuccess(String id) {
-//                            saveUser(name, contactDetails, bio, communityName, true);
-//                        }
-//
-//                        @Override
-//                        public void onFailure(Exception e) {
-//                            Toast.makeText(RegistrationDetailsActivity.this,
-//                                    "Failed to create community", Toast.LENGTH_SHORT).show();
-//                        }
-//                    }
-//            );
-//        } else {
-//            saveUser(name, contactDetails, bio, communityName, false);
-//        }
     }
 
     private void saveUser(String name,

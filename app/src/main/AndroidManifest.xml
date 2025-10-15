@@ -52,6 +52,7 @@
         <activity android:name=".OtherUserProfileActivity" android:exported="false" />
         <activity android:name=".CommunitySettingsActivity" android:exported="false" />
         <activity android:name=".AddDogActivity" android:exported="false" />
+        <activity android:name=".CommunityCreationDetailsActivity" android:exported="false" />
 
         <!-- ✅ נוספה ההכרזה למסך פרטי כלב -->
         <activity
