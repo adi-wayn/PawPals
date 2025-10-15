@@ -34,7 +34,7 @@ import model.firebase.Firestore.UserRepository;
 public class RegistrationDetailsActivity extends AppCompatActivity {
 
     private EditText inputName, inputCommunity;
-    private EditText inputContactDetails, inputBio; // ← חדשים
+    private EditText inputContactDetails, inputBio;
     private CheckBox checkboxCreateCommunity;
     private MaterialButton buttonContinue;
     private Spinner spinnerCommunities;
@@ -195,29 +195,30 @@ public class RegistrationDetailsActivity extends AppCompatActivity {
                                       boolean isManager) {
         CommunityRepository communityRepository = new CommunityRepository();
 
-        if (isManager) {
-            communityRepository.createCommunity(
-                    communityName,
-                    userId,
-                    currentLat,
-                    currentLng,
-                    new ArrayList<>(),
-                    new CommunityRepository.FirestoreCallback() {
-                        @Override
-                        public void onSuccess(String id) {
-                            saveUser(name, contactDetails, bio, communityName, true);
-                        }
-
-                        @Override
-                        public void onFailure(Exception e) {
-                            Toast.makeText(RegistrationDetailsActivity.this,
-                                    "Failed to create community", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-            );
-        } else {
-            saveUser(name, contactDetails, bio, communityName, false);
-        }
+//        if (isManager) {
+//            communityRepository.createCommunity(
+//                    communityName,
+//                    userId,
+//                    currentLat,
+//                    currentLng,
+//                    String description, String imageUrl,
+//                    new ArrayList<>(),
+//                    new CommunityRepository.FirestoreCallback() {
+//                        @Override
+//                        public void onSuccess(String id) {
+//                            saveUser(name, contactDetails, bio, communityName, true);
+//                        }
+//
+//                        @Override
+//                        public void onFailure(Exception e) {
+//                            Toast.makeText(RegistrationDetailsActivity.this,
+//                                    "Failed to create community", Toast.LENGTH_SHORT).show();
+//                        }
+//                    }
+//            );
+//        } else {
+//            saveUser(name, contactDetails, bio, communityName, false);
+//        }
     }
 
     private void saveUser(String name,

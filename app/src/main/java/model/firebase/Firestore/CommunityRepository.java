@@ -29,7 +29,7 @@ public class CommunityRepository {
 
     // יצירת קהילה חדשה
     public void createCommunity(String communityName, String managerUserId,
-                                double latitude, double longitude,
+                                double latitude, double longitude, String description, String imageUrl,
                                 List<Report> reports, FirestoreCallback callback) {
         Map<String, Object> communityData = new HashMap<>();
         communityData.put("name", communityName);
@@ -37,6 +37,8 @@ public class CommunityRepository {
         communityData.put("reports", reports);
         communityData.put("latitude", latitude);
         communityData.put("longitude", longitude);
+        communityData.put("description", description);
+        communityData.put("imageUrl", imageUrl);
 
         db.collection("communities")
                 .document(communityName)
@@ -44,6 +46,40 @@ public class CommunityRepository {
                 .addOnSuccessListener(aVoid -> {
                     Log.d(TAG, "Community created: " + communityName);
                     callback.onSuccess(communityName);
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
+    // 🔹 עדכון תיאור הקהילה
+    public void updateCommunityDescription(String communityId, String description, FirestoreCallback callback) {
+        db.collection("communities")
+                .document(communityId)
+                .update("description", description)
+                .addOnSuccessListener(v -> callback.onSuccess(communityId))
+                .addOnFailureListener(callback::onFailure);
+    }
+
+    // 🔹 עדכון תמונת פרופיל של קהילה
+    public void updateCommunityImage(String communityId, String imageUrl, FirestoreCallback callback) {
+        db.collection("communities")
+                .document(communityId)
+                .update("imageUrl", imageUrl)
+                .addOnSuccessListener(v -> callback.onSuccess(communityId))
+                .addOnFailureListener(callback::onFailure);
+    }
+
+    public void getCommunityDetails(String communityId, FirestoreCommunityCallback callback) {
+        db.collection("communities")
+                .document(communityId)
+                .get()
+                .addOnSuccessListener(doc -> {
+                    if (doc.exists()) {
+                        String description = doc.getString("description");
+                        String imageUrl = doc.getString("imageUrl");
+                        callback.onSuccess(description, imageUrl);
+                    } else {
+                        callback.onFailure(new Exception("Community not found"));
+                    }
                 })
                 .addOnFailureListener(callback::onFailure);
     }
@@ -270,6 +306,11 @@ public class CommunityRepository {
     // ===================== ממשקי Callback =====================
     public interface FirestoreCallback {
         void onSuccess(String documentId);
+        void onFailure(Exception e);
+    }
+
+    public interface FirestoreCommunityCallback {
+        void onSuccess(String description, String imageUrl);
         void onFailure(Exception e);
     }
 

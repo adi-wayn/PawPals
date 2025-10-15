@@ -2,10 +2,10 @@ package model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-
 import java.util.ArrayList;
 
 public class Community implements Parcelable {
+
     private String name;
     private CommunityManager manager;
     private ArrayList<User> members;
@@ -14,7 +14,11 @@ public class Community implements Parcelable {
     private double latitude;
     private double longitude;
 
+    // 🔹 שדות חדשים
+    private String description;
+    private String imageUrl;
 
+    // --- בנאים ---
     public Community(String name, double latitude, double longitude) {
         this.name = name;
         this.latitude = latitude;
@@ -25,15 +29,11 @@ public class Community implements Parcelable {
     }
 
     public Community(String name, double latitude, double longitude, CommunityManager manager) {
-        this.name = name;
-        this.latitude = latitude;
-        this.longitude = longitude;
+        this(name, latitude, longitude);
         this.manager = manager;
-        this.messages = new ArrayList<>();
-        this.members = new ArrayList<>();
-        this.reports = new ArrayList<>();
     }
 
+    // --- Parcelable ---
     protected Community(Parcel in) {
         name = in.readString();
         manager = in.readParcelable(CommunityManager.class.getClassLoader());
@@ -42,6 +42,8 @@ public class Community implements Parcelable {
         reports = in.createTypedArrayList(Report.CREATOR);
         latitude = in.readDouble();
         longitude = in.readDouble();
+        description = in.readString();
+        imageUrl = in.readString();
     }
 
     public static final Creator<Community> CREATOR = new Creator<Community>() {
@@ -56,37 +58,41 @@ public class Community implements Parcelable {
         }
     };
 
-    public String getName() {
-        return name;
-    }
+    // --- Getters & Setters ---
+    public String getName() { return name; }
 
-    public CommunityManager getManager() {
-        return manager;
-    }
+    public CommunityManager getManager() { return manager; }
 
-    public void setManager(CommunityManager manager) {
-        this.manager = manager;
-    }
+    public void setManager(CommunityManager manager) { this.manager = manager; }
 
-    public ArrayList<User> getMembers() {
-        return members;
-    }
+    public ArrayList<User> getMembers() { return members; }
 
-    public void setMembers(ArrayList<User> members) {
-        this.members = members;
-    }
+    public void setMembers(ArrayList<User> members) { this.members = members; }
 
-    public ArrayList<Report> getReports() {
-        return reports;
-    }
-    public ArrayList<Message> getMessages() {
-        return messages;
-    }
+    public ArrayList<Report> getReports() { return reports; }
 
-    public void setReports(ArrayList<Report> reports) {
-        this.reports = reports;
-    }
+    public void setReports(ArrayList<Report> reports) { this.reports = reports; }
 
+    public ArrayList<Message> getMessages() { return messages; }
+
+    public double getLatitude() { return latitude; }
+
+    public void setLatitude(double latitude) { this.latitude = latitude; }
+
+    public double getLongitude() { return longitude; }
+
+    public void setLongitude(double longitude) { this.longitude = longitude; }
+
+    // --- שדות חדשים ---
+    public String getDescription() { return description; }
+
+    public void setDescription(String description) { this.description = description; }
+
+    public String getImageUrl() { return imageUrl; }
+
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+
+    // --- עוזרים ---
     public ArrayList<Report> getReportByType(String type) {
         ArrayList<Report> result = new ArrayList<>();
         for (Report r : reports) {
@@ -101,27 +107,12 @@ public class Community implements Parcelable {
         this.reports.add(r);
     }
 
-    public double getLatitude() {
-        return latitude;
-    }
-
-    public void setLatitude(double latitude) {
-        this.latitude = latitude;
-    }
-
-    public double getLongitude() {
-        return longitude;
-    }
-
-    public void setLongitude(double longitude) {
-        this.longitude = longitude;
-    }
-
     @Override
     public String toString() {
         return name;
     }
 
+    // --- Parcelable ---
     @Override
     public int describeContents() {
         return 0;
@@ -132,8 +123,11 @@ public class Community implements Parcelable {
         dest.writeString(name);
         dest.writeParcelable(manager, flags);
         dest.writeTypedList(members);
+        dest.writeTypedList(messages);
         dest.writeTypedList(reports);
         dest.writeDouble(latitude);
         dest.writeDouble(longitude);
+        dest.writeString(description);
+        dest.writeString(imageUrl);
     }
 }
