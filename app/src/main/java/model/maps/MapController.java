@@ -34,8 +34,10 @@ import com.google.android.gms.maps.*;
 import com.google.android.gms.maps.model.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import model.Dog;
 import model.MapReport;
 import model.User;
 import model.firebase.Firestore.MapRepository;
@@ -115,17 +117,16 @@ public class MapController {
                     MarkerTag tag = (MarkerTag) t;
                     if (tag.kind != MarkerKind.USER) return null; // לדיווחים – החלון הסטנדרטי
 
-                    // ננפח layout מותאם
                     View v = View.inflate(context, R.layout.view_user_preview, null);
                     TextView tvName = v.findViewById(R.id.tvName);
                     TextView tvCommunity = v.findViewById(R.id.tvCommunity);
                     TextView tvBio = v.findViewById(R.id.tvBio);
                     TextView tvManager = v.findViewById(R.id.tvManager);
-                    TextView tvDogs     = v.findViewById(R.id.tvDogs);
-                    TextView tvContact  = v.findViewById(R.id.tvContact);
+                    TextView tvDogs = v.findViewById(R.id.tvDogs);
+                    TextView tvContact = v.findViewById(R.id.tvContact);
                     TextView tvAvatar = v.findViewById(R.id.tvAvatar);
 
-                    // ברירת מחדל מהירה
+                    // ברירת מחדל
                     tvName.setText(marker.getTitle());
                     tvCommunity.setText("");
                     tvBio.setText("");
@@ -133,37 +134,72 @@ public class MapController {
                     tvDogs.setText("");
                     tvContact.setText("");
 
-                    // אם יש בקאש – נציג; אחרת נמשוך ואז נרענן
-                    User u = userCache.get(tag.id);
+                    String userId = tag.id;
+
+                    // אם המשתמש כבר בקאש
+                    User u = userCache.get(userId);
                     if (u != null) {
                         tvName.setText(u.getUserName());
                         tvCommunity.setText(u.getCommunityName());
-                        if (u.getFieldsOfInterest() != null) tvBio.setText(u.getFieldsOfInterest());
-                        if (u.isManager()) tvManager.setVisibility(View.VISIBLE);
-
-                        int dogs = (u.getDogs() == null) ? 0 : u.getDogs().size();
-                        tvDogs.setText("Dogs: " + dogs);
+                        if (u.getFieldsOfInterest() != null)
+                            tvBio.setText(u.getFieldsOfInterest());
+                        if (u.isManager())
+                            tvManager.setVisibility(View.VISIBLE);
 
                         String contact = (u.getContactDetails() == null || u.getContactDetails().isEmpty())
                                 ? "—" : u.getContactDetails();
                         tvContact.setText("Contact: " + contact);
 
+                        // שליפה דינמית של כלבים מה־Firestore
+                        userRepo.getDogsForUser(userId, new UserRepository.FirestoreDogsListCallback() {
+                            @Override
+                            public void onSuccess(List<Dog> dogs) {
+                                int count = (dogs != null) ? dogs.size() : 0;
+                                tvDogs.setText("Dogs: " + count);
+                            }
+
+                            @Override
+                            public void onFailure(Exception e) {
+                                tvDogs.setText("Dogs: -");
+                            }
+                        });
+
+                        // אווטאר לפי שם
                         String n = u.getUserName();
-                        String initial = !TextUtils.isEmpty(n) ? n.substring(0,1).toUpperCase() : "?";
+                        String initial = !TextUtils.isEmpty(n) ? n.substring(0, 1).toUpperCase() : "?";
                         tvAvatar.setText(initial);
                     } else {
+                        // שליפה אם לא בקאש
                         String n = marker.getTitle();
-                        String initial = !TextUtils.isEmpty(n) ? n.substring(0,1).toUpperCase() : "?";
+                        String initial = !TextUtils.isEmpty(n) ? n.substring(0, 1).toUpperCase() : "?";
                         tvAvatar.setText(initial);
 
-                        userRepo.getUserById(tag.id, new UserRepository.FirestoreUserCallback() {
-                            @Override public void onSuccess(User user) {
-                                userCache.put(tag.id, user);
-                                if (marker.isInfoWindowShown()) marker.showInfoWindow(); // רענון התצוגה
+                        userRepo.getUserById(userId, new UserRepository.FirestoreUserCallback() {
+                            @Override
+                            public void onSuccess(User user) {
+                                userCache.put(userId, user);
+                                if (marker.isInfoWindowShown()) marker.showInfoWindow();
                             }
-                            @Override public void onFailure(Exception e) { /* no-op */ }
+
+                            @Override
+                            public void onFailure(Exception e) { /* no-op */ }
+                        });
+
+                        // שליפת כמות כלבים גם בלי Cache
+                        userRepo.getDogsForUser(userId, new UserRepository.FirestoreDogsListCallback() {
+                            @Override
+                            public void onSuccess(java.util.List<model.Dog> dogs) {
+                                int count = (dogs != null) ? dogs.size() : 0;
+                                tvDogs.setText("Dogs: " + count);
+                            }
+
+                            @Override
+                            public void onFailure(Exception e) {
+                                tvDogs.setText("Dogs: -");
+                            }
                         });
                     }
+
                     return v;
                 }
             });

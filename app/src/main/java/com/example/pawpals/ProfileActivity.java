@@ -293,7 +293,7 @@ public class ProfileActivity extends AppCompatActivity {
             if (card == null) { Log.e(TAG, "inflate item_dog_card returned null"); continue; }
 
             TextView tvName  = card.findViewById(R.id.dog_name);
-            TextView tvBreed = card.findViewById(R.id.dog_breed1);
+            TextView tvBreed = card.findViewById(R.id.dog_breed);
             if (tvBreed == null) tvBreed = card.findViewById(R.id.dog_breed);
             TextView tvAge   = card.findViewById(R.id.dog_age);
 

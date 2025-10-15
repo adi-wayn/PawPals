@@ -25,6 +25,8 @@
     <color name="pp_colorError">#BA1A1A</color>
     <color name="pp_colorOnError">#FFFFFF</color>
     <color name="gray_text">#666666</color>
+    <color name="status_online_green">#4CAF50</color>
+    <color name="status_offline_gray">#BDBDBD</color>
 
     <!-- התאמות UI ספציפיות (Light) -->
     <color name="app_background">@color/pp_colorBackground</color>
