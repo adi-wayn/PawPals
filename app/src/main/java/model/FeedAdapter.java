@@ -17,7 +17,7 @@ import com.google.android.material.button.MaterialButton;
 import java.util.ArrayList;
 import java.util.List;
 
-import model.firebase.firestore.CommunityRepository;
+import model.firebase.Firestore.CommunityRepository;
 
 public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.PostViewHolder> {
 

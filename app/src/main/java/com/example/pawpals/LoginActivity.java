@@ -33,7 +33,7 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
 
 import model.firebase.Authentication.AuthHelper;
 import model.firebase.CloudMessaging.FcmTokenManager;
-import model.firebase.firestore.UserRepository;
+import model.firebase.Firestore.UserRepository;
 
 public class LoginActivity extends AppCompatActivity {
 

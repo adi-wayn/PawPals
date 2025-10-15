@@ -1,10 +1,11 @@
-package model.firebase.firestore;
+package model.firebase.Firestore;
 
 import android.util.Log;
 
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -132,6 +133,7 @@ public class CommunityRepository {
         db.collection("communities")
                 .document(communityId)
                 .collection("feed")
+//                .orderBy("timestamp", Query.Direction.DESCENDING) // ✅ מיון ישירות ב־Firestore
                 .get()
                 .addOnSuccessListener(query -> {
                     List<Report> posts = new ArrayList<>();

@@ -38,8 +38,8 @@ import java.util.Map;
 
 import model.MapReport;
 import model.User;
-import model.firebase.firestore.MapRepository;
-import model.firebase.firestore.UserRepository;
+import model.firebase.Firestore.MapRepository;
+import model.firebase.Firestore.UserRepository;
 
 public class MapController {
     private LatLng pendingFocusCenter = null;
