@@ -21,6 +21,7 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import model.Community;
 import model.CommunityManager;
@@ -35,6 +36,7 @@ public class RegistrationDetailsActivity extends AppCompatActivity {
     private Spinner spinnerCommunities;
 
     private final String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+    private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private FusedLocationProviderClient locationClient;
 
     private double currentLat = 0;

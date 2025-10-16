@@ -97,7 +97,7 @@ public class CommunityUtils {
 
                     if (isManager && !exists) {
                         // ✅ Create community first
-                        communityRepository.createCommunity(communityName, userId, lat, lng, new ArrayList<>(),
+                        communityRepository.createCommunity(communityName, userId, lat, lng, "", "", new ArrayList<>(),
                                 new CommunityRepository.FirestoreCallback() {
                                     @Override
                                     public void onSuccess(String id) {
@@ -172,6 +172,8 @@ public class CommunityUtils {
                 managerId,
                 lat,
                 lng,
+                "",
+                "",
                 new ArrayList<>(),
                 new CommunityRepository.FirestoreCallback() {
                     @Override

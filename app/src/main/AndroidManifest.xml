@@ -53,22 +53,11 @@
         <activity android:name=".CommunitySettingsActivity" android:exported="false" />
         <activity android:name=".AddDogActivity" android:exported="false" />
         <activity android:name=".CommunityCreationDetailsActivity" android:exported="false" />
-      <activity
-            android:name=".PrivacyPolicyActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".EditProfileActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".DeleteAccountActivity"
-            android:exported="false" />
-
-        <!-- ✅ נוספה ההכרזה למסך פרטי כלב -->
-        <activity
-            android:name=".DogDetailsActivity"
-            android:exported="false" />
+        <activity android:name=".EditDogsActivity" android:exported="false" />
+        <activity android:name=".PrivacyPolicyActivity" android:exported="false" />
+        <activity android:name=".DeleteAccountActivity" android:exported="false" />
+        <activity android:name=".DogDetailsActivity" android:exported="false" />
+        <activity android:name=".AlertsActivity" android:exported="false" />
 
         <!-- Firebase Messaging service -->
         <service

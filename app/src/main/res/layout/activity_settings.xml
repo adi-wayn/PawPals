@@ -107,7 +107,7 @@
 
                 <!-- User name (dynamic) -->
                 <TextView
-                    android:id="@+id/account_title"
+                    android:id="@+id/text_user_name"
                     style="@style/TextAppearance.Material3.LabelLarge"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
