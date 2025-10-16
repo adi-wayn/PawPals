@@ -116,6 +116,24 @@ public class UserRepository {
                 });
     }
 
+    // 🔹 Find a user's document ID by their username
+    public void getUserIdByUserName(String userName, FirestoreIdCallback callback) {
+        db.collection("users")
+                .whereEqualTo("userName", userName)
+                .limit(1)
+                .get()
+                .addOnSuccessListener(query -> {
+                    if (!query.isEmpty()) {
+                        String documentId = query.getDocuments().get(0).getId(); // ← UID
+                        callback.onSuccess(documentId);
+                    } else {
+                        callback.onFailure(new Exception("User not found"));
+                    }
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
+
     // קבלת כל המשתמשים
     public void getAllUsers(FirestoreUsersListCallback callback) {
         db.collection("users")
@@ -394,6 +412,12 @@ public class UserRepository {
         void onSuccess(List<Pair<String, User>> rows);
         void onFailure(Exception e);
     }
+
+    public interface FirestoreIdCallback {
+        void onSuccess(String documentId);
+        void onFailure(Exception e);
+    }
+
 
     /** עדכון שדות בפרופיל המשתמש */
     public void updateUserProfile(String userId, Map<String, Object> updates, FirestoreCallback callback) {

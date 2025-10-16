@@ -1,9 +1,11 @@
 package com.example.pawpals;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.view.View;
+import android.util.Pair;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
@@ -11,13 +13,16 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
+import com.example.pawpals.utils.CommunityManagerUtils;
 import com.example.pawpals.utils.CommunityUtils;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.FirebaseAuth;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import model.User;
@@ -33,6 +38,8 @@ public class EditProfileActivity extends AppCompatActivity {
     private final UserRepository userRepository = new UserRepository();
 
     private boolean isManager = false;
+    private String currentUserCommunity = null;
+
     private FusedLocationProviderClient locationClient;
     private double currentLat = 0, currentLng = 0;
 
@@ -71,12 +78,13 @@ public class EditProfileActivity extends AppCompatActivity {
                     inputContactDetails.setText(user.getContactDetails());
                     inputFieldsOfInterest.setText(user.getFieldsOfInterest());
                     isManager = user.isManager();
+                    currentUserCommunity = user.getCommunityName();
                 }
             }
 
             @Override
             public void onFailure(Exception e) {
-                Toast.makeText(EditProfileActivity.this, "Failed to load profile", Toast.LENGTH_SHORT).show();
+                android.widget.Toast.makeText(EditProfileActivity.this, "Failed to load profile", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -105,8 +113,6 @@ public class EditProfileActivity extends AppCompatActivity {
             if (location != null) {
                 currentLat = location.getLatitude();
                 currentLng = location.getLongitude();
-
-                // ✅ Load nearby communities through CommunityUtils
                 CommunityUtils.loadNearbyCommunities(this, currentLat, currentLng, spinnerCommunities);
             } else {
                 Toast.makeText(this, "Unable to get location. Try again.", Toast.LENGTH_SHORT).show();
@@ -137,50 +143,96 @@ public class EditProfileActivity extends AppCompatActivity {
         }
 
         Map<String, Object> updates = new HashMap<>();
-        if (!name.isEmpty()) updates.put("userName", name);
-        if (!contactDetails.isEmpty()) updates.put("contactDetails", contactDetails);
-        if (!fieldsOfInterest.isEmpty()) updates.put("fieldsOfInterest", fieldsOfInterest);
+        updates.put("userName", name);
+        updates.put("contactDetails", contactDetails);
+        updates.put("fieldsOfInterest", fieldsOfInterest);
 
-        // ✅ If manager, just update fields
-        if (isManager) {
-            updateUserProfile(updates, "Profile updated!");
+        String newCommunity = spinnerCommunities.getSelectedItem() != null
+                ? spinnerCommunities.getSelectedItem().toString()
+                : safeText(inputNewCommunity);
+
+        if (newCommunity.isEmpty()) {
+            Toast.makeText(this, "Please select or enter a community", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // ✅ If non-manager: check for selected or new community
-        if (spinnerCommunities.getSelectedItem() != null) {
-            String selectedCommunity = spinnerCommunities.getSelectedItem().toString();
-
-            CommunityUtils.saveUserAndCommunity(
-                    this,
-                    name,
-                    contactDetails,
-                    fieldsOfInterest,
-                    selectedCommunity,
-                    userId,
-                    false,  // not creating new
-                    currentLat,
-                    currentLng
-            );
+        if (isManager && currentUserCommunity != null && !newCommunity.equals(currentUserCommunity)) {
+            startManagerTransferBeforeCommunityChange(newCommunity, updates, currentUserCommunity);
         } else {
-            String newCommunityName = safeText(inputNewCommunity);
-            if (newCommunityName.isEmpty()) {
-                Toast.makeText(this, "Please enter a community name", Toast.LENGTH_SHORT).show();
-                return;
+            updateUserProfile(updates, "Profile updated!");
+        }
+    }
+
+    private void startManagerTransferBeforeCommunityChange(String newCommunity, Map<String, Object> updates, String currentCommunity) {
+        UserRepository repo = new UserRepository();
+        repo.getUsersByCommunityWithIds(currentCommunity, new UserRepository.FirestoreUsersWithIdsCallback() {
+            @Override
+            public void onSuccess(List<Pair<String, User>> rows) {
+                List<String> memberNames = new ArrayList<>();
+                List<String> memberIds = new ArrayList<>();
+
+                for (Pair<String, User> pair : rows) {
+                    if (pair.first.equals(userId)) continue; // skip self
+                    memberIds.add(pair.first);
+                    memberNames.add(pair.second.getUserName() != null ? pair.second.getUserName() : "(no name)");
+                }
+
+                if (memberNames.isEmpty()) {
+                    Toast.makeText(EditProfileActivity.this,
+                            "You must assign a new manager before changing communities.",
+                            Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(EditProfileActivity.this);
+                builder.setTitle("Select New Manager");
+
+                Spinner spinner = new Spinner(EditProfileActivity.this);
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(EditProfileActivity.this,
+                        android.R.layout.simple_spinner_item, memberNames);
+                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                spinner.setAdapter(adapter);
+                builder.setView(spinner);
+
+                builder.setPositiveButton("Confirm", (dialog, which) -> {
+                    int pos = spinner.getSelectedItemPosition();
+                    if (pos == Spinner.INVALID_POSITION) {
+                        Toast.makeText(EditProfileActivity.this, "Please select a member.", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    String newManagerUid = memberIds.get(pos);
+
+                    CommunityManagerUtils.transferManager(
+                            EditProfileActivity.this,
+                            currentCommunity,
+                            newManagerUid,
+                            new CommunityManagerUtils.TransferCallback() {
+                                @Override
+                                public void onSuccess() {
+                                    updates.put("communityName", newCommunity);
+                                    updateUserProfile(updates, "Profile updated!");
+                                }
+
+                                @Override
+                                public void onFailure(Exception e) {
+                                    Toast.makeText(EditProfileActivity.this,
+                                            "Failed to transfer manager role: " + e.getMessage(),
+                                            Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                    );
+                });
+
+                builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
+                builder.show();
             }
 
-            CommunityUtils.saveUserAndCommunity(
-                    this,
-                    name,
-                    contactDetails,
-                    fieldsOfInterest,
-                    newCommunityName,
-                    userId,
-                    true,   // creating new
-                    currentLat,
-                    currentLng
-            );
-        }
+            @Override
+            public void onFailure(Exception e) {
+                Toast.makeText(EditProfileActivity.this, "Failed to load community members.", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void updateUserProfile(Map<String, Object> updates, String successMsg) {
