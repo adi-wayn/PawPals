@@ -17,7 +17,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -35,15 +34,17 @@ import model.firebase.Firestore.UserRepository;
  * 1) שימוש עקבי ב displayedUserId לכל טעינות הכלבים ולמעבר למסך פרטי כלב.
  * 2) רשימת חברים נטענת לפי friendsIds אם יש, אחרת לפי קהילה.
  * 3) הסתרת כפתור הוספת כלב כשזה לא הפרופיל שלי.
+ *
+ * שינוי מינימלי: רשימת חברים במבנה master+filtered (כמו "מסונן") בלי UI נוסף.
  */
 public class ProfileActivity extends AppCompatActivity {
 
     private static final String TAG = "ProfileActivity";
 
-    // Intent keys (שימי לב – כאן מחרוזות מקומיות כדי למנוע תלות):
+    // Intent keys
     public static final String EXTRA_CURRENT_USER = "currentUser"; // User implements Parcelable
-    public static final String EXTRA_DOG = "extra_dog";            // ב-DogDetailsActivity שמרי על אותו שם
-    public static final String EXTRA_OWNER_ID = "extra_owner_id";  // ב-DogDetailsActivity שמרי על אותו שם
+    public static final String EXTRA_DOG = "extra_dog";
+    public static final String EXTRA_OWNER_ID = "extra_owner_id";
 
     // Top section
     private TextView userName;
@@ -58,7 +59,7 @@ public class ProfileActivity extends AppCompatActivity {
     private View dogsScroll;          // ScrollView
     private LinearLayout dogsContainer;
 
-    // Add dog (Extended FAB בתחתית)
+    // Add dog (FAB)
     private MaterialButton fabAddDog;
 
     // Data
@@ -66,8 +67,11 @@ public class ProfileActivity extends AppCompatActivity {
     private String displayedUserId;          // ה-UID של המשתמש שמוצג
     private String myUid;                    // ה-UID של המשתמש המחובר (אם יש)
 
-    private final List<User> friends = new ArrayList<>();
-    private RecyclerView.Adapter<?> friendsAdapter;
+    // --- Friends data: master + filtered (כמו CommunitySearch) ---
+    private final List<User> friendsMaster = new ArrayList<>();
+    private final List<User> friendsFiltered = new ArrayList<>();
+    private FriendsAdapter friendsAdapter;
+
     private final UserRepository repo = new UserRepository();
 
     // Result launcher לרענון כלבים אחרי שמירה
@@ -97,10 +101,10 @@ public class ProfileActivity extends AppCompatActivity {
         FirebaseUser me = FirebaseAuth.getInstance().getCurrentUser();
         myUid = (me != null) ? me.getUid() : null;
 
-        // ===== קבלת המשתמש שמוצג (מומלץ להעביר Parcelable) =====
+        // ===== קבלת המשתמש שמוצג =====
         displayedUser = getIntent().getParcelableExtra(EXTRA_CURRENT_USER);
 
-        // קבעי displayedUserId: עדיפות ל-UID שמגיע מהמשתמש שמוצג; אחרת נפילה חכמה ל-myUid
+        // קבעי displayedUserId
         if (displayedUser != null && nn(displayedUser.getUid()).length() > 0) {
             displayedUserId = displayedUser.getUid();
         } else {
@@ -197,18 +201,17 @@ public class ProfileActivity extends AppCompatActivity {
     private void setupFriendsList() {
         friendsRecycler.setLayoutManager(new LinearLayoutManager(this));
 
-        // ✅ החלפה ל-FriendsAdapter החדש
-        friendsAdapter = new FriendsAdapter(this, friends, FriendsAdapter.defaultNavigator(this));
-
+        // אדפטר עובד על הרשימה המסוננת (filtered)
+        friendsAdapter = new FriendsAdapter(this, friendsFiltered, FriendsAdapter.defaultNavigator(this));
         friendsRecycler.setAdapter(friendsAdapter);
 
         // אם יש לנו friendsIds על המשתמש שמוצג – נטען לפיהם
         if (displayedUser != null && displayedUser.getFriendsIds() != null && !displayedUser.getFriendsIds().isEmpty()) {
             repo.getUsersByIds(displayedUser.getFriendsIds(), new UserRepository.FirestoreUsersListCallback() {
                 @Override public void onSuccess(List<User> users) {
-                    friends.clear();
-                    friends.addAll(users);
-                    friendsAdapter.notifyDataSetChanged();
+                    friendsMaster.clear();
+                    if (users != null) friendsMaster.addAll(users);
+                    refreshFriendsView(); // כרגע 1:1, עתידי – אפשר להכניס כאן לוגיקת סינון
                 }
                 @Override public void onFailure(Exception e) {
                     Log.e(TAG, "Failed to load friends by IDs", e);
@@ -222,22 +225,31 @@ public class ProfileActivity extends AppCompatActivity {
         }
     }
 
+    /** מעדכן את הרשימה המוצגת מתוך המאסטר (כאן ללא סינון לוגי – 1:1) */
+    private void refreshFriendsView() {
+        friendsFiltered.clear();
+        friendsFiltered.addAll(friendsMaster);
+        if (friendsAdapter != null) friendsAdapter.notifyDataSetChanged();
+    }
+
     private void loadFriendsByCommunityFallback() {
         String communityName = (displayedUser != null) ? nn(displayedUser.getCommunityName()) : "";
         if (communityName.isEmpty()) {
-            friends.clear();
-            friendsAdapter.notifyDataSetChanged();
+            friendsMaster.clear();
+            refreshFriendsView();
             return;
         }
         repo.getUsersByCommunity(communityName, new UserRepository.FirestoreUsersListCallback() {
             @Override public void onSuccess(List<User> users) {
-                friends.clear();
+                friendsMaster.clear();
                 // אל תציגי את המשתמש עצמו ברשימה
                 String selfName = (displayedUser != null) ? nn(displayedUser.getUserName()) : "";
-                for (User u : users) {
-                    if (!nn(u.getUserName()).equals(selfName)) friends.add(u);
+                if (users != null) {
+                    for (User u : users) {
+                        if (!nn(u.getUserName()).equals(selfName)) friendsMaster.add(u);
+                    }
                 }
-                friendsAdapter.notifyDataSetChanged();
+                refreshFriendsView();
             }
             @Override public void onFailure(Exception e) {
                 Log.e(TAG, "Failed to load friends by community", e);
