@@ -58,8 +58,9 @@ public class Community implements Parcelable {
         }
     };
 
-    // --- Getters & Setters ---
-    public String getName() { return name; }
+    public String getName() {
+        return name != null ? name : "";
+    }
 
     public CommunityManager getManager() { return manager; }
 
@@ -130,4 +131,15 @@ public class Community implements Parcelable {
         dest.writeString(description);
         dest.writeString(imageUrl);
     }
+
+    public void setName(String id) {
+    }
+
+    public Community() {
+        // Needed for Firestore
+        this.messages = new ArrayList<>();
+        this.members = new ArrayList<>();
+        this.reports = new ArrayList<>();
+    }
+
 }

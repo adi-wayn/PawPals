@@ -2,7 +2,7 @@
 <project version="4">
   <component name="deploymentTargetSelector">
     <selectionStates>
-      <SelectionState runConfigName="app">
+      <SelectionState runConfigName="pawpals">
         <option name="selectionMode" value="DROPDOWN" />
         <DropdownSelection timestamp="2025-10-15T14:16:13.193135Z">
           <Target type="DEFAULT_BOOT">

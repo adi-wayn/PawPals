@@ -3,8 +3,6 @@ package model.firebase.Firestore;
 import android.util.Log;
 import android.util.Pair;
 
-import androidx.annotation.Nullable;
-
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
@@ -152,6 +150,24 @@ public class UserRepository {
                     callback.onFailure(e);
                 });
     }
+
+    // 🔹 Find a user's document ID by their username
+    public void getUserIdByUserName(String userName, FirestoreIdCallback callback) {
+        db.collection("users")
+                .whereEqualTo("userName", userName)
+                .limit(1)
+                .get()
+                .addOnSuccessListener(query -> {
+                    if (!query.isEmpty()) {
+                        String documentId = query.getDocuments().get(0).getId(); // ← UID
+                        callback.onSuccess(documentId);
+                    } else {
+                        callback.onFailure(new Exception("User not found"));
+                    }
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
 
     // קבלת כל המשתמשים
     public void getAllUsers(FirestoreUsersListCallback callback) {
@@ -437,6 +453,13 @@ public class UserRepository {
         });
     }
 
+    public void deleteUser(String userId, FirestoreCallback callback) {
+        db.collection("users")
+                .document(userId)
+                .delete()
+                .addOnSuccessListener(aVoid -> callback.onSuccess(userId))
+                .addOnFailureListener(callback::onFailure);
+    }
     // שליפה חד-פעמית של מזהי חברים מתוך תת-האוסף
     public void getFriendIdsOnce(String uid, FirestoreIdsListCallback cb) {
         friendsCol(uid).orderBy("createdAt", Query.Direction.DESCENDING)
@@ -486,6 +509,37 @@ public class UserRepository {
         void onFailure(Exception e);
     }
 
+    public interface FirestoreIdCallback {
+        void onSuccess(String documentId);
+        void onFailure(Exception e);
+    }
+
+
+    /** עדכון שדות בפרופיל המשתמש */
+    public void updateUserProfile(String userId, Map<String, Object> updates, FirestoreCallback callback) {
+        if (userId == null || userId.isEmpty()) {
+            callback.onFailure(new IllegalArgumentException("userId is empty"));
+            return;
+        }
+        if (updates == null || updates.isEmpty()) {
+            callback.onFailure(new IllegalArgumentException("updates map is empty"));
+            return;
+        }
+
+        db.collection("users")
+                .document(userId)
+                .update(updates)
+                .addOnSuccessListener(aVoid -> {
+                    Log.d(TAG, "User profile updated for: " + userId);
+                    callback.onSuccess(userId);
+                })
+                .addOnFailureListener(e -> {
+                    Log.w(TAG, "Error updating user profile", e);
+                    callback.onFailure(e);
+                });
+    }
+
+}
     public interface FirestoreIdsListCallback {
         void onSuccess(List<String> ids);
         void onFailure(Exception e);

@@ -2,6 +2,10 @@ package model.firebase.Firestore;
 
 import android.util.Log;
 
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
@@ -50,6 +54,16 @@ public class CommunityRepository {
                 .addOnFailureListener(callback::onFailure);
     }
 
+    public void updateCommunityManager(String communityName, String newManagerId, FirestoreCallback callback){
+        db.collection("communities")
+                .document(communityName)
+                .update("managerId", newManagerId)
+                .addOnSuccessListener(aVoid -> callback.onSuccess(newManagerId))
+                .addOnFailureListener(callback::onFailure);
+    }
+
+    // קבלת קהילה לפי ID (שם)
+    public void getCommunityById(String communityId, FirestoreCommunityCallback callback) {
     // 🔹 עדכון תיאור הקהילה
     public void updateCommunityDescription(String communityId, String description, FirestoreCallback callback) {
         db.collection("communities")
@@ -147,7 +161,98 @@ public class CommunityRepository {
                 .addOnFailureListener(callback::onFailure);
     }
 
-    // 🔹 שליפת כל ה־Reports מתוך הקהילה
+    public void findCommunityNearby(double userLat, double userLng, int radiusMeters, FirestoreCommunityCallback callback) {
+        db.collection("communities")
+                .get()
+                .addOnSuccessListener(query -> {
+                    Community closest = null;
+                    double closestDistance = Double.MAX_VALUE;
+
+                    for (DocumentSnapshot doc : query.getDocuments()) {
+                        Double lat = doc.getDouble("latitude");
+                        Double lng = doc.getDouble("longitude");
+                        if (lat != null && lng != null) {
+                            double distance = distanceInMeters(userLat, userLng, lat, lng);
+                            if (distance <= radiusMeters && distance < closestDistance) {
+                                closestDistance = distance;
+                                closest = doc.toObject(Community.class);
+                                if (closest != null) closest.setName(doc.getId());
+                            }
+                        }
+                    }
+
+                    if (closest != null) {
+                        callback.onSuccess(closest);
+                    } else {
+                        callback.onFailure(new Exception("No nearby community found"));
+                    }
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
+    public void findCommunitiesNearby(double userLat, double userLng, double radiusKm, FirestoreCommunitiesListCallback callback) {
+        db.collection("communities").get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                List<Community> nearbyCommunities = new ArrayList<>();
+
+                for (QueryDocumentSnapshot doc : task.getResult()) {
+                    Double lat = doc.getDouble("latitude");
+                    Double lng = doc.getDouble("longitude");
+
+                    if (lat != null && lng != null) {
+                        double distanceKm = haversineDistance(userLat, userLng, lat, lng) / 1000.0; // convert to km
+
+                        Log.d("CommunityRepo", "Community: " + doc.getId() + " distance: " + distanceKm + "km");
+
+                        if (distanceKm <= radiusKm) {
+                            Community community = doc.toObject(Community.class);
+                            if (community != null) {
+                                community.setName(doc.getId()); // in case name is missing
+                                nearbyCommunities.add(community);
+                            }
+                        }
+                    }
+                }
+
+                Log.d("CommunityRepo", "Nearby communities found: " + nearbyCommunities.size());
+                callback.onSuccess(nearbyCommunities);
+            } else {
+                Log.e("CommunityRepo", "Error fetching communities", task.getException());
+                callback.onFailure(task.getException());
+            }
+        });
+    }
+
+
+    // Haversine formula (distance in meters)
+    private double haversineDistance(double lat1, double lon1, double lat2, double lon2) {
+        double R = 6371000; // Earth radius in meters
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    }
+
+    public interface FirestoreCommunitiesListCallback {
+        void onSuccess(List<Community> communities);
+        void onFailure(Exception e);
+    }
+
+
+    // Haversine formula to calculate distance between two coordinates
+    private double distanceInMeters(double lat1, double lon1, double lat2, double lon2) {
+        int R = 6371000; // radius of Earth in meters
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
+                        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    }
     public void getReportsByCommunity(String communityId, FirestoreReportsListCallback callback) {
         db.collection("communities")
                 .document(communityId)
@@ -313,11 +418,6 @@ public class CommunityRepository {
     public interface FirestoreCommunityCallback {
         void onSuccess(String description, String imageUrl);
         void onFailure(Exception e);
-    }
-
-    public interface FirestoreMessagesChangeCallback {
-        void onChanges(List<com.google.firebase.firestore.DocumentChange> changes);
-        void onError(Exception e);
     }
 
     public interface FirestoreIdCallback {
