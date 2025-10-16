@@ -8,31 +8,33 @@
     android:orientation="vertical"
     android:padding="16dp"
     android:layoutDirection="locale"
-    android:background="?android:windowBackground"
+    android:background="@color/app_background"
     tools:context=".OtherUserProfileActivity">
 
-    <!-- User Profile Section (זהה + כפתור חברות) -->
+    <!-- Header: תמונה + שם + כפתור חברות -->
     <LinearLayout
         android:id="@+id/user_profile_section"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
 
         <FrameLayout
             android:layout_width="80dp"
             android:layout_height="80dp">
 
-            <ImageView
+            <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/user_profile_picture"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_gravity="center"
                 android:contentDescription="@string/profile_picture"
                 android:scaleType="centerCrop"
-                tools:srcCompat="@tools:sample/avatars" />
+                tools:srcCompat="@tools:sample/avatars"
+                app:shapeAppearanceOverlay="@style/Shape.Round24"
+                app:strokeColor="@color/pp_colorPrimary"
+                app:strokeWidth="1dp" />
 
-            <!-- אינדיקטור סטטוס (נשתמש בצבע כדי לבטא חברות/לא חברות אם תרצה) -->
+            <!-- 🟢 אינדיקטור חברות (ירוק = חבר, אפור = לא) -->
             <View
                 android:id="@+id/friend_status_indicator"
                 android:layout_width="16dp"
@@ -49,9 +51,10 @@
             android:layout_marginStart="16dp"
             android:layout_weight="1"
             android:text="@string/user_name_placeholder"
-            android:textAppearance="?attr/textAppearanceHeadline6" />
+            style="@style/TextAppearance.Material3.TitleLarge"
+            android:textColor="?attr/colorOnSurface" />
 
-        <!-- כפתור פעולה לחברות — Outlined, תואם סטייל -->
+        <!-- כפתור חברות -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_friend_action"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
@@ -60,89 +63,107 @@
             android:text="Add Friend" />
     </LinearLayout>
 
-    <!-- Divider (זהה) -->
-    <View
+    <!-- Divider -->
+    <com.google.android.material.divider.MaterialDivider
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="8dp"
         android:layout_marginBottom="12dp"
-        android:background="@color/light_gray" />
+        app:dividerColor="@color/pp_colorPrimary"
+        app:thickness="1dp" />
 
-    <!-- Bio (זהה) -->
-    <TextView
-        android:id="@+id/bio_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="About"
-        android:textStyle="bold"
-        android:textAppearance="?attr/textAppearanceSubtitle1"
-        android:layout_marginBottom="4dp" />
-
-    <TextView
-        android:id="@+id/bio_text"
+    <!-- About + Contact -->
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Short bio goes here…"
-        android:textAppearance="?attr/textAppearanceBody2"
-        android:lineSpacingExtra="2dp"
-        android:layout_marginBottom="12dp"
-        tools:text="Dog lover, early riser, love morning park walks and organizing weekend meetups." />
+        app:cardBackgroundColor="?attr/colorSurface"
+        app:strokeColor="@color/pp_colorOutline"
+        app:strokeWidth="1dp"
+        app:shapeAppearance="@style/Shape.Round16">
 
-    <!-- Contact (זהה) -->
-    <TextView
-        android:id="@+id/contact_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Contact"
-        android:textStyle="bold"
-        android:textAppearance="?attr/textAppearanceSubtitle1"
-        android:layout_marginBottom="4dp" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
 
-    <TextView
-        android:id="@+id/contact_text"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="email@example.com | 050-0000000"
-        android:autoLink="email|phone"
-        android:linksClickable="true"
-        android:textAppearance="?attr/textAppearanceBody2"
-        android:layout_marginBottom="16dp"
-        tools:text="bella.owner@gmail.com | 050-1234567" />
+            <TextView
+                android:id="@+id/bio_title"
+                style="@style/TextAppearance.Material3.LabelLarge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="About"
+                android:textStyle="bold"
+                android:alpha="0.85" />
 
-    <!-- Toggle row נשארת לעקביות, אך מכילה רק Dogs -->
+            <TextView
+                android:id="@+id/bio_text"
+                style="@style/TextAppearance.Material3.BodyLarge"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:lineSpacingExtra="2dp"
+                android:layout_marginBottom="12dp"
+                tools:text="Dog lover, early riser, love morning park walks." />
+
+            <com.google.android.material.divider.MaterialDivider
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                app:dividerColor="?attr/colorOutline" />
+
+            <TextView
+                android:id="@+id/contact_title"
+                style="@style/TextAppearance.Material3.LabelLarge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="Contact"
+                android:textStyle="bold"
+                android:alpha="0.85" />
+
+            <TextView
+                android:id="@+id/contact_text"
+                style="@style/TextAppearance.Material3.BodyLarge"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:autoLink="email|phone"
+                android:linksClickable="true"
+                android:layout_marginBottom="4dp"
+                tools:text="bella.owner@gmail.com | 050-1234567" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- כפתור Dogs -->
     <LinearLayout
         android:id="@+id/toggle_row"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:weightSum="1"
+        android:layout_marginTop="12dp"
         android:layout_marginBottom="8dp">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_show_dogs"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:layout_width="0dp"
+            style="@style/Widget.PawPals.ButtonTransparent"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Dogs" />
+            android:text="Dogs"
+            app:backgroundTint="@color/toggle_dogs_bg"
+            android:textColor="@color/toggle_dogs_text"
+            app:iconTint="@color/toggle_dogs_text"
+            app:strokeColor="@color/toggle_dogs_stroke"
+            app:strokeWidth="1dp" />
     </LinearLayout>
 
-    <!-- Switchable content: כאן יש רק Dogs -->
-    <FrameLayout
-        android:id="@+id/content_switcher"
+    <!-- רשימת הכלבים -->
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        app:cardBackgroundColor="?attr/colorSurface"
+        app:strokeColor="@color/pp_colorOutline"
+        app:strokeWidth="1dp"
+        app:shapeAppearance="@style/Shape.Round16">
 
-        <com.google.android.material.progressindicator.CircularProgressIndicator
-            android:id="@+id/progressBar"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_gravity="center"
-            android:visibility="gone"
-            app:indicatorSize="48dp"/>
-
-        <!-- Dogs cards -->
         <ScrollView
             android:id="@+id/dogs_scroll"
             android:layout_width="match_parent"
@@ -154,21 +175,23 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:divider="?android:attr/dividerHorizontal"
                 android:showDividers="middle"
-                android:dividerPadding="8dp" />
+                android:dividerPadding="8dp"
+                android:divider="?android:attr/dividerHorizontal" />
         </ScrollView>
-    </FrameLayout>
+    </com.google.android.material.card.MaterialCardView>
 
-    <!-- Community Status (זהה) -->
+    <!-- סטטוס קהילה -->
     <TextView
         android:id="@+id/community_status"
+        style="@style/TextAppearance.Material3.BodySmall"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/in_the_same_community"
-        android:textAppearance="?attr/textAppearanceBody2"
+        android:text="@string/user_community"
+        android:textColor="?attr/colorOnSurface"
         android:gravity="center"
         android:layout_marginTop="12dp"
         android:layout_marginBottom="8dp" />
+
 
 </LinearLayout>

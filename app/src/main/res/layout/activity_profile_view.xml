@@ -8,10 +8,10 @@
     android:orientation="vertical"
     android:padding="16dp"
     android:layoutDirection="locale"
-    android:background="?android:windowBackground"
+    android:background="@color/app_background"
     tools:context=".ProfileActivity">
 
-    <!-- User Profile Section (unchanged) -->
+    <!-- Header: תמונה + נקודת סטטוס + שם -->
     <LinearLayout
         android:id="@+id/user_profile_section"
         android:layout_width="match_parent"
@@ -23,22 +23,26 @@
             android:layout_width="80dp"
             android:layout_height="80dp">
 
-            <ImageView
+            <!-- תמונה מעוגלת עם מסגרת דקה טורקיז -->
+            <com.google.android.material.imageview.ShapeableImageView
                 android:id="@+id/user_profile_picture"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_gravity="center"
                 android:contentDescription="@string/profile_picture"
                 android:scaleType="centerCrop"
-                tools:srcCompat="@tools:sample/avatars" />
+                tools:srcCompat="@tools:sample/avatars"
+                app:shapeAppearanceOverlay="@style/Shape.Round24"
+                app:strokeColor="@color/pp_colorPrimary"
+                app:strokeWidth="1dp" />
 
+            <!-- נקודת סטטוס ירוקה (עם מסגרת לבנה) -->
             <View
                 android:id="@+id/friend_status_indicator"
                 android:layout_width="16dp"
                 android:layout_height="16dp"
                 android:layout_gravity="bottom|end"
                 android:layout_margin="4dp"
-                android:background="@drawable/status_indicator" />
+                android:background="@drawable/status_indicator_online" />
         </FrameLayout>
 
         <TextView
@@ -48,74 +52,109 @@
             android:layout_marginStart="16dp"
             android:layout_weight="1"
             android:text="@string/user_name_placeholder"
-            android:textAppearance="?attr/textAppearanceHeadline6" />
+            style="@style/TextAppearance.Material3.TitleLarge"
+            android:textColor="?attr/colorOnSurface" />
     </LinearLayout>
 
-    <!-- Divider -->
-    <View
+    <!-- Divider טורקיז -->
+    <com.google.android.material.divider.MaterialDivider
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="8dp"
         android:layout_marginBottom="12dp"
-        android:background="@color/light_gray" />
+        app:dividerColor="@color/pp_colorPrimary"
+        app:thickness="1dp" />
 
-    <!-- Bio -->
-    <TextView
-        android:id="@+id/bio_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="About"
-        android:textStyle="bold"
-        android:textAppearance="?attr/textAppearanceSubtitle1"
-        android:layout_marginBottom="4dp" />
-
-    <TextView
-        android:id="@+id/bio_text"
+    <!-- כרטיס מידע: About + Contact -->
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Short bio goes here…"
-        android:textAppearance="?attr/textAppearanceBody2"
-        android:lineSpacingExtra="2dp"
-        android:layout_marginBottom="12dp"
-        tools:text="Dog lover, early riser, love morning park walks and organizing weekend meetups." />
+        app:cardBackgroundColor="?attr/colorSurface"
+        app:strokeColor="@color/pp_colorOutline"
+        app:strokeWidth="1dp"
+        app:shapeAppearance="@style/Shape.Round16">
 
-    <!-- Contact -->
-    <TextView
-        android:id="@+id/contact_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Contact"
-        android:textStyle="bold"
-        android:textAppearance="?attr/textAppearanceSubtitle1"
-        android:layout_marginBottom="4dp" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
 
-    <TextView
-        android:id="@+id/contact_text"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="email@example.com | 050-0000000"
-        android:autoLink="email|phone"
-        android:linksClickable="true"
-        android:textAppearance="?attr/textAppearanceBody2"
-        android:layout_marginBottom="16dp"
-        tools:text="bella.owner@gmail.com | 050-1234567" />
+            <!-- About -->
+            <TextView
+                android:id="@+id/bio_title"
+                style="@style/TextAppearance.Material3.LabelLarge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="About"
+                android:textStyle="bold"
+                android:textColor="?attr/colorOnSurface"
+                android:alpha="0.85" />
 
-    <!-- Toggle buttons -->
+            <TextView
+                android:id="@+id/bio_text"
+                style="@style/TextAppearance.Material3.BodyLarge"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Short bio goes here…"
+                android:textColor="?attr/colorOnSurface"
+                android:lineSpacingExtra="2dp"
+                android:layout_marginBottom="12dp"
+                tools:text="Dog lover, early riser, love morning park walks and organizing weekend meetups." />
+
+            <com.google.android.material.divider.MaterialDivider
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                app:dividerColor="?attr/colorOutline"
+                app:thickness="1dp" />
+
+            <!-- Contact -->
+            <TextView
+                android:id="@+id/contact_title"
+                style="@style/TextAppearance.Material3.LabelLarge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="Contact"
+                android:textStyle="bold"
+                android:textColor="?attr/colorOnSurface"
+                android:alpha="0.85" />
+
+            <TextView
+                android:id="@+id/contact_text"
+                style="@style/TextAppearance.Material3.BodyLarge"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="email@example.com | 050-0000000"
+                android:autoLink="email|phone"
+                android:linksClickable="true"
+                android:textColor="?attr/colorOnSurface"
+                android:layout_marginBottom="4dp"
+                tools:text="bella.owner@gmail.com | 050-1234567" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- טוגלים: Friends / Dogs (עם גוון רך ונעים) -->
     <LinearLayout
         android:id="@+id/toggle_row"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:weightSum="2"
+        android:layout_marginTop="12dp"
         android:layout_marginBottom="8dp">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_show_friends"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            style="@style/Widget.PawPals.ButtonTransparent"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Friends" />
+            android:text="Friends"
+            app:backgroundTint="@color/toggle_friends_bg"
+            android:textColor="@color/toggle_friends_text"
+            app:iconTint="@color/toggle_friends_text"
+            app:strokeColor="@color/toggle_friends_stroke"
+            app:strokeWidth="1dp" />
 
         <View
             android:layout_width="8dp"
@@ -123,53 +162,65 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_show_dogs"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            style="@style/Widget.PawPals.ButtonTransparent"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Dogs" />
+            android:text="Dogs"
+            app:backgroundTint="@color/toggle_dogs_bg"
+            android:textColor="@color/toggle_dogs_text"
+            app:iconTint="@color/toggle_dogs_text"
+            app:strokeColor="@color/toggle_dogs_stroke"
+            app:strokeWidth="1dp" />
     </LinearLayout>
 
-    <!-- Switchable content area -->
-    <FrameLayout
-        android:id="@+id/content_switcher"
+    <!-- אזור תוכן מתחלף בתוך כרטיס (נעים + עקבי) -->
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        app:cardBackgroundColor="?attr/colorSurface"
+        app:strokeColor="@color/pp_colorOutline"
+        app:strokeWidth="1dp"
+        app:shapeAppearance="@style/Shape.Round16">
 
-        <!-- Friends list (RecyclerView) -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/friends_recycler"
+        <FrameLayout
+            android:id="@+id/content_switcher"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:clipToPadding="false"
-            android:paddingTop="4dp"
-            android:paddingBottom="8dp"
-            tools:listitem="@layout/item_profile_card"
-            tools:itemCount="6" />
+            android:layout_height="match_parent">
 
-        <!-- Dogs list scroll -->
-        <ScrollView
-            android:id="@+id/dogs_scroll"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:fillViewport="true"
-            android:visibility="gone">
-
-            <LinearLayout
-                android:id="@+id/dogs_container"
+            <!-- Friends list -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/friends_recycler"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:divider="?android:attr/dividerHorizontal"
-                android:showDividers="middle"
-                android:dividerPadding="8dp" />
-        </ScrollView>
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:paddingTop="4dp"
+                android:paddingBottom="8dp"
+                tools:listitem="@layout/item_profile_card"
+                tools:itemCount="6" />
 
-        <!-- NOTE: ה-FAB שהיה כאן הוסר -->
-    </FrameLayout>
+            <!-- Dogs list -->
+            <ScrollView
+                android:id="@+id/dogs_scroll"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:fillViewport="true"
+                android:visibility="gone">
 
-    <!-- Extended FAB under the scroll (no outline) -->
+                <LinearLayout
+                    android:id="@+id/dogs_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:showDividers="middle"
+                    android:dividerPadding="8dp"
+                    android:divider="?android:attr/dividerHorizontal" />
+            </ScrollView>
+        </FrameLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- FAB להוספת כלב (Primary טורקיז) -->
     <LinearLayout
         android:id="@+id/add_dog_footer"
         android:layout_width="match_parent"
@@ -179,26 +230,28 @@
         android:gravity="center"
         android:padding="8dp">
 
-        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/fab_add_dog"
+            style="?attr/materialButtonOutlinedStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="add dog"
-            android:contentDescription="@string/add_dog"
-            app:icon="@drawable/ic_add"
-            app:iconPadding="8dp"
-            app:iconGravity="textStart"
-            app:showMotionSpec="@animator/mtrl_extended_fab_show_motion_spec"
-            app:hideMotionSpec="@animator/mtrl_extended_fab_hide_motion_spec" />
+            android:text="@string/add_dog"
+            android:paddingHorizontal="24dp"
+            android:paddingVertical="10dp"
+            app:cornerRadius="16dp"
+            app:backgroundTint="?attr/colorPrimary"
+            android:textColor="?attr/colorOnPrimary"/>
+
     </LinearLayout>
 
-    <!-- Community Status -->
+    <!-- סטטוס קהילה -->
     <TextView
         android:id="@+id/community_status"
+        style="@style/TextAppearance.Material3.BodySmall"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/user_community"
-        android:textAppearance="?attr/textAppearanceBody2"
+        android:textColor="?attr/colorOnSurface"
         android:gravity="center"
         android:layout_marginTop="0dp"
         android:layout_marginBottom="8dp" />

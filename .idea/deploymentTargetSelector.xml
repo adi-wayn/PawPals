@@ -4,10 +4,10 @@
     <selectionStates>
       <SelectionState runConfigName="pawpals">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-10-10T09:42:10.708203800Z">
+        <DropdownSelection timestamp="2025-10-15T14:16:13.193135Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\Chana\.android\avd\Pixel_9.avd" />
+              <DeviceId pluginId="LocalEmulator" identifier="path=/Users/testmac/.android/avd/Pixel_9_Pro_XL.avd" />
             </handle>
           </Target>
         </DropdownSelection>

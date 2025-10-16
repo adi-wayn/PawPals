@@ -1,7 +1,10 @@
 package model;
 
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import android.content.Context;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,10 +18,10 @@ import androidx.annotation.NonNull;
 import com.example.pawpals.R;
 import com.google.firebase.auth.FirebaseAuth;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import model.firebase.Firestore.CommunityRepository;
-import model.firebase.Storage.StorageRepository;
 
 public class ReportsAdapter extends RecyclerView.Adapter<ReportsAdapter.ReportViewHolder> {
 
@@ -26,19 +29,19 @@ public class ReportsAdapter extends RecyclerView.Adapter<ReportsAdapter.ReportVi
         void onReportRemoved(Report report);
     }
 
-    private final List<Report> reportList; // filtered list
+    private final List<Report> reportList;
     private final String communityId;
     private final Context context;
     private final CommunityRepository repo;
-    private int expandedPosition = -1;
-
+    private final boolean isManager;
     private OnReportRemovedListener removedListener;
 
-    public ReportsAdapter(List<Report> reportList, String communityId, Context context) {
+    public ReportsAdapter(List<Report> reportList, String communityId, Context context, boolean isManager) {
         this.reportList = reportList;
         this.communityId = communityId;
         this.context = context;
         this.repo = new CommunityRepository();
+        this.isManager = isManager;
     }
 
     public void setOnReportRemovedListener(OnReportRemovedListener l) {
@@ -60,179 +63,185 @@ public class ReportsAdapter extends RecyclerView.Adapter<ReportsAdapter.ReportVi
         holder.textPostSender.setText(report.getSenderName());
         holder.textPostType.setText(report.getType());
         holder.textPostSubject.setText(report.getSubject());
+        holder.textPostMessage.setText(report.getText());
+        holder.textPostMessageFull.setText(report.getText());
 
-        String text = report.getText() != null ? report.getText() : "";
-        String shortText = text.length() > 80 ? text.substring(0, 80) + "..." : text;
-        holder.textPostMessage.setText(shortText);
-        holder.textPostMessageFull.setText(text);
+        // ✅ הצגת preview קצר (20 תווים לדוגמה)
+        String full = report.getText();
+        if (full != null && full.length() > 20) {
+            holder.textPostMessage.setText(full.substring(0, 20) + "...");
+        } else {
+            holder.textPostMessage.setText(full);
+        }
 
-        boolean isExpanded = position == expandedPosition;
-        boolean isPost = report.isPost();
+        // ✅ טיפול בתמונות
+        List<String> all = new ArrayList<>();
+        if (report.getImageUrls() != null && !report.getImageUrls().isEmpty()) {
+            all.addAll(report.getImageUrls());
+        } else if (report.getImageUrl() != null && !report.getImageUrl().isEmpty()) {
+            all.add(report.getImageUrl());
+        }
+
+        if (all.isEmpty()) {
+            holder.postImagesRv.setVisibility(View.GONE);
+            holder.imagesAdapter.submit(null);
+        } else {
+            holder.postImagesRv.setVisibility(holder.expanded ? View.VISIBLE : View.GONE);
+            holder.imagesAdapter.submit(all);
+        }
+
+        // ✅ הצגת / הסתרת תוכן מלא בלחיצה
+        holder.itemView.setOnClickListener(v -> {
+            holder.expanded = !holder.expanded;
+            holder.textPostMessageFull.setVisibility(holder.expanded ? View.VISIBLE : View.GONE);
+            holder.textPostMessage.setVisibility(holder.expanded ? View.GONE : View.VISIBLE);
+            holder.postImagesRv.setVisibility(holder.expanded && !all.isEmpty() ? View.VISIBLE : View.GONE);
+        });
+
+        // ✅ Change button text based on report type
+        String type = report.getType() != null ? report.getType().toLowerCase() : "";
+        switch (type) {
+            case "complaint":
+                holder.buttonApprove.setText("Mark as Handled");
+                holder.buttonApprove.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#9E9E9E"))); // Gray
+
+                holder.buttonApprove.setTextColor(Color.WHITE);
+                break;
+            case "assistance":
+                holder.buttonApprove.setText("Offer Help");
+                holder.buttonApprove.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#FF9800"))); // Orange
+
+                holder.buttonApprove.setTextColor(Color.WHITE);
+                break;
+            case "manager application":
+                holder.buttonApprove.setText("Transfer Manager");
+                holder.buttonApprove.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#2196F3"))); // Blue
+
+                holder.buttonApprove.setTextColor(Color.WHITE);
+                break;
+            default:
+                holder.buttonApprove.setText("Approve");
+                holder.buttonApprove.setBackgroundTintList(ColorStateList.valueOf(Color.parseColor("#4CAF50"))); // Green
+
+                holder.buttonApprove.setTextColor(Color.WHITE);
+                break;
+        }
+
         boolean isManagerApp = report.isManagerApplication();
 
-        // כפתורי פעולה מוצגים רק כשמורחב ורק אם יש מה לאשר/לדחות
-        boolean showActions = isExpanded && (isPost || isManagerApp);
-        holder.textPostMessageFull.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
-        holder.actionButtonsLayout.setVisibility(showActions ? View.VISIBLE : View.GONE);
-
-        // פתיחה/סגירה של הכרטיס (expand/collapse)
-        holder.itemView.setOnClickListener(v -> {
-            int pos = holder.getAdapterPosition();
-            if (pos == RecyclerView.NO_POSITION) return;
-
-            int oldExpanded = expandedPosition;
-            expandedPosition = (position == expandedPosition) ? -1 : pos;
-
-            if (oldExpanded != -1) notifyItemChanged(oldExpanded);
-            if (expandedPosition != -1) notifyItemChanged(expandedPosition);
-        });
-
-        // טקסט מלא בלחיצה על המקוצר
-        holder.textPostMessage.setOnClickListener(v -> {
-            boolean currentlyVisible = holder.textPostMessageFull.getVisibility() == View.VISIBLE;
-            holder.textPostMessageFull.setVisibility(currentlyVisible ? View.GONE : View.VISIBLE);
-        });
-
-        // APPROVE
+        // ✅ כפתור אישור
         holder.buttonApprove.setOnClickListener(v -> {
-            int adapterPos = holder.getAdapterPosition();
-            if (adapterPos == RecyclerView.NO_POSITION) return;
-
-            String reportId = report.getId();
-            if (reportId == null || reportId.isEmpty()) {
-                Toast.makeText(context, "Missing report id. Cannot approve.", Toast.LENGTH_LONG).show();
-                return;
-            }
 
             if (isManagerApp) {
-                // אישור מועמדות לניהול → transferManager
                 String oldManagerUid = FirebaseAuth.getInstance().getUid();
                 String newManagerUid = report.getApplicantUserId();
-
-                if (communityId == null || oldManagerUid == null || newManagerUid == null || newManagerUid.isEmpty()) {
-                    Toast.makeText(context, "Missing data for manager transfer.", Toast.LENGTH_LONG).show();
-                    return;
-                }
-
                 repo.transferManager(communityId, oldManagerUid, newManagerUid, new CommunityRepository.FirestoreCallback() {
                     @Override public void onSuccess(String id) {
-                        // מחיקת הדיווח אחרי ההעברה
-                        repo.deleteReport(communityId, reportId, new CommunityRepository.FirestoreCallback() {
+                        repo.deleteReport(communityId, report.getId(), new CommunityRepository.FirestoreCallback() {
                             @Override public void onSuccess(String ignored) {
                                 Toast.makeText(context, "Manager transferred successfully.", Toast.LENGTH_SHORT).show();
-                                removeAt(adapterPos, report);
+                                removeAt(holder.getAdapterPosition());
                             }
-                            @Override public void onFailure(Exception e) {
-                                // גם אם המחיקה נכשלה – נסיר מקומית כדי לא לתקוע את ה-UI
-                                removeAt(adapterPos, report);
-                            }
+                            @Override public void onFailure(Exception e) { removeAt(holder.getAdapterPosition()); }
                         });
                     }
                     @Override public void onFailure(Exception e) {
                         Toast.makeText(context, "Failed to transfer manager: " + e.getMessage(), Toast.LENGTH_LONG).show();
                     }
                 });
+            }
 
-            } else if (isPost) {
-                // פוסט מאושר → עובר ל-feed ונמחק מהתור
-                repo.createFeedPost(communityId, report, new CommunityRepository.FirestoreCallback() {
-                    @Override public void onSuccess(String feedId) {
-                        repo.deleteReport(communityId, reportId, new CommunityRepository.FirestoreCallback() {
-                            @Override public void onSuccess(String ignored) {
-                                Toast.makeText(context, "Post approved & moved to bulletin.", Toast.LENGTH_SHORT).show();
-                                removeAt(adapterPos, report);
-                            }
-                            @Override public void onFailure(Exception e) {
-                                Toast.makeText(context, "Post added but failed to remove from queue: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                            }
-                        });
+            // 🔴 תלונה או בקשת סיוע
+            else if (type.equals("complaint") || type.equals("assistance")) {
+                repo.deleteReport(communityId, report.getId(), new CommunityRepository.FirestoreCallback() {
+                    @Override
+                    public void onSuccess(String ignored) {
+                        Toast.makeText(context, "Report handled and removed.", Toast.LENGTH_SHORT).show();
+                        removeAt(holder.getAdapterPosition());
                     }
-                    @Override public void onFailure(Exception e) {
-                        Toast.makeText(context, "Failed to approve post: " + e.getMessage(), Toast.LENGTH_LONG).show();
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        Toast.makeText(context, "Failed to remove report: " + e.getMessage(), Toast.LENGTH_LONG).show();
                     }
                 });
+            }
 
-            } else {
-                // סוג אחר – רק מחיקה
-                repo.deleteReport(communityId, reportId, new CommunityRepository.FirestoreCallback() {
-                    @Override public void onSuccess(String ignored) {
-                        Toast.makeText(context, "Report approved and removed.", Toast.LENGTH_SHORT).show();
-                        removeAt(adapterPos, report);
+            else {
+                repo.createFeedPost(communityId, report, new CommunityRepository.FirestoreCallback() {
+                    @Override public void onSuccess(String feedId) {
+                        repo.deleteReport(communityId, report.getId(), new CommunityRepository.FirestoreCallback() {
+                            @Override public void onSuccess(String ignored) {
+                                Toast.makeText(context, "Post approved & moved to bulletin.", Toast.LENGTH_SHORT).show();
+                                removeAt(holder.getAdapterPosition());
+                            }
+                            @Override public void onFailure(Exception e) { }
+                        });
                     }
-                    @Override public void onFailure(Exception e) {
-                        Toast.makeText(context, "Failed to delete report: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                    }
+                    @Override public void onFailure(Exception e) { }
                 });
             }
         });
 
-        // REJECT
-        holder.buttonReject.setOnClickListener(v -> {
-            int adapterPos = holder.getAdapterPosition();
-            if (adapterPos == RecyclerView.NO_POSITION) return;
-
-            String reportId = report.getId();
-            if (reportId == null || reportId.isEmpty()) {
-                Toast.makeText(context, "Missing report id. Cannot delete.", Toast.LENGTH_LONG).show();
-                return;
-            }
-
-            repo.deleteReport(communityId, reportId, new CommunityRepository.FirestoreCallback() {
+        // ✅ כפתור מחיקה
+        holder.buttonDelete.setOnClickListener(v -> {
+            repo.deleteReport(communityId, report.getId(), new CommunityRepository.FirestoreCallback() {
                 @Override public void onSuccess(String ignored) {
-                    // מחיקה מה־Storage (best-effort)
-                    StorageRepository s = new StorageRepository();
-                    java.util.List<String> urls = new java.util.ArrayList<>();
-                    if (report.getImageUrl() != null) urls.add(report.getImageUrl());
-                    if (report.getImageUrls() != null) urls.addAll(report.getImageUrls());
-                    for (String u : urls) {
-                        s.deleteByUrl(u, new StorageRepository.SimpleCallback() {
-                            @Override public void onSuccess() { /* no-op */ }
-                            @Override public void onFailure(@NonNull Exception e) { /* swallow */ }
-                        });
-                    }
-
-                    Toast.makeText(context, "Report rejected and deleted.", Toast.LENGTH_SHORT).show();
-                    removeAt(adapterPos, report);
+                    Toast.makeText(context, "Report deleted.", Toast.LENGTH_SHORT).show();
+                    removeAt(holder.getAdapterPosition());
                 }
                 @Override public void onFailure(Exception e) {
-                    Toast.makeText(context, "Failed to delete report: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(context, "Delete failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
                 }
             });
         });
+
+        // ✅ הצגת כפתורים רק למנהל
+        holder.actionButtonsLayout.setVisibility(isManager ? View.VISIBLE : View.GONE);
     }
 
-    private void removeAt(int position, Report report) {
+    private void removeAt(int position) {
         if (position < 0 || position >= reportList.size()) return;
-        reportList.remove(position);
+        Report removed = reportList.remove(position);
         notifyItemRemoved(position);
-        notifyItemRangeChanged(position, reportList.size() - position);
+        notifyItemRangeChanged(position, reportList.size());
+
         if (removedListener != null) {
-            removedListener.onReportRemoved(report);
+            removedListener.onReportRemoved(removed);
         }
-        if (expandedPosition == position) expandedPosition = -1;
-        else if (expandedPosition > position) expandedPosition--;
     }
 
     @Override
-    public int getItemCount() {
-        return reportList.size();
-    }
+    public int getItemCount() { return reportList.size(); }
 
-    public static class ReportViewHolder extends RecyclerView.ViewHolder {
+    static class ReportViewHolder extends RecyclerView.ViewHolder {
         TextView textPostSender, textPostType, textPostSubject, textPostMessage, textPostMessageFull;
+        Button buttonApprove, buttonDelete;
         LinearLayout actionButtonsLayout;
-        Button buttonApprove, buttonReject;
+        RecyclerView postImagesRv;
+        ImagesAdapter imagesAdapter;
 
-        public ReportViewHolder(View itemView) {
+        boolean expanded = false;
+
+        ReportViewHolder(View itemView) {
             super(itemView);
             textPostSender = itemView.findViewById(R.id.text_post_sender);
             textPostType = itemView.findViewById(R.id.text_post_type);
             textPostSubject = itemView.findViewById(R.id.text_post_subject);
             textPostMessage = itemView.findViewById(R.id.text_post_message);
             textPostMessageFull = itemView.findViewById(R.id.text_post_message_full);
-            actionButtonsLayout = itemView.findViewById(R.id.actionButtonsLayout);
             buttonApprove = itemView.findViewById(R.id.buttonApprove);
-            buttonReject = itemView.findViewById(R.id.buttonReject);
+            buttonDelete = itemView.findViewById(R.id.buttonDelete);
+            actionButtonsLayout = itemView.findViewById(R.id.actionButtonsLayout);
+
+            postImagesRv = itemView.findViewById(R.id.postImagesRv);
+            postImagesRv.setLayoutManager(
+                    new LinearLayoutManager(itemView.getContext(), LinearLayoutManager.HORIZONTAL, false)
+            );
+            postImagesRv.setItemAnimator(null);
+            postImagesRv.setNestedScrollingEnabled(false);
+            imagesAdapter = new ImagesAdapter(4);
+            postImagesRv.setAdapter(imagesAdapter);
         }
     }
 }

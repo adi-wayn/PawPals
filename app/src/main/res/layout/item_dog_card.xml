@@ -1,60 +1,75 @@
-<!-- res/layout/item_dog_card.xml -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:gravity="center_vertical"
-    android:padding="8dp">
-
-    <ImageView
-        android:id="@+id/dog_profile_picture"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:layout_gravity="center"
-        android:contentDescription="@string/dog_picture"
-        android:scaleType="centerCrop"
-        tools:srcCompat="@tools:sample/avatars" />
+    android:layout_marginVertical="4dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:minHeight="?attr/listPreferredItemHeightSmall"
+    android:foreground="?attr/selectableItemBackground"
+    app:cardBackgroundColor="?attr/colorSurface"
+    app:strokeColor="@color/pp_colorOutline"
+    app:strokeWidth="1dp"
+    app:shapeAppearance="@style/Shape.Round16">
 
     <LinearLayout
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:orientation="vertical"
-        android:layout_marginStart="16dp">
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="12dp">
 
-        <TextView
-            android:id="@+id/dog_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?attr/textAppearanceSubtitle1"
-            android:textStyle="bold"
-            tools:text="Rex" />
+        <!-- תמונה מעוגלת עם מסגרת טורקיז עדינה -->
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/dog_profile_picture"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:contentDescription="@string/dog_picture"
+            android:scaleType="centerCrop"
+            tools:srcCompat="@tools:sample/avatars"
+            app:shapeAppearanceOverlay="@style/Shape.Round16"
+            app:strokeColor="@color/pp_colorPrimary"
+            app:strokeWidth="1dp" />
 
-        <TextView
-            android:id="@+id/dog_breed1"
-            android:layout_width="wrap_content"
+        <!-- טקסטים -->
+        <LinearLayout
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textAppearance="?attr/textAppearanceBody2"
-            tools:text="German Shepherd" />
+            android:layout_weight="1"
+            android:layout_marginStart="16dp"
+            android:orientation="vertical">
 
-        <!-- גיל הכלב -->
-        <TextView
-            android:id="@+id/dog_age"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?attr/textAppearanceBody2"
-            android:layout_marginTop="2dp"
-            tools:text="Age: 3" />
+            <TextView
+                android:id="@+id/dog_name"
+                style="@style/TextAppearance.Material3.TitleMedium"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textStyle="bold"
+                android:textColor="?attr/colorOnSurface"
+                tools:text="Rex" />
+
+            <TextView
+                android:id="@+id/dog_breed"
+                style="@style/TextAppearance.Material3.BodyMedium"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:textColor="?attr/colorOnSurface"
+                android:alpha="0.85"
+                tools:text="German Shepherd" />
+
+            <TextView
+                android:id="@+id/dog_age"
+                style="@style/TextAppearance.Material3.BodySmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:textColor="?attr/colorOnSurface"
+                android:alpha="0.75"
+                tools:text="Age: 3" />
+        </LinearLayout>
+
     </LinearLayout>
-
-    <!-- כפתור תפריט (שלוש נקודות) -->
-    <ImageButton
-        android:id="@+id/btn_dog_menu"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:contentDescription="@string/dog_menu"
-        app:srcCompat="@drawable/ic_more_vert" />
-</LinearLayout>
+</com.google.android.material.card.MaterialCardView>

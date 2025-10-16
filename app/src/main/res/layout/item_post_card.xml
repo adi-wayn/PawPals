@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
-    android:elevation="4dp"
-    android:backgroundTint="#FFFFFF">
+    app:cardUseCompatPadding="true"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="?attr/colorSurface">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -15,53 +20,69 @@
         <!-- סוג ההודעה -->
         <TextView
             android:id="@+id/text_post_type"
+            style="@style/TextAppearance.Material3.LabelLarge"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Type: Post"
             android:textStyle="bold"
-            android:textColor="#6200EE"
-            android:textSize="14sp"
+            android:textColor="?attr/colorPrimary"
             android:layout_marginBottom="4dp"/>
 
         <!-- נושא -->
         <TextView
             android:id="@+id/text_post_subject"
+            style="@style/TextAppearance.Material3.TitleSmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Subject"
             android:textStyle="bold"
-            android:textSize="16sp"
-            android:textColor="#000000"
+            android:textColor="?attr/colorOnSurface"
             android:layout_marginBottom="2dp"/>
 
         <!-- שם השולח -->
         <TextView
             android:id="@+id/text_post_sender"
+            style="@style/TextAppearance.Material3.BodySmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="by Sender Name"
             android:textStyle="italic"
-            android:textColor="#555555"
-            android:textSize="13sp"
+            android:textColor="?attr/colorOnSurface"
+            android:alpha="0.7"
             android:layout_marginBottom="6dp"/>
 
         <!-- גוף ההודעה -->
         <TextView
             android:id="@+id/text_post_message"
+            style="@style/TextAppearance.Material3.BodyMedium"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Message content goes here..."
-            android:textSize="14sp"
-            android:textColor="#333333"
+            android:textColor="?attr/colorOnSurface"
+            android:alpha="0.9"
             android:lineSpacingExtra="4dp" />
 
+        <!-- גלריית תמונות (נשאר כמות שהוא) -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/postImagesRv"
             android:layout_width="match_parent"
             android:layout_height="180dp"
             android:visibility="gone"
             android:overScrollMode="never"
-            android:nestedScrollingEnabled="false"/>
+            android:nestedScrollingEnabled="false"
+            android:layout_marginTop="8dp"/>
+
+        <!-- כפתור מחיקה (אדום תמאטי) -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/buttonDelete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/delete"
+            style="@style/Widget.Material3.Button.ElevatedButton"
+            app:backgroundTint="?attr/colorError"
+            android:textColor="?attr/colorOnError"
+            android:layout_marginTop="8dp"
+            android:visibility="gone"/>
 
     </LinearLayout>
 </androidx.cardview.widget.CardView>

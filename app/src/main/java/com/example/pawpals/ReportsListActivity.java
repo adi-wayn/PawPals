@@ -24,17 +24,21 @@ public class ReportsListActivity extends AppCompatActivity {
     private EditText searchEditText;
 
     private ReportsAdapter adapter;
-    private List<Report> allReports = new ArrayList<>();
-    private List<Report> filteredReports = new ArrayList<>();
+    private final List<Report> allReports = new ArrayList<>();
+    private final List<Report> filteredReports = new ArrayList<>();
     private User currentUser;
     private CommunityRepository communityRepo;
-    private static String s(String v) { return v == null ? "" : v; }
+
+    private static String s(String v) {
+        return v == null ? "" : v;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_reports);
 
+        // קבלת המשתמש הנוכחי
         currentUser = getIntent().getParcelableExtra("currentUser");
         communityRepo = new CommunityRepository();
 
@@ -56,6 +60,11 @@ public class ReportsListActivity extends AppCompatActivity {
     }
 
     private void loadReportsFromFirebase() {
+        if (currentUser == null || currentUser.getCommunityName() == null) {
+            Toast.makeText(this, "Missing current user or community name", Toast.LENGTH_LONG).show();
+            return;
+        }
+
         String communityName = currentUser.getCommunityName();
 
         communityRepo.getCommunityIdByName(communityName, new CommunityRepository.FirestoreIdCallback() {
@@ -67,28 +76,39 @@ public class ReportsListActivity extends AppCompatActivity {
                         allReports.clear();
                         allReports.addAll(reports);
 
-                        // אתחול Adapter רק אחרי שיש communityId
-                        adapter = new ReportsAdapter(filteredReports, communityId, ReportsListActivity.this);
+                        // שולחים ל־Adapter גם את isManager
+                        adapter = new ReportsAdapter(
+                                filteredReports,
+                                communityId,
+                                ReportsListActivity.this,
+                                currentUser.isManager()
+                        );
                         reportsRecyclerView.setAdapter(adapter);
 
-                        // Keep allReports in sync when an item is removed from the filtered list
+                        // ✅ סנכרון רשימות - גם למחוק וגם לעדכן את המסוננים
                         adapter.setOnReportRemovedListener(report -> {
                             allReports.remove(report);
+                            filterReports(searchEditText.getText().toString());
                         });
 
-                        filterReports(""); // הצג הכל
+                        // הצגת כל הדיווחים בהתחלה
+                        filterReports("");
                     }
 
                     @Override
                     public void onFailure(Exception e) {
-                        Toast.makeText(ReportsListActivity.this, "Failed to load reports: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        Toast.makeText(ReportsListActivity.this,
+                                "Failed to load reports: " + e.getMessage(),
+                                Toast.LENGTH_LONG).show();
                     }
                 });
             }
 
             @Override
             public void onFailure(Exception e) {
-                Toast.makeText(ReportsListActivity.this, "Failed to find community: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(ReportsListActivity.this,
+                        "Failed to find community: " + e.getMessage(),
+                        Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -96,6 +116,7 @@ public class ReportsListActivity extends AppCompatActivity {
     private void filterReports(String query) {
         String q = query == null ? "" : query.toLowerCase();
         filteredReports.clear();
+
         if (q.isEmpty()) {
             filteredReports.addAll(allReports);
         } else {
@@ -107,6 +128,7 @@ public class ReportsListActivity extends AppCompatActivity {
                 }
             }
         }
+
         if (adapter != null) adapter.notifyDataSetChanged();
     }
 }

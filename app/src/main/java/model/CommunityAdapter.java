@@ -14,27 +14,29 @@ import com.example.pawpals.R;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.util.Pair;
+import model.firebase.Firestore.UserRepository;
+
 public class CommunityAdapter extends RecyclerView.Adapter<CommunityAdapter.ViewHolder> {
 
-    // מאזין שמעביר גם את המיקום ברשימה
     public interface OnUserClickListener {
         void onUserClick(User user, int position);
     }
 
-    private final List<User> users = new ArrayList<>();
+    private final List<Pair<String, User>> rows = new ArrayList<>();
     @Nullable private OnUserClickListener clickListener;
 
-    public CommunityAdapter(@Nullable List<User> users) {
-        if (users != null) this.users.addAll(users);
+    public CommunityAdapter(@Nullable List<Pair<String, User>> rows) {
+        if (rows != null) this.rows.addAll(rows);
     }
 
     public void setOnUserClickListener(@Nullable OnUserClickListener listener) {
         this.clickListener = listener;
     }
 
-    public void updateData(@Nullable List<User> newUsers) {
-        this.users.clear();
-        if (newUsers != null) this.users.addAll(newUsers);
+    public void updateData(@Nullable List<Pair<String, User>> newRows) {
+        this.rows.clear();
+        if (newRows != null) this.rows.addAll(newRows);
         notifyDataSetChanged();
     }
 
@@ -48,22 +50,23 @@ public class CommunityAdapter extends RecyclerView.Adapter<CommunityAdapter.View
 
     @Override
     public void onBindViewHolder(@NonNull CommunityAdapter.ViewHolder holder, int position) {
-        final User user = users.get(position);
-        holder.bind(user);
+        Pair<String, User> row = rows.get(position);
+        String userId = row.first;
+        User user = row.second;
+        holder.bind(user, userId);
 
         holder.itemView.setOnClickListener(v -> {
             if (clickListener == null) return;
-
-            int pos = holder.getAdapterPosition(); // עובד בכל הגרסאות
+            int pos = holder.getAdapterPosition();
             if (pos != RecyclerView.NO_POSITION) {
-                clickListener.onUserClick(users.get(pos), pos);
+                clickListener.onUserClick(rows.get(pos).second, pos);
             }
         });
     }
 
     @Override
     public int getItemCount() {
-        return users.size();
+        return rows.size();
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
@@ -73,24 +76,34 @@ public class CommunityAdapter extends RecyclerView.Adapter<CommunityAdapter.View
             super(itemView);
             nameText      = itemView.findViewById(R.id.profile_name);
             infoText      = itemView.findViewById(R.id.profile_info);
-            // שים לב: אם ב־item_profile_card אין TextView עם id כזה – או להוסיף אותו, או להוריד את השורה הבאה
             communityText = itemView.findViewById(R.id.profile_community);
         }
 
-        void bind(@Nullable User user) {
+        void bind(@Nullable User user, @NonNull String userId) {
             if (user == null) return;
 
-            // שם
             nameText.setText(user.getUserName() != null ? user.getUserName() : "Unknown");
 
-            // מידע כללי – כמות כלבים
-            int dogCount = (user.getDogs() != null) ? user.getDogs().size() : 0;
-            infoText.setText("Dogs: " + dogCount);
+            // שליפה לפי userId
+            UserRepository userRepo = new UserRepository();
+            userRepo.getDogsForUser(userId, new UserRepository.FirestoreDogsListCallback() {
+                @Override
+                public void onSuccess(List<Dog> dogs) {
+                    int dogCount = (dogs != null) ? dogs.size() : 0;
+                    infoText.setText("Dogs: " + dogCount);
+                }
 
-            // קהילה (בדיקה למקרה שה־View לא קיים ב־XML)
+                @Override
+                public void onFailure(Exception e) {
+                    infoText.setText("Dogs: -");
+                }
+            });
+
             if (communityText != null) {
                 communityText.setText(
-                        user.getCommunityName() != null ? "Community: " + user.getCommunityName() : "Community: -"
+                        user.getCommunityName() != null
+                                ? "Community: " + user.getCommunityName()
+                                : "Community: -"
                 );
             }
         }

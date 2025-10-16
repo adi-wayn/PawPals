@@ -9,25 +9,25 @@
         android:id="@+id/et_dog_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="שם הכלב" />
+        android:hint="the dog's name" />
 
     <EditText
         android:id="@+id/et_dog_breed"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="גזע הכלב" />
+        android:hint="dog breed" />
 
     <EditText
         android:id="@+id/et_dog_age"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="number"
-        android:hint="גיל הכלב" />
+        android:hint="the age of the dog" />
 
     <Button
         android:id="@+id/btn_save_dog"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="שמור" />
+        android:text="Save" />
 
 </LinearLayout>

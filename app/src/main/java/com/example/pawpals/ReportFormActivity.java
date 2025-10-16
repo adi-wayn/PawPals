@@ -1,5 +1,7 @@
 package com.example.pawpals;
 
+import static android.content.ContentValues.TAG;
+
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -11,6 +13,9 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.PickVisualMediaRequest;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -18,26 +23,34 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.google.firebase.auth.FirebaseAuth;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
+
 import model.Report;
 import model.SelectedImagesAdapter;
 import model.User;
-import model.firebase.Firestore.CommunityRepository;
 import model.firebase.Storage.StorageRepository;
+import model.firebase.Firestore.CommunityRepository;
 
 public class ReportFormActivity extends AppCompatActivity {
+    private static final String TAG = "ReportFormActivity";
 
     private RadioGroup typeTabs;
     private EditText inputSenderName, inputSubject, inputText;
     private Button buttonSubmit;
     private User currentUser;
-    private final java.util.List<Uri> selectedUris = new java.util.ArrayList<>();
+
+    // תמונות
+    private final List<Uri> selectedUris = new ArrayList<>();
     private androidx.recyclerview.widget.RecyclerView selectedImagesRv;
-    private android.view.View addImagesBtn;
+    private View addImagesBtn;
     private SelectedImagesAdapter previewAdapter;
 
-
-    private final androidx.activity.result.ActivityResultLauncher<androidx.activity.result.PickVisualMediaRequest> pickImages =
-            registerForActivityResult(new androidx.activity.result.contract.ActivityResultContracts.PickMultipleVisualMedia(4), uris -> {
+    // בחירת תמונות (מקסימום 4)
+    private final ActivityResultLauncher<PickVisualMediaRequest> pickImages =
+            registerForActivityResult(new ActivityResultContracts.PickMultipleVisualMedia(4), uris -> {
+                Log.d(TAG, "pickImages callback: uris=" + (uris != null ? uris.size() : 0));
                 selectedUris.clear();
                 if (uris != null) selectedUris.addAll(uris);
                 previewAdapter.submit(selectedUris);
@@ -45,29 +58,31 @@ public class ReportFormActivity extends AppCompatActivity {
                 Toast.makeText(this, "Selected: " + selectedUris.size(), Toast.LENGTH_SHORT).show();
             });
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        currentUser = getIntent().getParcelableExtra("currentUser");
         setContentView(R.layout.activity_report_form);
 
-        // Connect UI elements
+        currentUser = getIntent().getParcelableExtra("currentUser");
+        if (currentUser == null) {
+            Log.e(TAG, "currentUser is null — finishing activity.");
+            finish();
+            return;
+        }
+
         typeTabs = findViewById(R.id.type_tabs);
         inputSenderName = findViewById(R.id.input_sender_name);
         inputSubject = findViewById(R.id.input_subject);
         inputText = findViewById(R.id.input_text);
         buttonSubmit = findViewById(R.id.button_submit);
-        RadioButton tabManagerApp = findViewById(R.id.tab_manager_application);
         addImagesBtn = findViewById(R.id.button_add_images);
         selectedImagesRv = findViewById(R.id.selectedImagesRv);
 
+        // === RecyclerView & Adapter לתמונות ===
         selectedImagesRv.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        selectedImagesRv.setHasFixedSize(true);
-        selectedImagesRv.setNestedScrollingEnabled(false); // בתוך ScrollView זה עוזר
-
         previewAdapter = new SelectedImagesAdapter(selectedUris, pos -> {
             if (pos >= 0 && pos < selectedUris.size()) {
+                Log.d(TAG, "Removing image at position " + pos);
                 selectedUris.remove(pos);
                 previewAdapter.notifyItemRemoved(pos);
                 selectedImagesRv.setVisibility(selectedUris.isEmpty() ? View.GONE : View.VISIBLE);
@@ -76,141 +91,172 @@ public class ReportFormActivity extends AppCompatActivity {
         selectedImagesRv.setAdapter(previewAdapter);
         selectedImagesRv.setVisibility(View.GONE);
 
-        addImagesBtn.setOnClickListener(v ->
-                pickImages.launch(new androidx.activity.result.PickVisualMediaRequest.Builder()
-                        .setMediaType(androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
-                        .build()));
+        // כפתור בחירת תמונות
+        addImagesBtn.setOnClickListener(v -> {
+            Log.d(TAG, "Launching image picker...");
+            pickImages.launch(new PickVisualMediaRequest.Builder()
+                    .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
+                    .build());
+        });
 
-        buttonSubmit.setOnClickListener(v -> {
-            String type = getSelectedType();
-            String senderName = inputSenderName.getText().toString();
-            String subject = inputSubject.getText().toString();
-            String text = inputText.getText().toString();
+        CommunityRepository repo = new CommunityRepository();
 
-
-            if (subject.isEmpty() || text.isEmpty()) {
-                Toast.makeText(this, "Please fill in at least the subject and message.", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            // צור אובייקט Report
-            Report report = new Report(type, senderName, subject, text);
-
-            // אם זו מועמדות – צרף userId של המועמד
-            if ("Manager Application".equalsIgnoreCase(type)) {
-                String uid = FirebaseAuth.getInstance().getUid();
-                report.setApplicantUserId(uid);           // ← שדה חדש (ראה עדכון מודל בהמשך)
-                report.setType(Report.TYPE_MANAGER_APPLICATION);
-            }
-
-            // שמור במסד הנתונים תחת הקהילה
-            CommunityRepository repo = new CommunityRepository();
-            repo.getCommunityIdByName(currentUser.getCommunityName(), new CommunityRepository.FirestoreIdCallback() {
-                @Override
-                public void onSuccess(String communityId) {
-                    // בדוק אם יש צורך להציג את לשונית הבקשה למנהל
-                    repo.getManagerApplicationsOpen(communityId, new CommunityRepository.FirestoreBooleanCallback() {
-                        @Override public void onSuccess(boolean open) {
-                            // מציגים רק אם פתוח ורק אם המשתמש אינו מנהל
-                            tabManagerApp.setVisibility(open && !currentUser.isManager ? View.VISIBLE : View.GONE);
+        // בדיקת זמינות של בקשות מנהל
+        repo.getCommunityIdByName(currentUser.getCommunityName(), new CommunityRepository.FirestoreIdCallback() {
+            @Override
+            public void onSuccess(String communityId) {
+                repo.getManagerApplicationsOpen(communityId, new CommunityRepository.FirestoreBooleanCallback() {
+                    @Override
+                    public void onSuccess(boolean value) {
+                        RadioButton tabManagerApp = findViewById(R.id.tab_manager_application);
+                        Log.d(TAG, "getManagerApplicationsOpen success. value=" + value);
+                        if (tabManagerApp != null) {
+                            tabManagerApp.setVisibility(value ? View.VISIBLE : View.GONE);
+                            Log.d(TAG, "Manager Application tab visibility set to " +
+                                    (value ? "GONE" : "VISIBLE"));
                         }
-                        @Override public void onFailure(Exception e) { tabManagerApp.setVisibility(View.GONE); }
-                    });
+                    }
 
-                    // שמירת הדו"ח במסד הנתונים
-                    repo.createReport(communityId, report, new CommunityRepository.FirestoreCallback() {
-                        @Override
-                        public void onSuccess(String documentId) {
-                            // זה ה-id של הדיווח החדש
-                            final String reportId = documentId;
+                    @Override
+                    public void onFailure(Exception e) {
+                        Log.e(TAG, "Failed to check manager applications", e);
+                        RadioButton tabManagerApp = findViewById(R.id.tab_manager_application);
+                        if (tabManagerApp != null) tabManagerApp.setVisibility(View.VISIBLE);
+                    }
+                });
+            }
 
-                            if (selectedUris.isEmpty()) {
-                                // אין תמונות — סיימנו
-                                finishAfterSubmit();
-                                return;
-                            }
+            @Override
+            public void onFailure(Exception e) {
+                Log.e(TAG, "Community not found", e);
+                Toast.makeText(ReportFormActivity.this, "Community not found: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
 
-                            StorageRepository storageRepo = new StorageRepository();
-                            java.util.List<String> urls = new java.util.ArrayList<>();
+        buttonSubmit.setOnClickListener(v -> handleSubmit());
+    }
 
-                            uploadAllImagesSequentially(
-                                    0, selectedUris, urls,
-                                    (u, c) -> storageRepo.uploadReportImageCompressed(
-                                            ReportFormActivity.this, communityId, reportId, u, 1280, 82, null, c
-                                    ),
-                                    new Runnable() {
-                                        @Override public void run() {
-                                            // עדכון השדה imageUrls במסמך הדיווח
-                                            repo.updateReportImages(communityId, reportId, null, urls, new CommunityRepository.FirestoreCallback() {
-                                                @Override public void onSuccess(String id) {
-                                                    Log.d("Upload", "got url");
-                                                    finishAfterSubmit();
-                                                }
-                                                @Override public void onFailure(Exception e) {
-                                                    Log.e("Upload", "failed: ", e);
-                                                    Toast.makeText(ReportFormActivity.this,
-                                                            "Saved report but failed to update images: " + e.getMessage(),
-                                                            Toast.LENGTH_LONG).show();
-                                                    finishAfterSubmit();
-                                                }
-                                            });
-                                        }
-                                    },
-                                    e -> Toast.makeText(ReportFormActivity.this,
+    private void handleSubmit() {
+        String type = getSelectedType();
+        String senderName = inputSenderName.getText().toString().trim();
+        String subject = inputSubject.getText().toString().trim();
+        String text = inputText.getText().toString().trim();
+
+        Log.d(TAG, "Submitting report. Type=" + type + ", images=" + selectedUris.size());
+
+        if (subject.isEmpty() || text.isEmpty() || type.equals("No type selected")) {
+            Toast.makeText(this, "Please fill in at least the type, subject and message.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Report report = new Report(type, senderName, subject, text);
+        if ("Manager Application".equalsIgnoreCase(type)) {
+            String uid = FirebaseAuth.getInstance().getUid();
+            report.setApplicantUserId(uid);
+            report.setType(Report.TYPE_MANAGER_APPLICATION);
+        }
+
+        CommunityRepository repo = new CommunityRepository();
+
+        repo.getCommunityIdByName(currentUser.getCommunityName(), new CommunityRepository.FirestoreIdCallback() {
+            @Override
+            public void onSuccess(String communityId) {
+                Log.d(TAG, "Community found: " + communityId);
+                repo.createReport(communityId, report, new CommunityRepository.FirestoreCallback() {
+                    @Override
+                    public void onSuccess(String reportId) {
+                        Log.d(TAG, "Report created. id=" + reportId);
+                        if (selectedUris.isEmpty()) {
+                            finishAfterSubmit();
+                            return;
+                        }
+
+                        StorageRepository storageRepo = new StorageRepository();
+                        List<String> urls = new ArrayList<>();
+
+                        uploadAllImagesSequentially(0, selectedUris, urls,
+                                (u, c) -> storageRepo.uploadReportImageCompressed(
+                                        ReportFormActivity.this, communityId, reportId, u, 1280, 82, null, c),
+                                () -> repo.updateReportImages(communityId, reportId, null, urls,
+                                        new CommunityRepository.FirestoreCallback() {
+                                            @Override
+                                            public void onSuccess(String id) {
+                                                Log.d(TAG, "Images updated successfully");
+                                                finishAfterSubmit();
+                                            }
+
+                                            @Override
+                                            public void onFailure(Exception e) {
+                                                Log.e(TAG, "Failed to update images", e);
+                                                finishAfterSubmit();
+                                            }
+                                        }),
+                                e -> {
+                                    Log.e(TAG, "Image upload failed", e);
+                                    Toast.makeText(ReportFormActivity.this,
                                             "Image upload failed: " + e.getMessage(),
-                                            Toast.LENGTH_LONG).show()
-                            );
-                        }
+                                            Toast.LENGTH_LONG).show();
+                                });
+                    }
 
-                        @Override
-                        public void onFailure(Exception e) {
-                            Toast.makeText(ReportFormActivity.this, "Error saving report: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                        }
-                    });
-                }
+                    @Override
+                    public void onFailure(Exception e) {
+                        Log.e(TAG, "Error saving report", e);
+                        Toast.makeText(ReportFormActivity.this,
+                                "Error saving report: " + e.getMessage(),
+                                Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
 
-                @Override
-                public void onFailure(Exception e) {
-                    tabManagerApp.setVisibility(View.GONE);
-                    Toast.makeText(ReportFormActivity.this, "Community not found: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                }
-            });
-
-            // Log the data (for testing)
-            Log.d("ReportForm", "type: " + type);
-            Log.d("ReportForm", "sender name: " + senderName);
-            Log.d("ReportForm", "subject: " + subject);
-            Log.d("ReportForm", "text: " + text);
-
-            clearForm();
+            @Override
+            public void onFailure(Exception e) {
+                Log.e(TAG, "Community not found", e);
+                Toast.makeText(ReportFormActivity.this,
+                        "Community not found: " + e.getMessage(),
+                        Toast.LENGTH_LONG).show();
+            }
         });
     }
 
-    // Helper: העלאה סדרתית כדי לשמור על זיכרון נמוך
-    private interface Uploader { @Nullable
-    com.google.firebase.storage.UploadTask go(Uri u, StorageRepository.UploadCallback cb); }
+    // === Helpers ===
+    private interface Uploader {
+        @Nullable com.google.firebase.storage.UploadTask go(Uri u, StorageRepository.UploadCallback cb);
+    }
+
     private void uploadAllImagesSequentially(
             int idx,
-            java.util.List<Uri> uris,
-            java.util.List<String> outUrls,
+            List<Uri> uris,
+            List<String> outUrls,
             Uploader uploader,
             Runnable onDone,
-            java.util.function.Consumer<Exception> onError
+            Consumer<Exception> onError
     ) {
-        if (idx >= uris.size()) { onDone.run(); return; }
+        if (idx >= uris.size()) {
+            onDone.run();
+            return;
+        }
         Uri u = uris.get(idx);
+        Log.d(TAG, "Uploading image " + (idx + 1) + "/" + uris.size() + ": " + u);
         uploader.go(u, new StorageRepository.UploadCallback() {
-            @Override public void onSuccess(@NonNull String downloadUrl) {
+            @Override
+            public void onSuccess(@NonNull String downloadUrl) {
+                Log.d(TAG, "Image uploaded. URL=" + downloadUrl);
                 outUrls.add(downloadUrl);
-                uploadAllImagesSequentially(idx+1, uris, outUrls, uploader, onDone, onError);
+                uploadAllImagesSequentially(idx + 1, uris, outUrls, uploader, onDone, onError);
             }
-            @Override public void onFailure(@NonNull Exception e) { onError.accept(e); }
+
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.e(TAG, "Image upload failed at index " + idx, e);
+                onError.accept(e);
+            }
         });
     }
 
     private void finishAfterSubmit() {
         Toast.makeText(this, "Report submitted!", Toast.LENGTH_SHORT).show();
-        Intent intent = new Intent(ReportFormActivity.this, CommunityActivity.class);
+        Intent intent = new Intent(this, CommunityActivity.class);
         intent.putExtra("currentUser", currentUser);
         startActivity(intent);
         finish();
@@ -223,12 +269,5 @@ public class ReportFormActivity extends AppCompatActivity {
             return selectedRadio.getText().toString();
         }
         return "No type selected";
-    }
-
-    private void clearForm() {
-        typeTabs.clearCheck();
-        inputSenderName.setText("");
-        inputSubject.setText("");
-        inputText.setText("");
     }
 }

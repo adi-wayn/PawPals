@@ -1,35 +1,47 @@
 <resources>
-    <style name="PawPals.TextTitle">
+
+    <!-- כותרות -->
+    <style name="PawPals.TextTitle" parent="TextAppearance.Material3.HeadlineMedium">
         <item name="android:textSize">26sp</item>
-        <item name="android:textStyle">bold</item>
-        <item name="android:textColor">#1F3B3D</item>
+        <item name="fontFamily">@font/poppins_semibold</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
 
-    <style name="PawPals.TextButton">
+    <!-- טקסט לכפתורים / Labels -->
+    <style name="PawPals.TextButton" parent="TextAppearance.Material3.LabelLarge">
         <item name="android:textSize">14sp</item>
-        <item name="android:textStyle">bold</item>
-        <item name="android:textColor">#1F3B3D</item>
-        <item name="android:gravity">bottom</item>
+        <item name="fontFamily">@font/poppins_semibold</item>
+        <item name="android:textColor">?attr/colorOnPrimary</item>
     </style>
 
+    <!-- ElevatedButton כברירת מחדל -->
     <style name="Widget.PawPals.Button" parent="Widget.Material3.Button.ElevatedButton">
-        <item name="backgroundTint">#FFFFFF</item>
-        <item name="android:textColor">#000000</item>
+        <item name="backgroundTint">?attr/colorPrimary</item>
+        <item name="android:textColor">?attr/colorOnPrimary</item>
+        <item name="iconTint">?attr/colorOnPrimary</item>
         <item name="shapeAppearance">@style/Shape.Round16</item>
-        <item name="iconTint">#000000</item>
+
+        <!-- רווחי קצה אחידים -->
+        <item name="android:insetLeft">0dp</item>
+        <item name="android:insetRight">0dp</item>
+
+        <!-- יישור תוכן למרכז -->
+        <item name="android:textAlignment">center</item>
+        <item name="android:gravity">center</item>
     </style>
 
+    <!-- OutlinedButton שקוף -->
     <style name="Widget.PawPals.ButtonTransparent" parent="Widget.Material3.Button.OutlinedButton">
         <item name="backgroundTint">@android:color/transparent</item>
-        <item name="strokeColor">#000000</item>
+        <item name="strokeColor">?attr/colorOutline</item>
         <item name="strokeWidth">1dp</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+        <item name="iconTint">?attr/colorOnSurface</item>
         <item name="shapeAppearance">@style/Shape.Round16</item>
-    </style>
 
-    <style name="Theme.PawPals.Splash" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">#FFFDF7</item>
-        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
-        <item name="postSplashScreenTheme">@style/Theme.PawPals</item>
+        <!-- יישור תוכן למרכז (אופציונלי) -->
+        <item name="android:textAlignment">center</item>
+        <item name="android:gravity">center</item>
     </style>
 
     <style name="Widget.PawPals.TextButton" parent="Widget.MaterialComponents.Button.TextButton">

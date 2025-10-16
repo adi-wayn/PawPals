@@ -3,6 +3,8 @@ package com.example.pawpals;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.CheckBox;
@@ -141,6 +143,53 @@ public class RegistrationDetailsActivity extends AppCompatActivity {
                 name,
                 contactDetails,
                 bio,
+    }
+
+    private void checkCommunityExistence(String name,
+                                         String contactDetails,
+                                         String bio,
+                                         String communityName,
+                                         boolean wantsToCreate) {
+        db.collection("communities")
+                .document(communityName)
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    boolean exists = snapshot.exists();
+                    if (exists && wantsToCreate) {
+                        Toast.makeText(this, "Community already exists!", Toast.LENGTH_SHORT).show();
+                    } else if (!exists && !wantsToCreate) {
+                        Toast.makeText(this, "Community doesn't exist. Please check 'create' to create it.", Toast.LENGTH_SHORT).show();
+                    } else if (wantsToCreate) {
+                        Intent intent = new Intent(RegistrationDetailsActivity.this, CommunityCreationDetailsActivity.class);
+                        intent.putExtra("communityName", communityName);
+                        intent.putExtra("userId", userId);
+                        intent.putExtra("userName", name);
+                        intent.putExtra("contactDetails", contactDetails);
+                        intent.putExtra("bio", bio);
+                        intent.putExtra("lat", currentLat);
+                        intent.putExtra("lng", currentLng);
+                        startActivity(intent);
+                        new Handler(Looper.getMainLooper()).postDelayed(this::finish, 300);
+                    } else {
+                        // הצטרפות לקהילה קיימת
+                        saveUser(name, contactDetails, bio, communityName, false);
+                    }
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Error checking community", Toast.LENGTH_SHORT).show()
+                );
+    }
+
+    private void saveUser(String name,
+                          String contactDetails,
+                          String bio,
+                          String communityName,
+                          boolean isManager) {
+        UserRepository userRepository = new UserRepository();
+
+        // אם Community שלך מקבל מנהל בבנאי – נעביר כבר עם פרטי קשר וביו
+        Community community = isManager
+                ? new Community(
                 communityName,
                 userId,
                 wantsToCreate,

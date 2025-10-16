@@ -319,6 +319,7 @@
                 android:textSize="18sp"
                 android:textColor="#F44336"
                 android:paddingVertical="12dp" />
+
         </LinearLayout>
     </androidx.constraintlayout.motion.widget.MotionLayout>
 
