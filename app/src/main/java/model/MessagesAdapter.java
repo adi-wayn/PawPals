@@ -17,8 +17,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.pawpals.R;
 import com.google.android.material.card.MaterialCardView;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import model.firebase.Firestore.CommunityRepository;
 
@@ -74,8 +76,32 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Messag
         // טקסט ההודעה
         holder.textMessageBody.setText(msg.getText());
 
-        // מיקום ההודעה (שמאל/ימין)
-        holder.rootItem.setGravity(isOutgoing ? Gravity.END : Gravity.START);
+        // הצגת השעה (אם קיימת)
+        if (msg.getTimestamp() != null) {
+            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm", Locale.getDefault());
+            holder.textMessageTime.setText(sdf.format(msg.getTimestamp()));
+        } else {
+            holder.textMessageTime.setText("");
+        }
+
+        // כיווניות
+        holder.rootItem.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
+        holder.messageContainer.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
+
+        // יישור צדדים – שלך לשמאל, אחרים לימין
+        LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) holder.messageContainer.getLayoutParams();
+        if (isOutgoing) {
+            params.gravity = Gravity.END;
+            holder.messageContainer.setGravity(Gravity.START);
+            holder.bubble.setBackgroundResource(R.drawable.bubble_outgoing);
+            holder.buttonDelete.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
+        } else {
+            params.gravity = Gravity.START;
+            holder.messageContainer.setGravity(Gravity.END);
+            holder.bubble.setBackgroundResource(R.drawable.bubble_incoming);
+            holder.buttonDelete.setLayoutDirection(View.LAYOUT_DIRECTION_LTR);
+        }
+        holder.messageContainer.setLayoutParams(params);
 
         // צבע בועה
         int bubbleColor = ContextCompat.getColor(context,
@@ -87,25 +113,23 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Messag
                 isOutgoing ? android.R.color.white : android.R.color.black);
         holder.textMessageBody.setTextColor(textColor);
 
-        // כפתור מחיקה – מוצג רק אם המשתמש מנהל או השולח עצמו
+        // צבע שעה
+        int timeColor = ContextCompat.getColor(context,
+                isOutgoing ? R.color.bubble_time_light : android.R.color.darker_gray);
+        holder.textMessageTime.setTextColor(timeColor);
+
+        // כפתור מחיקה
         if ((isManager || isOutgoing) && communityId != null) {
             holder.buttonDelete.setVisibility(View.VISIBLE);
-
             holder.buttonDelete.setOnClickListener(v -> {
-                int adapterPos = holder.getAdapterPosition();
-                if (adapterPos == RecyclerView.NO_POSITION) return;
-
                 if (msg.getId() == null || msg.getId().isEmpty()) {
                     Toast.makeText(context, "Cannot delete: missing message id", Toast.LENGTH_SHORT).show();
                     return;
                 }
-
-                // מחיקה ב-Firestore בלבד; ה-UI יתעדכן ע"י SnapshotListener ב-ChatActivity
                 repo.deleteMessage(communityId, msg.getId(), new CommunityRepository.FirestoreCallback() {
                     @Override
                     public void onSuccess(String ignored) {
                         Toast.makeText(context, "Message deleted", Toast.LENGTH_SHORT).show();
-                        // אל תמחק מקומית ואל תקרא notify... כאן
                     }
 
                     @Override
@@ -137,17 +161,21 @@ public class MessagesAdapter extends RecyclerView.Adapter<MessagesAdapter.Messag
 
     static class MessageViewHolder extends RecyclerView.ViewHolder {
         LinearLayout rootItem;
+        LinearLayout messageContainer;
         TextView textSenderName;
         MaterialCardView bubble;
         TextView textMessageBody;
+        TextView textMessageTime;
         ImageButton buttonDelete;
 
         public MessageViewHolder(@NonNull View itemView) {
             super(itemView);
             rootItem = itemView.findViewById(R.id.root_message_item);
+            messageContainer = itemView.findViewById(R.id.message_container);
             textSenderName = itemView.findViewById(R.id.text_sender_name);
             bubble = itemView.findViewById(R.id.bubble);
             textMessageBody = itemView.findViewById(R.id.text_message_body);
+            textMessageTime = itemView.findViewById(R.id.text_message_time);
             buttonDelete = itemView.findViewById(R.id.button_delete_message);
         }
     }

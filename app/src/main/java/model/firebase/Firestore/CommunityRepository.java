@@ -87,6 +87,7 @@ public class CommunityRepository {
     // ✅ יצירת הודעה בצ'אט (שומר את ה-id)
     public void createMessage(String communityId, Message message, FirestoreCallback callback) {
         Map<String, Object> messageMap = message.toMap();
+        messageMap.put("timestamp", com.google.firebase.firestore.FieldValue.serverTimestamp());
 
         db.collection("communities")
                 .document(communityId)
