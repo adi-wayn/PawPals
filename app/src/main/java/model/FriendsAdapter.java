@@ -8,11 +8,11 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.example.pawpals.R;                    // ★ חשוב: לייבא את R מהחבילה של האפליקציה
-import com.example.pawpals.ProfileActivity;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.pawpals.OtherUserProfileActivity;
+import com.example.pawpals.R;
 
 import java.util.List;
 
@@ -73,11 +73,20 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.VH> {
     private static String nn(String s) { return s == null ? "" : s; }
     private static boolean isEmpty(String s) { return s == null || s.isEmpty(); }
 
-    // 🧭 אם תרצי שהאדפטר ינווט לבד (בלי callback), אפשר להשתמש בזה במקום ה-callback:
+    // 🧭 ניווט ברירת-מחדל: מעבר למסך פרופיל של משתמש אחר עם ה-ID שלו
     public static OnFriendClick defaultNavigator(Context ctx) {
         return user -> {
-            Intent i = new Intent(ctx, ProfileActivity.class);
-            i.putExtra(ProfileActivity.EXTRA_CURRENT_USER, user); // User הוא Parcelable
+            if (user == null) return;
+            String uid = user.getUid();
+            if (uid == null || uid.isEmpty()) return;
+
+            Intent i = new Intent(ctx, OtherUserProfileActivity.class);
+            i.putExtra(OtherUserProfileActivity.EXTRA_OTHER_USER_ID, uid);
+
+            // אם ה-Context אינו Activity (למשל Application), צריך FLAG_ACTIVITY_NEW_TASK
+            if (!(ctx instanceof android.app.Activity)) {
+                i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            }
             ctx.startActivity(i);
         };
     }
