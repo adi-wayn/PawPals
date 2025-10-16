@@ -539,7 +539,6 @@ public class UserRepository {
                 });
     }
 
-}
     public interface FirestoreIdsListCallback {
         void onSuccess(List<String> ids);
         void onFailure(Exception e);

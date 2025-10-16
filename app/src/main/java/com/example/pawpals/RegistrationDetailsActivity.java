@@ -1,6 +1,7 @@
 package com.example.pawpals;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -20,6 +21,11 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.FirebaseAuth;
+
+import model.Community;
+import model.CommunityManager;
+import model.User;
+import model.firebase.Firestore.UserRepository;
 
 public class RegistrationDetailsActivity extends AppCompatActivity {
 
@@ -137,12 +143,12 @@ public class RegistrationDetailsActivity extends AppCompatActivity {
             communityName = spinnerCommunities.getSelectedItem().toString();
         }
 
-        // ✅ Delegate saving logic to CommunityUtils
-        CommunityUtils.saveUserAndCommunity(
-                this,
-                name,
-                contactDetails,
-                bio,
+//        // ✅ Delegate saving logic to CommunityUtils
+//        CommunityUtils.saveUserAndCommunity(
+//                this,
+//                name,
+//                contactDetails,
+//                bio,
     }
 
     private void checkCommunityExistence(String name,
@@ -191,11 +197,36 @@ public class RegistrationDetailsActivity extends AppCompatActivity {
         Community community = isManager
                 ? new Community(
                 communityName,
-                userId,
-                wantsToCreate,
                 currentLat,
-                currentLng
-        );
+                currentLng,
+                new CommunityManager(name, communityName, contactDetails, bio)
+        )
+                : new Community(communityName, currentLat, currentLng);
+
+        // בניית המשתמש לשמירה ב-Firestore
+        User user = isManager
+                ? new CommunityManager(name, communityName, contactDetails, bio)
+                : new User(name, communityName, contactDetails, bio);
+
+        user.setIsManager(isManager);
+
+        User finalUser = user;
+        userRepository.createUserProfile(userId, finalUser, new UserRepository.FirestoreCallback() {
+            @Override
+            public void onSuccess(String documentId) {
+                Toast.makeText(RegistrationDetailsActivity.this, "Welcome!", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(RegistrationDetailsActivity.this, MainActivity.class);
+                intent.putExtra("currentUser", finalUser);
+                startActivity(intent);
+                finish();
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Toast.makeText(RegistrationDetailsActivity.this,
+                        "Failed to save user data", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private String safeText(EditText et) {

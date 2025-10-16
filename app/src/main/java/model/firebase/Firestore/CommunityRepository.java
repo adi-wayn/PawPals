@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import model.Community;
 import model.Message;
 import model.Report;
 
@@ -64,6 +65,10 @@ public class CommunityRepository {
 
     // קבלת קהילה לפי ID (שם)
     public void getCommunityById(String communityId, FirestoreCommunityCallback callback) {
+
+    }
+
+
     // 🔹 עדכון תיאור הקהילה
     public void updateCommunityDescription(String communityId, String description, FirestoreCallback callback) {
         db.collection("communities")
@@ -182,7 +187,7 @@ public class CommunityRepository {
                     }
 
                     if (closest != null) {
-                        callback.onSuccess(closest);
+//                        callback.onSuccess(closest);
                     } else {
                         callback.onFailure(new Exception("No nearby community found"));
                     }
@@ -418,6 +423,11 @@ public class CommunityRepository {
     public interface FirestoreCommunityCallback {
         void onSuccess(String description, String imageUrl);
         void onFailure(Exception e);
+    }
+
+    public interface FirestoreMessagesChangeCallback {
+        void onChanges(List<com.google.firebase.firestore.DocumentChange> changes);
+        void onError(Exception e);
     }
 
     public interface FirestoreIdCallback {
