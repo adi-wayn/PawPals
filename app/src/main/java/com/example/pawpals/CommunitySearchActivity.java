@@ -1,13 +1,12 @@
 package com.example.pawpals;
 
-import static androidx.core.content.ContextCompat.startActivity;
-
-import android.content.Intent; // ⬅️ חדש
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.Pair;
+import android.view.View;
 import android.widget.SearchView;
 import android.widget.Toast;
-import android.view.View;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -27,16 +26,19 @@ import java.util.Locale;
 import java.util.Set;
 
 import model.CommunityAdapter;
+import model.Dog;
 import model.User;
-import model.firebase.firestore.UserRepository;
+import model.firebase.Firestore.UserRepository;
 
 public class CommunitySearchActivity extends AppCompatActivity {
 
-    // רשימות מקור/תצוגה
     private final List<Pair<String, User>> masterRows = new ArrayList<>();
-    private final List<User> allUsers = new ArrayList<>();   // לתצוגה ב-Adapter
-    private final List<String> allIds = new ArrayList<>();   // מקביל ל-allUsers
+    private final List<Pair<String, User>> filteredRows = new ArrayList<>();
+
     @Nullable private User currentUser;
+    @Nullable private String selfId;
+    private final Set<String> myFriendIds = new HashSet<>();
+    @Nullable private ListenerRegistration friendReg;
 
     private RecyclerView recyclerView;
     private CommunityAdapter adapter;
@@ -44,10 +46,6 @@ public class CommunitySearchActivity extends AppCompatActivity {
     private SearchView searchView;
     private CircularProgressIndicator progressBar;
     private UserRepository userRepo;
-    @Nullable private String selfId;
-    private final Set<String> myFriendIds = new HashSet<>();
-    @Nullable private ListenerRegistration friendReg;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,29 +59,27 @@ public class CommunitySearchActivity extends AppCompatActivity {
         setupSearchAndChips();
 
         userRepo = new UserRepository();
-
-        // Try to get community from intent (via currentUser)
         currentUser = getIntent().getParcelableExtra("currentUser");
 
+        // מעקב אחרי רשימת חברים
         if (selfId != null) {
             friendReg = userRepo.observeFriendsIds(selfId, (qs, err) -> {
                 myFriendIds.clear();
                 if (err == null && qs != null) {
                     for (DocumentSnapshot d : qs.getDocuments()) {
-                        myFriendIds.add(d.getId()); // כל דוק הוא friendId
+                        myFriendIds.add(d.getId());
                     }
                 }
-                // מרעננים את הסינון הנוכחי כדי לשקף עדכון חברים
                 filterProfiles(searchView.getQuery() != null ? searchView.getQuery().toString() : "");
             });
         }
 
-
+        // טעינת משתמשים מהקהילה
         String communityFromIntent = (currentUser != null) ? currentUser.getCommunityName() : null;
         if (communityFromIntent != null && !communityFromIntent.isEmpty()) {
             loadCommunityMembers(communityFromIntent);
         } else {
-            // Fallback: get the logged-in user to resolve community
+            // אם אין בקהילה, נטען את המשתמש המחובר
             String uid = FirebaseAuth.getInstance().getUid();
             if (uid == null) {
                 Toast.makeText(this, "No authenticated user found.", Toast.LENGTH_SHORT).show();
@@ -91,7 +87,8 @@ public class CommunitySearchActivity extends AppCompatActivity {
             }
             showLoading(true);
             userRepo.getUserById(uid, new UserRepository.FirestoreUserCallback() {
-                @Override public void onSuccess(User user) {
+                @Override
+                public void onSuccess(User user) {
                     String communityName = (user != null) ? user.getCommunityName() : null;
                     if (communityName == null || communityName.isEmpty()) {
                         showLoading(false);
@@ -100,7 +97,9 @@ public class CommunitySearchActivity extends AppCompatActivity {
                     }
                     loadCommunityMembers(communityName);
                 }
-                @Override public void onFailure(Exception e) {
+
+                @Override
+                public void onFailure(Exception e) {
                     showLoading(false);
                     Toast.makeText(CommunitySearchActivity.this, "Failed to fetch user: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
@@ -109,19 +108,18 @@ public class CommunitySearchActivity extends AppCompatActivity {
     }
 
     private void bindViews() {
-        searchView       = findViewById(R.id.searchView);
-        filterChipGroup  = findViewById(R.id.filterChipGroup);
-        recyclerView     = findViewById(R.id.recyclerView);
-        progressBar      = findViewById(R.id.progressBar);
+        searchView      = findViewById(R.id.searchView);
+        filterChipGroup = findViewById(R.id.filterChipGroup);
+        recyclerView    = findViewById(R.id.recyclerView);
+        progressBar     = findViewById(R.id.progressBar);
     }
 
     private void setupRecycler() {
-        adapter = new CommunityAdapter(allUsers);
+        adapter = new CommunityAdapter(filteredRows);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(adapter);
 
-        // ⬅️ האזנה לקליקים על המשתמשים (ניווט לעמוד הפרופיל)
         adapter.setOnUserClickListener(this::navigateToProfile);
     }
 
@@ -166,37 +164,66 @@ public class CommunitySearchActivity extends AppCompatActivity {
         final List<Integer> checkedChipIds = filterChipGroup.getCheckedChipIds();
         final boolean requireFriend = checkedChipIds != null && checkedChipIds.contains(R.id.chipFriends);
 
-        allUsers.clear();
-        allIds.clear();
+        filteredRows.clear();
+
+        // רשימה זמנית לאסוף מי שעובר את הפילטרים הראשוניים
+        List<Pair<String, User>> preFiltered = new ArrayList<>();
 
         for (Pair<String, User> row : masterRows) {
-            // דילוג על עצמי
-            if (selfId != null && selfId.equals(row.first)) continue;
-
-            // אם נבחר "חברים" – חייב להיות ברשימת החברים
-            if (requireFriend && !myFriendIds.contains(row.first)) continue;
-
+            String userId = row.first;
             User user = row.second;
+
+            if (selfId != null && selfId.equals(userId)) continue;
+            if (requireFriend && !myFriendIds.contains(userId)) continue;
             if (user == null || user.getUserName() == null) continue;
 
             boolean matchesText = user.getUserName().toLowerCase(Locale.ROOT).contains(lowerQuery);
             if (!matchesText) continue;
 
-            if (!passesChipFilters(user, checkedChipIds)) continue;
-
-            allUsers.add(user);
-            allIds.add(row.first);
+            // נעביר לשלב הבא (בדיקה לפי כלבים)
+            preFiltered.add(row);
         }
 
-        adapter.updateData(allUsers);
+        if (checkedChipIds == null || checkedChipIds.isEmpty()) {
+            // אין צורך לבדוק כלבים – נעדכן מיד
+            filteredRows.addAll(preFiltered);
+            adapter.updateData(filteredRows);
+            return;
+        }
+
+        // במידה ויש פילטר לפי כמות כלבים – נטען זאת דרך Firestore
+        UserRepository repo = new UserRepository();
+        final int total = preFiltered.size();
+        final int[] completed = {0};
+
+        for (Pair<String, User> row : preFiltered) {
+            String userId = row.first;
+            User user = row.second;
+
+            repo.getDogsForUser(userId, new UserRepository.FirestoreDogsListCallback() {
+                @Override
+                public void onSuccess(List<Dog> dogs) {
+                    int dogCount = (dogs != null) ? dogs.size() : 0;
+                    if (passesDogCountFilters(dogCount, checkedChipIds)) {
+                        filteredRows.add(row);
+                    }
+                    if (++completed[0] == total) {
+                        adapter.updateData(filteredRows);
+                    }
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                    if (++completed[0] == total) {
+                        adapter.updateData(filteredRows);
+                    }
+                }
+            });
+        }
     }
 
-    private boolean passesChipFilters(User user, List<Integer> checkedChipIds) {
-        // If no chips are checked, everything passes
+    private boolean passesDogCountFilters(int dogCount, List<Integer> checkedChipIds) {
         if (checkedChipIds == null || checkedChipIds.isEmpty()) return true;
-
-        int dogCount = (user.getDogs() != null) ? user.getDogs().size() : 0;
-
         for (int id : checkedChipIds) {
             if (id == R.id.chipTwoPlusDogs && dogCount < 2) return false;
             else if (id == R.id.chipOneDog && dogCount != 1) return false;
@@ -210,13 +237,13 @@ public class CommunitySearchActivity extends AppCompatActivity {
         progressBar.setIndeterminate(show);
     }
 
-    // ⬅️ מתודה לניווט לפרופיל
     private void navigateToProfile(@Nullable User user, int position) {
-        if (user == null) {
+        if (user == null || position < 0 || position >= filteredRows.size()) {
             Toast.makeText(this, "Unknown profile.", Toast.LENGTH_SHORT).show();
             return;
         }
-        String targetId = (position >= 0 && position < allIds.size()) ? allIds.get(position) : null;
+
+        String targetId = filteredRows.get(position).first;
         if (targetId == null || targetId.isEmpty()) {
             Toast.makeText(this, "Missing user id.", Toast.LENGTH_SHORT).show();
             return;
@@ -239,6 +266,7 @@ public class CommunitySearchActivity extends AppCompatActivity {
         if (friendReg != null) { friendReg.remove(); friendReg = null; }
         super.onStop();
     }
+
     @Override
     protected void onDestroy() {
         if (friendReg != null) { friendReg.remove(); friendReg = null; }

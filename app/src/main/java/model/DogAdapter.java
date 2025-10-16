@@ -86,8 +86,9 @@ public class DogAdapter extends RecyclerView.Adapter<DogAdapter.DogViewHolder> {
             dogProfilePicture = itemView.findViewById(R.id.dog_profile_picture);
             dogName  = itemView.findViewById(R.id.dog_name);
             // בלייאאוט שלך השדה נקרא dog_breed1; נוסיף fallback ל-dog_breed אם קיים לייאאוט אחר
-            TextView breed1 = itemView.findViewById(R.id.dog_breed1);
-            dogBreed = (breed1 != null) ? breed1 : itemView.findViewById(R.id.dog_breed);
+            dogBreed = itemView.findViewById(R.id.dog_breed);
+//            TextView breed1 = itemView.findViewById(R.id.dog_breed);
+//            dogBreed = (breed1 != null) ? breed1 : itemView.findViewById(R.id.dog_breed);
             dogAge   = itemView.findViewById(R.id.dog_age);
         }
     }

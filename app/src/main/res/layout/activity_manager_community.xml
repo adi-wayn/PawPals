@@ -9,43 +9,63 @@
     android:padding="16dp"
     tools:context=".ManagerCommunityActivity">
 
-    <!-- Header -->
-    <ImageView
-        android:id="@+id/imageViewProfile"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="8dp"
-        android:src="@drawable/ic_profile_placeholder"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <TextView
-        android:id="@+id/textViewCommunityName"
+    <!-- ===== Community Header Section ===== -->
+    <LinearLayout
+        android:id="@+id/communityHeader"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="PawPals Community"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:textColor="?attr/colorOnSurface"
-        android:layout_marginTop="24dp"
-        android:layout_marginEnd="8dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@drawable/header_bg_card"
+        android:padding="12dp"
+        android:elevation="4dp"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/imageViewProfile"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent">
 
-    <!-- Barrier שממקם את הקו מתחת לשם+תמונה -->
-    <androidx.constraintlayout.widget.Barrier
-        android:id="@+id/headerBarrier"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:barrierDirection="bottom"
-        app:constraint_referenced_ids="textViewCommunityName,imageViewProfile"
-        app:barrierAllowsGoneWidgets="true"
-        app:barrierMargin="8dp" />
+        <!-- תמונת הקהילה -->
+        <ImageView
+            android:id="@+id/imageViewProfile"
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:layout_marginEnd="12dp"
+            android:src="@drawable/ic_profile_placeholder"
+            android:scaleType="centerCrop"
+            android:background="@drawable/image_circle_mask"
+            android:contentDescription="Community Image"
+            android:clipToOutline="true" />
 
+        <!-- טקסטים -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center_vertical">
 
-    <!-- קו הפרדה טורקיז עדין -->
+            <TextView
+                android:id="@+id/textViewCommunityName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="PawPals Community"
+                android:textStyle="bold"
+                android:textSize="20sp"
+                android:textColor="?attr/colorOnSurface"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:id="@+id/textViewCommunityDescription"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="A friendly local dog community!"
+                android:textSize="14sp"
+                android:textColor="@color/gray_text"
+                android:maxLines="2"
+                android:ellipsize="end" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- קו הפרדה -->
     <com.google.android.material.divider.MaterialDivider
         android:id="@+id/headerDivider"
         android:layout_width="0dp"
@@ -53,13 +73,11 @@
         android:layout_marginTop="8dp"
         app:dividerColor="@color/pp_colorPrimary"
         app:thickness="1dp"
-        app:dividerInsetStart="0dp"
-        app:dividerInsetEnd="0dp"
-        app:layout_constraintTop_toBottomOf="@id/headerBarrier"
+        app:layout_constraintTop_toBottomOf="@id/communityHeader"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- RecyclerView: מתחת לקו -->
+    <!-- רשימת פוסטים -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/feedRecyclerView"
         android:layout_width="0dp"
@@ -72,7 +90,7 @@
         app:layout_constraintBottom_toTopOf="@id/buttonAreaMap"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        tools:listitem="@layout/item_post_card"/>
+        tools:listitem="@layout/item_post_card" />
 
     <!-- שורה 1 -->
     <com.google.android.material.button.MaterialButton
@@ -80,7 +98,7 @@
         android:layout_width="0dp"
         android:layout_height="114dp"
         android:layout_marginEnd="8dp"
-        android:text="area map"
+        android:text="Area Map"
         android:textColor="?attr/colorOnSurface"
         app:icon="@android:drawable/ic_dialog_map"
         app:iconGravity="textTop"
@@ -98,7 +116,7 @@
         android:layout_width="0dp"
         android:layout_height="114dp"
         android:layout_marginStart="8dp"
-        android:text="view reports"
+        android:text="View Reports"
         android:textColor="?attr/colorOnSurface"
         app:icon="@android:drawable/ic_dialog_info"
         app:iconGravity="textTop"
@@ -118,7 +136,7 @@
         android:layout_height="114dp"
         android:layout_marginEnd="8dp"
         android:layout_marginTop="8dp"
-        android:text="write post"
+        android:text="Write Post"
         android:textColor="?attr/colorOnSurface"
         app:icon="@drawable/imagetostl_com_whatsapp_image_2025_05_07_at_17_27_17"
         app:iconGravity="textTop"
@@ -137,7 +155,7 @@
         android:layout_height="114dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:text="chat"
+        android:text="Chat"
         android:textColor="?attr/colorOnSurface"
         app:icon="@android:drawable/stat_notify_chat"
         app:iconGravity="textTop"
@@ -150,14 +168,14 @@
         app:layout_constraintBottom_toTopOf="@id/buttonCommunitySettings"
         app:layout_constraintStart_toEndOf="@+id/buttonReportSystem" />
 
-    <!-- שורה 3 - צמוד לתחתית -->
+    <!-- שורה 3 -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/buttonMembers"
         android:layout_width="0dp"
         android:layout_height="114dp"
         android:layout_marginEnd="8dp"
         android:layout_marginTop="8dp"
-        android:text="members"
+        android:text="Members"
         android:textColor="?attr/colorOnSurface"
         app:icon="@drawable/ic_community"
         app:iconGravity="textTop"
@@ -176,7 +194,7 @@
         android:layout_height="114dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:text="settings"
+        android:text="Settings"
         android:textColor="?attr/colorOnSurface"
         app:icon="@android:drawable/ic_menu_manage"
         app:iconGravity="textTop"

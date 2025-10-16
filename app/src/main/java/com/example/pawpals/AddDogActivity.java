@@ -15,7 +15,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import model.Dog;
 import model.User;
-import model.firebase.firestore.UserRepository;
+import model.firebase.Firestore.UserRepository;
 
 public class AddDogActivity extends AppCompatActivity {
 

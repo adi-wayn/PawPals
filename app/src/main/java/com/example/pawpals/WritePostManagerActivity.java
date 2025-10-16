@@ -24,7 +24,7 @@ import java.util.function.Consumer;
 import model.Report;
 import model.SelectedImagesAdapter;
 import model.User;
-import model.firebase.firestore.CommunityRepository;
+import model.firebase.Firestore.CommunityRepository;
 import model.firebase.Storage.StorageRepository;
 
 public class WritePostManagerActivity extends AppCompatActivity {

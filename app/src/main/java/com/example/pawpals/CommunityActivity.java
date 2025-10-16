@@ -3,6 +3,7 @@ package com.example.pawpals;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -10,16 +11,21 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+import com.google.firebase.firestore.FirebaseFirestore;
+
 import java.util.List;
 
 import model.FeedAdapter;
 import model.Report;
 import model.User;
-import model.firebase.firestore.CommunityRepository;
+import model.firebase.Firestore.CommunityRepository;
 
 public class CommunityActivity extends AppCompatActivity {
 
     private User currentUser;
+    private ImageView imageViewProfile;
+    private TextView textViewCommunityName, textViewCommunityDescription;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,14 +35,38 @@ public class CommunityActivity extends AppCompatActivity {
         currentUser = getIntent().getParcelableExtra("currentUser");
         CommunityRepository communityRepo = new CommunityRepository();
 
-        TextView textViewCommunityName = findViewById(R.id.textViewCommunityName);
+        imageViewProfile = findViewById(R.id.imageViewProfile);
+        textViewCommunityName = findViewById(R.id.textViewCommunityName);
+        textViewCommunityDescription = findViewById(R.id.textViewCommunityDescription);
+
         textViewCommunityName.setText(currentUser.getCommunityName());
 
-        // שליפת הפוסטים מה־feed
+        // שליפת פרטי קהילה (תמונה + תיאור)
         communityRepo.getCommunityIdByName(currentUser.getCommunityName(),
                 new CommunityRepository.FirestoreIdCallback() {
                     @Override
                     public void onSuccess(String communityId) {
+                        communityRepo.getCommunityDetails(communityId,
+                                new CommunityRepository.FirestoreCommunityCallback() {
+                                    @Override
+                                    public void onSuccess(String description, String imageUrl) {
+                                        if (description != null && !description.isEmpty())
+                                            textViewCommunityDescription.setText(description);
+                                        if (imageUrl != null && !imageUrl.isEmpty())
+                                            Glide.with(CommunityActivity.this)
+                                                    .load(imageUrl)
+                                                    .placeholder(R.drawable.ic_profile_placeholder)
+                                                    .into(imageViewProfile);
+                                    }
+
+                                    @Override
+                                    public void onFailure(Exception e) {
+                                        Toast.makeText(CommunityActivity.this,
+                                                "Failed to load community info", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+
+                        // שליפת הפוסטים
                         communityRepo.getFeedPosts(communityId,
                                 new CommunityRepository.FirestoreReportsListCallback() {
                                     @Override
