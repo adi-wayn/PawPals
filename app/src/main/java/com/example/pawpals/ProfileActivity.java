@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.Pair;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -13,36 +14,34 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.chip.ChipGroup;
+import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.ListenerRegistration;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 import model.Dog;
 import model.FriendsAdapter;
 import model.User;
 import model.firebase.Firestore.UserRepository;
 
-/**
- * ProfileActivity – מסך פרופיל משתמש (שלי או של משתמש אחר)
- * תיקונים עיקריים:
- * 1) שימוש עקבי ב displayedUserId לכל טעינות הכלבים ולמעבר למסך פרטי כלב.
- * 2) רשימת חברים נטענת לפי friendsIds אם יש, אחרת לפי קהילה.
- * 3) הסתרת כפתור הוספת כלב כשזה לא הפרופיל שלי.
- *
- * שינוי מינימלי: רשימת חברים במבנה master+filtered (כמו "מסונן") בלי UI נוסף.
- */
 public class ProfileActivity extends AppCompatActivity {
 
     private static final String TAG = "ProfileActivity";
 
     // Intent keys
-    public static final String EXTRA_CURRENT_USER = "currentUser"; // User implements Parcelable
+    public static final String EXTRA_CURRENT_USER = "currentUser";
     public static final String EXTRA_DOG = "extra_dog";
     public static final String EXTRA_OWNER_ID = "extra_owner_id";
 
@@ -53,8 +52,7 @@ public class ProfileActivity extends AppCompatActivity {
     private TextView communityStatus;
 
     // Toggle + content
-    private MaterialButton btnShowFriends;
-    private MaterialButton btnShowDogs;
+    private MaterialButton btnShowFriends, btnShowDogs;
     private RecyclerView friendsRecycler;
     private View dogsScroll;          // ScrollView
     private LinearLayout dogsContainer;
@@ -62,17 +60,28 @@ public class ProfileActivity extends AppCompatActivity {
     // Add dog (FAB)
     private MaterialButton fabAddDog;
 
-    // Data
-    private User displayedUser;              // האובייקט של המשתמש שמוצג
-    private String displayedUserId;          // ה-UID של המשתמש שמוצג
-    private String myUid;                    // ה-UID של המשתמש המחובר (אם יש)
+    // --- Friends filter UI (אופציונלי) ---
+    private SearchView searchViewFriends;                // @id/searchViewFriends
+    private ChipGroup filterChipGroupFriends;            // @id/filterChipGroupFriends
+    private CircularProgressIndicator friendsProgress;   // @id/friendsProgress
 
-    // --- Friends data: master + filtered (כמו CommunitySearch) ---
-    private final List<User> friendsMaster = new ArrayList<>();
-    private final List<User> friendsFiltered = new ArrayList<>();
+    // Data
+    private User displayedUser;
+    private String displayedUserId;
+    private String myUid;
+
+    // סינון/תצוגת חברים (כמו CommunitySearch)
+    private final List<Pair<String, User>> masterRows   = new ArrayList<>();
+    private final List<Pair<String, User>> filteredRows = new ArrayList<>();
+    private final Set<String> myFriendIds               = new HashSet<>();
+    private final List<User> viewUsers                  = new ArrayList<>();
     private FriendsAdapter friendsAdapter;
 
     private final UserRepository repo = new UserRepository();
+
+    // מאזינים בזמן אמת
+    @Nullable private ListenerRegistration displayedFriendsReg; // חברים של המשתמש המוצג
+    @Nullable private ListenerRegistration myFriendsIdsReg;     // ids של החברים שלי (ל-chipFriends)
 
     // Result launcher לרענון כלבים אחרי שמירה
     private ActivityResultLauncher<Intent> addDogLauncher;
@@ -97,32 +106,30 @@ public class ProfileActivity extends AppCompatActivity {
 
         fabAddDog       = findViewById(R.id.fab_add_dog);
 
+        // (אופציונלי – רק אם יש את ה־IDs ב־XML)
+        //searchViewFriends      = findViewById(R.id.searchViewFriends);
+      //  filterChipGroupFriends = findViewById(R.id.filterChipGroupFriends);
+       // friendsProgress        = findViewById(R.id.friendsProgress);
+
         // ===== מי המשתמש המחובר? =====
         FirebaseUser me = FirebaseAuth.getInstance().getCurrentUser();
         myUid = (me != null) ? me.getUid() : null;
 
         // ===== קבלת המשתמש שמוצג =====
         displayedUser = getIntent().getParcelableExtra(EXTRA_CURRENT_USER);
+        displayedUserId = (displayedUser != null && nn(displayedUser.getUid()).length() > 0)
+                ? displayedUser.getUid()
+                : myUid;
 
-        // קבעי displayedUserId
-        if (displayedUser != null && nn(displayedUser.getUid()).length() > 0) {
-            displayedUserId = displayedUser.getUid();
-        } else {
-            displayedUserId = myUid; // fallback – תצוגת הפרופיל שלי
-        }
-
-        // Bind UI (אם יש אובייקט מלא)
+        // Bind UI
         if (displayedUser != null) {
             bindUser(displayedUser);
-        } else {
-            // אם אין אובייקט, לפחות נציג שהמסך שלי
-            if (myUid != null && myUid.equals(displayedUserId)) {
-                communityStatus.setText(getString(R.string.user_community) + " ");
-            }
+        } else if (myUid != null && myUid.equals(displayedUserId)) {
+            communityStatus.setText(getString(R.string.user_community) + " ");
         }
 
-        // ===== הכנת רשימת חברים (תמיד נקנפג את ה-RecyclerView) =====
-        setupFriendsList();
+        // ===== Friends: Recycler + מאזיני סינון =====
+        setupFriendsSection();
 
         // ===== ActivityResultLauncher =====
         addDogLauncher = registerForActivityResult(
@@ -147,16 +154,16 @@ public class ProfileActivity extends AppCompatActivity {
             }
         });
 
-        // ===== טען כלבים של בעל הפרופיל שמוצג =====
+        // טען כלבים של בעל הפרופיל שמוצג
         if (displayedUserId != null) {
             loadDogs(displayedUserId);
         }
 
-        // ===== כפתור "הוסף כלב" – מופיע רק אם זה הפרופיל שלי =====
+        // כפתור "הוסף כלב"
         boolean isMyProfile = (myUid != null && myUid.equals(displayedUserId));
         fabAddDog.setVisibility(isMyProfile ? View.VISIBLE : View.GONE);
         fabAddDog.setOnClickListener(v -> {
-            if (!isMyProfile) return; // ביטחון
+            if (!isMyProfile) return;
             if (myUid == null) {
                 Toast.makeText(this, "לא נמצא משתמש מחובר", Toast.LENGTH_SHORT).show();
                 return;
@@ -172,94 +179,188 @@ public class ProfileActivity extends AppCompatActivity {
         });
     }
 
-    // ====== UI helpers ======
+    @Override
+    protected void onStart() {
+        super.onStart();
 
+        // 1) מאזין בזמן אמת לחברי המשתמש המוצג (תמיד רלוונטי למסך)
+        if (displayedFriendsReg != null) { displayedFriendsReg.remove(); displayedFriendsReg = null; }
+        if (displayedUserId != null && !displayedUserId.isEmpty()) {
+            showFriendsLoading(true);
+            displayedFriendsReg = repo.observeFriendsUsers(displayedUserId, new UserRepository.FirestoreUsersListCallback() {
+                @Override public void onSuccess(List<User> users) {
+                    // מתעדכן אוטומטית בכל שינוי add/remove
+                    masterRows.clear();
+                    if (users != null) {
+                        for (User u : users) {
+                            if (u != null && nn(u.getUid()).length() > 0) {
+                                masterRows.add(new Pair<>(u.getUid(), u));
+                            }
+                        }
+                    }
+                    showFriendsLoading(false);
+                    filterFriends(getCurrentQuery());
+                }
+                @Override public void onFailure(Exception e) {
+                    Log.e(TAG, "observeFriendsUsers failed", e);
+                    showFriendsLoading(false);
+                    // אם תרצי – אפשר לבצע כאן fallback לקהילה. כרגע נשאיר ריק (רשימה ריקה).
+                    filterFriends(getCurrentQuery());
+                }
+            });
+        }
+
+        // 2) מאזין לרשימת החברים שלי – רק לשם פילטר "חברים שלי"
+        if (myFriendsIdsReg != null) { myFriendsIdsReg.remove(); myFriendsIdsReg = null; }
+        if (myUid != null) {
+            myFriendsIdsReg = repo.observeFriendsIds(myUid, (qs, err) -> {
+                myFriendIds.clear();
+                if (err == null && qs != null) {
+                    for (com.google.firebase.firestore.DocumentSnapshot d : qs.getDocuments()) {
+                        myFriendIds.add(d.getId());
+                    }
+                }
+                filterFriends(getCurrentQuery());
+            });
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        if (displayedFriendsReg != null) { displayedFriendsReg.remove(); displayedFriendsReg = null; }
+        if (myFriendsIdsReg != null)   { myFriendsIdsReg.remove();   myFriendsIdsReg = null; }
+        super.onStop();
+    }
+
+    // ====== UI helpers ======
     private void showFriends() {
         friendsRecycler.setVisibility(View.VISIBLE);
         dogsScroll.setVisibility(View.GONE);
         btnShowFriends.setChecked(true);
         btnShowDogs.setChecked(false);
     }
-
     private void showDogs() {
         friendsRecycler.setVisibility(View.GONE);
         dogsScroll.setVisibility(View.VISIBLE);
         btnShowDogs.setChecked(true);
         btnShowFriends.setChecked(false);
     }
-
     private void bindUser(User user) {
         userName.setText(nn(user.getUserName()));
-        bioText.setText(nn(user.getFieldsOfInterest()));     // זה ה-Bio
-        contactText.setText(nn(user.getContactDetails()));   // יצירת קשר
+        bioText.setText(nn(user.getFieldsOfInterest()));
+        contactText.setText(nn(user.getContactDetails()));
         String community = nn(user.getCommunityName());
         communityStatus.setText(getString(R.string.user_community) + (community.isEmpty() ? "" : (" " + community)));
     }
 
-    // ====== Friends ======
-
-    private void setupFriendsList() {
+    // ====== Friends (כמו CommunitySearch) ======
+    private void setupFriendsSection() {
         friendsRecycler.setLayoutManager(new LinearLayoutManager(this));
-
-        // אדפטר עובד על הרשימה המסוננת (filtered)
-        friendsAdapter = new FriendsAdapter(this, friendsFiltered, FriendsAdapter.defaultNavigator(this));
+        friendsAdapter = new FriendsAdapter(this, viewUsers, FriendsAdapter.defaultNavigator(this));
         friendsRecycler.setAdapter(friendsAdapter);
 
-        // אם יש לנו friendsIds על המשתמש שמוצג – נטען לפיהם
-        if (displayedUser != null && displayedUser.getFriendsIds() != null && !displayedUser.getFriendsIds().isEmpty()) {
-            repo.getUsersByIds(displayedUser.getFriendsIds(), new UserRepository.FirestoreUsersListCallback() {
-                @Override public void onSuccess(List<User> users) {
-                    friendsMaster.clear();
-                    if (users != null) friendsMaster.addAll(users);
-                    refreshFriendsView(); // כרגע 1:1, עתידי – אפשר להכניס כאן לוגיקת סינון
-                }
-                @Override public void onFailure(Exception e) {
-                    Log.e(TAG, "Failed to load friends by IDs", e);
-                    // fallback לפי קהילה
-                    loadFriendsByCommunityFallback();
-                }
+        if (searchViewFriends != null) {
+            searchViewFriends.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+                @Override public boolean onQueryTextSubmit(String q)  { filterFriends(q);     return true; }
+                @Override public boolean onQueryTextChange(String q) { filterFriends(q);     return true; }
             });
-        } else {
-            // fallback לפי קהילה
-            loadFriendsByCommunityFallback();
+        }
+        if (filterChipGroupFriends != null) {
+            filterChipGroupFriends.setOnCheckedStateChangeListener((g, ids) -> filterFriends(getCurrentQuery()));
         }
     }
 
-    /** מעדכן את הרשימה המוצגת מתוך המאסטר (כאן ללא סינון לוגי – 1:1) */
-    private void refreshFriendsView() {
-        friendsFiltered.clear();
-        friendsFiltered.addAll(friendsMaster);
+    /** סינון טקסט + צ'יפים ("חברים שלי" / "כלב אחד" / "2+") */
+    private void filterFriends(String query) {
+        final String lowerQuery = (query == null ? "" : query).toLowerCase(Locale.ROOT);
+        final List<Integer> checkedIds = (filterChipGroupFriends != null)
+                ? filterChipGroupFriends.getCheckedChipIds()
+                : java.util.Collections.emptyList();
+
+        final boolean requireFriend =
+                checkedIds != null && checkedIds.contains(R.id.chipFriends);
+        final boolean needDogCount =
+                checkedIds != null && (checkedIds.contains(R.id.chipOneDog) || checkedIds.contains(R.id.chipTwoPlusDogs));
+
+        filteredRows.clear();
+
+        // שלב א' – סינון טקסט + "חברים שלי"
+        List<Pair<String, User>> preFiltered = new ArrayList<>();
+        for (Pair<String, User> row : masterRows) {
+            if (row == null) continue;
+            String uid = row.first;
+            User user = row.second;
+            if (uid == null || user == null || user.getUserName() == null) continue;
+
+            if (requireFriend && !myFriendIds.contains(uid)) continue;
+
+            boolean matchesText = user.getUserName().toLowerCase(Locale.ROOT).contains(lowerQuery);
+            if (!matchesText) continue;
+
+            preFiltered.add(row);
+        }
+
+        if (!needDogCount) {
+            filteredRows.addAll(preFiltered);
+            updateFriendsAdapter();
+            return;
+        }
+
+        // שלב ב' – סינון לפי כמות כלבים (קריאות אסינכרוניות)
+        if (preFiltered.isEmpty()) {
+            updateFriendsAdapter();
+            return;
+        }
+
+        final int total = preFiltered.size();
+        final int[] completed = {0};
+        filteredRows.clear();
+
+        for (Pair<String, User> row : preFiltered) {
+            String userId = row.first;
+            repo.getDogsForUser(userId, new UserRepository.FirestoreDogsListCallback() {
+                @Override public void onSuccess(List<Dog> dogs) {
+                    int dogCount = (dogs != null) ? dogs.size() : 0;
+                    if (passesDogCountFilters(dogCount, checkedIds)) filteredRows.add(row);
+                    if (++completed[0] == total) updateFriendsAdapter();
+                }
+                @Override public void onFailure(Exception e) {
+                    if (++completed[0] == total) updateFriendsAdapter();
+                }
+            });
+        }
+    }
+
+    private boolean passesDogCountFilters(int dogCount, List<Integer> checkedIds) {
+        if (checkedIds == null || checkedIds.isEmpty()) return true;
+        for (int id : checkedIds) {
+            if (id == R.id.chipTwoPlusDogs && dogCount < 2) return false;
+            else if (id == R.id.chipOneDog && dogCount != 1) return false;
+        }
+        return true;
+    }
+
+    private void updateFriendsAdapter() {
+        viewUsers.clear();
+        for (Pair<String, User> p : filteredRows) {
+            if (p != null && p.second != null) viewUsers.add(p.second);
+        }
         if (friendsAdapter != null) friendsAdapter.notifyDataSetChanged();
     }
 
-    private void loadFriendsByCommunityFallback() {
-        String communityName = (displayedUser != null) ? nn(displayedUser.getCommunityName()) : "";
-        if (communityName.isEmpty()) {
-            friendsMaster.clear();
-            refreshFriendsView();
-            return;
+    private String getCurrentQuery() {
+        if (searchViewFriends == null || searchViewFriends.getQuery() == null) return "";
+        return searchViewFriends.getQuery().toString();
+    }
+
+    private void showFriendsLoading(boolean show) {
+        if (friendsProgress != null) {
+            friendsProgress.setVisibility(show ? View.VISIBLE : View.GONE);
+            friendsProgress.setIndeterminate(show);
         }
-        repo.getUsersByCommunity(communityName, new UserRepository.FirestoreUsersListCallback() {
-            @Override public void onSuccess(List<User> users) {
-                friendsMaster.clear();
-                // אל תציגי את המשתמש עצמו ברשימה
-                String selfName = (displayedUser != null) ? nn(displayedUser.getUserName()) : "";
-                if (users != null) {
-                    for (User u : users) {
-                        if (!nn(u.getUserName()).equals(selfName)) friendsMaster.add(u);
-                    }
-                }
-                refreshFriendsView();
-            }
-            @Override public void onFailure(Exception e) {
-                Log.e(TAG, "Failed to load friends by community", e);
-            }
-        });
     }
 
     // ====== Dogs ======
-
-    /** שולף כלבים מתת-קולקציה; אם אין — מנסה לקרוא embedded מהמסמך של המשתמש */
     private void loadDogs(String userId) {
         repo.getDogsForUser(userId, new UserRepository.FirestoreDogsListCallback() {
             @Override public void onSuccess(List<Dog> dogs) {
@@ -290,7 +391,6 @@ public class ProfileActivity extends AppCompatActivity {
         });
     }
 
-    /** רינדור + קליק על כרטיס כלב -> מסך פרטים */
     @SuppressLint("MissingInflatedId")
     private void renderDogs(@Nullable List<Dog> dogs) {
         if (dogsContainer == null) {
@@ -306,11 +406,10 @@ public class ProfileActivity extends AppCompatActivity {
 
             TextView tvName  = card.findViewById(R.id.dog_name);
             TextView tvBreed = card.findViewById(R.id.dog_breed);
-            if (tvBreed == null) tvBreed = card.findViewById(R.id.dog_breed);
             TextView tvAge   = card.findViewById(R.id.dog_age);
 
             if (tvName == null || tvBreed == null || tvAge == null) {
-                Log.e(TAG, "item_dog_card.xml חסר IDs (dog_name/dog_breed1|dog_breed/dog_age)");
+                Log.e(TAG, "item_dog_card.xml חסר IDs (dog_name/dog_breed/dog_age)");
                 continue;
             }
 
@@ -322,7 +421,6 @@ public class ProfileActivity extends AppCompatActivity {
             tvBreed.setText(nn(breed));
             tvAge.setText(age != null ? String.valueOf(age) : "");
 
-            // קליק -> DogDetailsActivity עם displayedUserId כבעלים
             card.setOnClickListener(v -> {
                 if (d == null) return;
                 if (displayedUserId == null || displayedUserId.isEmpty()) {
@@ -331,7 +429,7 @@ public class ProfileActivity extends AppCompatActivity {
                 }
                 try {
                     Intent it = new Intent(ProfileActivity.this, DogDetailsActivity.class);
-                    it.putExtra(EXTRA_DOG, d);            // ודאי ש-Dog implements Parcelable
+                    it.putExtra(EXTRA_DOG, d);
                     it.putExtra(EXTRA_OWNER_ID, displayedUserId);
                     startActivity(it);
                 } catch (Exception e) {
