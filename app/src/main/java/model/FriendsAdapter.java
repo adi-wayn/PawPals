@@ -8,18 +8,13 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.example.pawpals.OtherUserProfileActivity;
 import com.example.pawpals.R;                    // ★ חשוב: לייבא את R מהחבילה של האפליקציה
 import com.example.pawpals.ProfileActivity;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.pawpals.ProfileActivity;
-
 import java.util.List;
-
-import model.User;
 
 public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.VH> {
 
