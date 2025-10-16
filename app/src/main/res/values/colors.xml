@@ -5,6 +5,7 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="light_gray">#DDDDDD</color>
+    <color name="bubble_time_light">#CCFFFFFF</color>
 
     <!-- PawPals: Light (מבוסס על הלוגו + רקע טורקיז רך) -->
     <color name="pp_colorPrimary">#22949B</color>        <!-- טורקיז עמוק -->

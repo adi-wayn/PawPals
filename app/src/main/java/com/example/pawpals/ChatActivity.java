@@ -18,6 +18,7 @@ import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.ListenerRegistration;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import model.Message;
@@ -150,42 +151,16 @@ public class ChatActivity extends AppCompatActivity {
 
                         for (DocumentChange dc : changes) {
                             Message m = dc.getDocument().toObject(Message.class);
-                            m.setId(dc.getDocument().getId()); // נשמור מזהה יציב
+                            m.setId(dc.getDocument().getId());
 
                             switch (dc.getType()) {
-                                case ADDED: {
-                                    // הוסף אם לא קיים; ננסה לשמור על סדר אם newIndex תקין
-                                    int existing = indexOfMessageId(m.getId());
-                                    if (existing == -1) {
-                                        int insertAt = dc.getNewIndex();
-                                        if (insertAt >= 0 && insertAt <= messages.size()) {
-                                            messages.add(insertAt, m);
-                                            adapter.notifyItemInserted(insertAt);
-                                        } else {
-                                            messages.add(m);
-                                            adapter.notifyItemInserted(messages.size() - 1);
-                                        }
-                                        recyclerView.scrollToPosition(Math.max(0, adapter.getItemCount() - 1));
-                                    } else {
-                                        messages.set(existing, m);
-                                        adapter.notifyItemChanged(existing);
-                                    }
-                                    break;
-                                }
+                                case ADDED:
                                 case MODIFIED: {
                                     int idx = indexOfMessageId(m.getId());
                                     if (idx != -1) {
                                         messages.set(idx, m);
-                                        adapter.notifyItemChanged(idx);
                                     } else {
-                                        int insertAt = dc.getNewIndex();
-                                        if (insertAt >= 0 && insertAt <= messages.size()) {
-                                            messages.add(insertAt, m);
-                                            adapter.notifyItemInserted(insertAt);
-                                        } else {
-                                            messages.add(m);
-                                            adapter.notifyItemInserted(messages.size() - 1);
-                                        }
+                                        messages.add(m);
                                     }
                                     break;
                                 }
@@ -193,12 +168,22 @@ public class ChatActivity extends AppCompatActivity {
                                     int idx = indexOfMessageId(m.getId());
                                     if (idx != -1) {
                                         messages.remove(idx);
-                                        adapter.notifyItemRemoved(idx);
                                     }
                                     break;
                                 }
                             }
                         }
+
+                        // ✅ מיון לפי זמן (null קודם)
+                        messages.sort((m1, m2) -> {
+                            if (m1.getTimestamp() == null && m2.getTimestamp() == null) return 0;
+                            if (m1.getTimestamp() == null) return -1;
+                            if (m2.getTimestamp() == null) return 1;
+                            return m1.getTimestamp().compareTo(m2.getTimestamp());
+                        });
+
+                        adapter.notifyDataSetChanged();
+                        recyclerView.scrollToPosition(Math.max(0, adapter.getItemCount() - 1));
                     }
 
                     @Override
@@ -217,6 +202,7 @@ public class ChatActivity extends AppCompatActivity {
         if (TextUtils.isEmpty(text)) return;
 
         Message msg = new Message(communityId, currentUserId, currentUserName, text);
+        msg.setTimestamp(new Date());
 
         repo.createMessage(communityId, msg, new CommunityRepository.FirestoreCallback() {
             @Override
