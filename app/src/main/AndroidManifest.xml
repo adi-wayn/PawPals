@@ -58,6 +58,8 @@
         <activity android:name=".DeleteAccountActivity" android:exported="false" />
         <activity android:name=".DogDetailsActivity" android:exported="false" />
         <activity android:name=".AlertsActivity" android:exported="false" />
+        <activity android:name=".EditProfileActivity" android:exported="false" />
+
 
         <!-- Firebase Messaging service -->
         <service

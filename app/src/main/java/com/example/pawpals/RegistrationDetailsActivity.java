@@ -126,8 +126,12 @@ public class RegistrationDetailsActivity extends AppCompatActivity {
         boolean wantsToCreate = checkboxCreateCommunity.isChecked();
         String communityName;
 
+        Log.d("Registration", "handleRegistrationDetails called");
+        Log.d("Registration", "Name: " + name + ", Contact: " + contactDetails + ", Bio: " + bio + ", wantsToCreate: " + wantsToCreate);
+
         if (name.isEmpty()) {
             Toast.makeText(this, "Please enter your name", Toast.LENGTH_SHORT).show();
+            Log.d("Registration", "Name is empty, returning");
             return;
         }
 
@@ -135,23 +139,38 @@ public class RegistrationDetailsActivity extends AppCompatActivity {
             communityName = safeText(inputCommunity);
             if (communityName.isEmpty()) {
                 Toast.makeText(this, "Please enter a community name to create", Toast.LENGTH_SHORT).show();
+                Log.d("Registration", "Community name empty while creating, returning");
                 return;
             }
         } else {
             if (spinnerCommunities.getSelectedItem() == null) {
                 Toast.makeText(this, "Please select a community", Toast.LENGTH_SHORT).show();
+                Log.d("Registration", "No community selected in spinner, returning");
                 return;
             }
             communityName = spinnerCommunities.getSelectedItem().toString();
         }
 
-//        // ✅ Delegate saving logic to CommunityUtils
-//        CommunityUtils.saveUserAndCommunity(
-//                this,
-//                name,
-//                contactDetails,
-//                bio,
+        Log.d("Registration", "Community name selected: " + communityName);
+        Log.d("Registration", "Current location: " + currentLat + ", " + currentLng);
+
+        // ✅ Save user and handle community creation/joining
+        CommunityUtils.saveUserAndCommunity(
+                this,
+                name,
+                contactDetails,
+                bio,
+                communityName,
+                userId,
+                wantsToCreate, // manager flag
+                currentLat,
+                currentLng
+        );
+
+        Log.d("Registration", "Called saveUserAndCommunity");
     }
+
+
 
     private void checkCommunityExistence(String name,
                                          String contactDetails,

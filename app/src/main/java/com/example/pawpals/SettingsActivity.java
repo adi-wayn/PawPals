@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.view.View;
+
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -26,9 +28,31 @@ public class SettingsActivity extends AppCompatActivity {
 
         // Initialize views
         textUserName = findViewById(R.id.text_user_name);
+        Button deleteButton = findViewById(R.id.button_delete_account);
 
-        // Load user's name from Firestore
-        loadUserName();
+        // Load user's name and manager status
+        userRepository.getUserById(userId, new UserRepository.FirestoreUserCallback() {
+            @Override
+            public void onSuccess(User user) {
+                // Set username
+                if (user != null && user.getUserName() != null && !user.getUserName().isEmpty()) {
+                    textUserName.setText(user.getUserName());
+                } else {
+                    textUserName.setText("User");
+                }
+
+                // Hide delete button for managers
+                if (user != null && user.isManager()) {
+                    deleteButton.setVisibility(View.GONE);
+                }
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Toast.makeText(SettingsActivity.this, "Failed to load username", Toast.LENGTH_SHORT).show();
+                textUserName.setText("User");
+            }
+        });
 
         // Back button
         Button backButton = findViewById(R.id.button_back);
@@ -59,11 +83,12 @@ public class SettingsActivity extends AppCompatActivity {
                 startActivity(new Intent(SettingsActivity.this, AlertsActivity.class))
         );
 
-        // 🔥 Delete Account
-        findViewById(R.id.button_delete_account).setOnClickListener(v ->
+        // Delete Account (only visible if not a manager)
+        deleteButton.setOnClickListener(v ->
                 startActivity(new Intent(SettingsActivity.this, DeleteAccountActivity.class))
         );
     }
+
 
     private void loadUserName() {
         userRepository.getUserById(userId, new UserRepository.FirestoreUserCallback() {

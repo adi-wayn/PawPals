@@ -41,51 +41,6 @@
             app:strokeWidth="1dp"
             app:shapeAppearance="@style/Shape.Round16">
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:padding="16dp">
-
-                <!-- Name -->
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:id="@+id/tv_owner_name"
-                        style="@style/TextAppearance.Material3.TitleMedium"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Dog Owner1"
-                        android:textColor="?attr/colorOnSurface" />
-
-                    <TextView
-                        android:id="@+id/tv_edit_name"
-                        style="@style/TextAppearance.Material3.BodyMedium"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Edit name"
-                        android:textColor="?attr/colorOnSurface"
-                        android:alpha="0.7"
-                        android:layout_marginTop="2dp" />
-                </LinearLayout>
-
-                <!-- Image -->
-                <com.google.android.material.imageview.ShapeableImageView
-                    android:id="@+id/iv_profile"
-                    android:layout_width="64dp"
-                    android:layout_height="64dp"
-                    android:contentDescription="Profile picture"
-                    android:scaleType="centerCrop"
-                    app:shapeAppearanceOverlay="@style/Shape.Round24"
-                    app:strokeColor="@color/pp_colorPrimary"
-                    app:strokeWidth="1dp"
-                    android:src="@drawable/ic_profile_placeholder" />
-            </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
         <!-- Account Card -->

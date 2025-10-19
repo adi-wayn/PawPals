@@ -2,13 +2,10 @@
 package com.example.pawpals;
 
 import android.app.AlertDialog;
-import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Spinner;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,23 +14,12 @@ import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import model.User;
 import model.firebase.Firestore.UserRepository;
-import com.example.pawpals.utils.CommunityManagerUtils;
 
 public class DeleteAccountActivity extends AppCompatActivity {
 
-    private TextView textSelectAdmin;
-    private Spinner spinnerNewAdmin;
     private Button buttonDelete, buttonCancel;
-
     private String currentUserId;
-    private String currentCommunity;
-    private boolean isManager;
-
     private UserRepository userRepository = new UserRepository();
 
     @Override
@@ -41,78 +27,26 @@ public class DeleteAccountActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_delete_account);
 
-        textSelectAdmin = findViewById(R.id.text_select_admin);
-        spinnerNewAdmin = findViewById(R.id.spinner_new_admin);
         buttonDelete = findViewById(R.id.button_delete);
         buttonCancel = findViewById(R.id.button_cancel);
 
         currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-        loadUserInfo();
-
         buttonCancel.setOnClickListener(v -> finish());
 
-        buttonDelete.setOnClickListener(v -> {
-            if (isManager) {
-                // Start manager transfer flow before deletion
-                CommunityManagerUtils.startManagerTransferFlow(
-                        this,
-                        currentUserId,
-                        currentCommunity,
-                        new CommunityManagerUtils.TransferFlowCallback() {
-                            @Override
-                            public void onManagerTransferred(String newAdminUid) {
-                                confirmPasswordBeforeDelete(newAdminUid);
-                            }
-
-                            @Override
-                            public void onCancelled() {
-                                Toast.makeText(DeleteAccountActivity.this,
-                                        "Manager transfer cancelled.", Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                );
-            } else {
-                confirmPasswordBeforeDelete(null);
-            }
-        });
-    }
-
-    /**
-     * Load current user info to determine if manager and community.
-     */
-    private void loadUserInfo() {
-        userRepository.getUserById(currentUserId, new UserRepository.FirestoreUserCallback() {
-            @Override
-            public void onSuccess(User user) {
-                if (user != null) {
-                    isManager = user.isManager();
-                    currentCommunity = user.getCommunityName();
-                }
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-                Toast.makeText(DeleteAccountActivity.this,
-                        "Failed to load user info", Toast.LENGTH_SHORT).show();
-            }
-        });
+        buttonDelete.setOnClickListener(v -> confirmPasswordBeforeDelete());
     }
 
     /**
      * Confirm user's password before deleting account.
-     * @param newAdminUid If manager, the UID of the new admin to assign before deletion. Can be null.
      */
-    private void confirmPasswordBeforeDelete(String newAdminUid) {
+    private void confirmPasswordBeforeDelete() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) return;
 
-        // Show dialog to ask for password
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Confirm Password");
 
-        final Spinner passwordInput = new Spinner(this); // Alternatively, use EditText
-        // Or EditText for password
         final EditText input = new EditText(this);
         input.setHint("Password");
         builder.setView(input);
@@ -128,10 +62,9 @@ public class DeleteAccountActivity extends AppCompatActivity {
             user.reauthenticate(EmailAuthProvider.getCredential(user.getEmail(), password))
                     .addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
-                            deleteUser(newAdminUid);
+                            actuallyDeleteAccount();
                         } else {
-                            Toast.makeText(DeleteAccountActivity.this,
-                                    "Incorrect password", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(DeleteAccountActivity.this, "Incorrect password", Toast.LENGTH_SHORT).show();
                         }
                     });
         });
@@ -141,34 +74,8 @@ public class DeleteAccountActivity extends AppCompatActivity {
     }
 
     /**
-     * Delete the user from Firebase (and optionally update new manager role)
+     * Delete the user from Firestore and Firebase Auth.
      */
-    private void deleteUser(String newAdminUid) {
-        if (isManager && newAdminUid != null) {
-            // Update Firestore to assign new manager
-            CommunityManagerUtils.transferManager(
-                    this,
-                    currentCommunity,
-                    newAdminUid,
-                    new CommunityManagerUtils.TransferCallback() {
-                        @Override
-                        public void onSuccess() {
-                            actuallyDeleteAccount();
-                        }
-
-                        @Override
-                        public void onFailure(Exception e) {
-                            Toast.makeText(DeleteAccountActivity.this,
-                                    "Failed to assign new manager. Account not deleted.",
-                                    Toast.LENGTH_SHORT).show();
-                        }
-                    }
-            );
-        } else {
-            actuallyDeleteAccount();
-        }
-    }
-
     private void actuallyDeleteAccount() {
         userRepository.deleteUser(currentUserId, new UserRepository.FirestoreCallback() {
             @Override
@@ -176,20 +83,23 @@ public class DeleteAccountActivity extends AppCompatActivity {
                 FirebaseAuth.getInstance().getCurrentUser().delete()
                         .addOnCompleteListener(task -> {
                             if (task.isSuccessful()) {
-                                Toast.makeText(DeleteAccountActivity.this,
-                                        "Account deleted successfully.", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(DeleteAccountActivity.this, "Account deleted successfully.", Toast.LENGTH_SHORT).show();
+
+                                // Sign out and redirect to LoginActivity
+                                FirebaseAuth.getInstance().signOut();
+                                Intent intent = new Intent(DeleteAccountActivity.this, LoginActivity.class);
+                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                startActivity(intent);
                                 finish();
                             } else {
-                                Toast.makeText(DeleteAccountActivity.this,
-                                        "Failed to delete account from Auth.", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(DeleteAccountActivity.this, "Failed to delete account from Auth.", Toast.LENGTH_SHORT).show();
                             }
                         });
             }
 
             @Override
             public void onFailure(Exception e) {
-                Toast.makeText(DeleteAccountActivity.this,
-                        "Failed to delete user from database.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(DeleteAccountActivity.this, "Failed to delete user from database.", Toast.LENGTH_SHORT).show();
             }
         });
     }

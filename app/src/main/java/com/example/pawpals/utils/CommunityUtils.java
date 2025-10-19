@@ -8,7 +8,7 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
-
+import android.util.Log;
 import com.example.pawpals.MainActivity;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -30,16 +30,16 @@ import model.firebase.Firestore.UserRepository;
 public class CommunityUtils {
 
     private static final FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private static final String TAG = "CommunityUtils";
 
-    /**
-     * Load nearby communities into a Spinner.
-     */
     public static void loadNearbyCommunities(Context context, double lat, double lng, Spinner spinner) {
+        Log.d(TAG, "Loading nearby communities for lat=" + lat + ", lng=" + lng);
         MapRepository mapRepo = new MapRepository();
 
         mapRepo.getNearbyCommunities(lat, lng, 5000, new MapRepository.FirestoreNearbyCommunitiesCallback() {
             @Override
             public void onSuccess(List<String> nearbyCommunityNames) {
+                Log.d(TAG, "Nearby communities loaded: " + nearbyCommunityNames);
                 ArrayAdapter<String> adapter = new ArrayAdapter<>(
                         context,
                         android.R.layout.simple_spinner_item,
@@ -53,42 +53,31 @@ public class CommunityUtils {
 
             @Override
             public void onFailure(Exception e) {
+                Log.d(TAG, "Failed to load nearby communities", e);
                 Toast.makeText(context, "Failed to load nearby communities", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    /**
-     * Toggles between community Spinner (join existing) and input field (create new).
-     */
-    public static void setupCommunitySelection(
-            CheckBox checkboxCreateCommunity,
-            EditText inputCommunity,
-            Spinner spinnerCommunities
-    ) {
-        checkboxCreateCommunity.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            inputCommunity.setVisibility(isChecked ? View.VISIBLE : View.GONE);
-            spinnerCommunities.setVisibility(isChecked ? View.GONE : View.VISIBLE);
-        });
-    }
-
-    /**
-     * Checks if a community exists; if not, optionally creates it, then saves the user.
-     */
     public static void saveUserAndCommunity(Context context, String name, String contactDetails, String bio,
                                             String communityName, String userId, boolean isManager,
                                             double lat, double lng) {
+
+        Log.d(TAG, "saveUserAndCommunity called with communityName=" + communityName + ", isManager=" + isManager);
 
         db.collection("communities")
                 .document(communityName)
                 .get()
                 .addOnSuccessListener(snapshot -> {
                     boolean exists = snapshot.exists();
+                    Log.d(TAG, "Community exists: " + exists);
 
                     if (exists && isManager) {
+                        Log.d(TAG, "Community already exists, cannot create as manager");
                         Toast.makeText(context, "Community already exists!", Toast.LENGTH_SHORT).show();
                         return;
                     } else if (!exists && !isManager) {
+                        Log.d(TAG, "Community doesn't exist, cannot join");
                         Toast.makeText(context, "Community doesn't exist. Check 'create' to create it.", Toast.LENGTH_SHORT).show();
                         return;
                     }
@@ -96,35 +85,37 @@ public class CommunityUtils {
                     CommunityRepository communityRepository = new CommunityRepository();
 
                     if (isManager && !exists) {
-                        // ✅ Create community first
+                        Log.d(TAG, "Creating new community: " + communityName);
                         communityRepository.createCommunity(communityName, userId, lat, lng, "", "", new ArrayList<>(),
                                 new CommunityRepository.FirestoreCallback() {
                                     @Override
                                     public void onSuccess(String id) {
+                                        Log.d(TAG, "Community created successfully: " + id);
                                         saveUserAndNavigate(context, name, contactDetails, bio, communityName, userId, true, lat, lng);
                                     }
 
                                     @Override
                                     public void onFailure(Exception e) {
+                                        Log.d(TAG, "Failed to create community", e);
                                         Toast.makeText(context, "Failed to create community", Toast.LENGTH_SHORT).show();
                                     }
                                 });
                     } else {
+                        Log.d(TAG, "Joining existing community or saving user without creating");
                         saveUserAndNavigate(context, name, contactDetails, bio, communityName, userId, isManager, lat, lng);
                     }
                 })
-                .addOnFailureListener(e ->
-                        Toast.makeText(context, "Error checking community", Toast.LENGTH_SHORT).show()
-                );
+                .addOnFailureListener(e -> {
+                    Log.d(TAG, "Error checking community existence", e);
+                    Toast.makeText(context, "Error checking community", Toast.LENGTH_SHORT).show();
+                });
     }
 
-    /**
-     * Saves a user and navigates to the main screen upon success.
-     */
     private static void saveUserAndNavigate(Context context, String name, String contactDetails, String bio,
                                             String communityName, String userId, boolean isManager,
                                             double lat, double lng) {
 
+        Log.d(TAG, "saveUserAndNavigate called for user=" + name + ", community=" + communityName + ", isManager=" + isManager);
         UserRepository userRepository = new UserRepository();
 
         User user = isManager
@@ -136,9 +127,9 @@ public class CommunityUtils {
         userRepository.createUserProfile(userId, user, new UserRepository.FirestoreCallback() {
             @Override
             public void onSuccess(String documentId) {
+                Log.d(TAG, "User saved successfully: " + documentId);
                 Toast.makeText(context, "Welcome, " + name + "!", Toast.LENGTH_SHORT).show();
 
-                // ✅ Navigate to main screen
                 Intent intent = new Intent(context, MainActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 context.startActivity(intent);
@@ -146,60 +137,9 @@ public class CommunityUtils {
 
             @Override
             public void onFailure(Exception e) {
+                Log.d(TAG, "Failed to save user data", e);
                 Toast.makeText(context, "Failed to save user data", Toast.LENGTH_SHORT).show();
             }
         });
-    }
-
-    /**
-     * Creates a new community, marks the creator as manager, and updates their profile.
-     */
-    public static void createCommunityAndUpdateUser(
-            Context context,
-            String communityName,
-            String managerId,
-            double lat,
-            double lng,
-            Map<String, Object> updates,
-            Consumer<String> onSuccess,
-            Consumer<String> onFailure
-    ) {
-        CommunityRepository repo = new CommunityRepository();
-        UserRepository userRepo = new UserRepository();
-
-        repo.createCommunity(
-                communityName,
-                managerId,
-                lat,
-                lng,
-                "",
-                "",
-                new ArrayList<>(),
-                new CommunityRepository.FirestoreCallback() {
-                    @Override
-                    public void onSuccess(String newCommunityId) {
-                        // ✅ Ensure user becomes manager and community is linked
-                        updates.put("communityName", communityName);
-                        updates.put("isManager", true);
-
-                        userRepo.updateUserProfile(managerId, updates, new UserRepository.FirestoreCallback() {
-                            @Override
-                            public void onSuccess(String id) {
-                                onSuccess.accept("Created new community: " + communityName);
-                            }
-
-                            @Override
-                            public void onFailure(Exception e) {
-                                onFailure.accept("Community created, but failed to update user: " + e.getMessage());
-                            }
-                        });
-                    }
-
-                    @Override
-                    public void onFailure(Exception e) {
-                        onFailure.accept("Failed to create community: " + e.getMessage());
-                    }
-                }
-        );
     }
 }
