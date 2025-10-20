@@ -481,6 +481,9 @@ public class UserRepository {
 
     public interface FirestoreCallback {
         void onSuccess(String documentId);
+
+//        void onSuccess();
+
         void onFailure(Exception e);
     }
 

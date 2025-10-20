@@ -1,6 +1,7 @@
 package com.example.pawpals;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.View;
@@ -184,15 +185,36 @@ public class EditProfileActivity extends AppCompatActivity {
             @Override
             public void onSuccess(String id) {
                 Toast.makeText(EditProfileActivity.this, successMsg, Toast.LENGTH_SHORT).show();
-                finish();
+
+                // Navigate to MainActivity after successful update
+                Intent intent = new Intent(EditProfileActivity.this, MainActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+
+                // Optionally, you can pass the updated user object if needed
+                userRepository.getUserById(userId, new UserRepository.FirestoreUserCallback() {
+                    @Override
+                    public void onSuccess(User updatedUser) {
+                        intent.putExtra("currentUser", updatedUser);
+                        startActivity(intent);
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        // fallback: just go to MainActivity without passing user
+                        startActivity(intent);
+                    }
+                });
             }
 
             @Override
             public void onFailure(Exception e) {
-                Toast.makeText(EditProfileActivity.this, "Update failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(EditProfileActivity.this,
+                        "Failed to update profile: " + e.getMessage(),
+                        Toast.LENGTH_LONG).show();
             }
         });
     }
+
 
     private String safeText(EditText et) {
         return et == null || et.getText() == null ? "" : et.getText().toString().trim();
