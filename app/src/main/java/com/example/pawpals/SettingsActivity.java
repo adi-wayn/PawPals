@@ -90,22 +90,22 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
 
-    private void loadUserName() {
-        userRepository.getUserById(userId, new UserRepository.FirestoreUserCallback() {
-            @Override
-            public void onSuccess(User user) {
-                if (user != null && user.getUserName() != null && !user.getUserName().isEmpty()) {
-                    textUserName.setText(user.getUserName());
-                } else {
-                    textUserName.setText("User");
-                }
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-                Toast.makeText(SettingsActivity.this, "Failed to load username", Toast.LENGTH_SHORT).show();
-                textUserName.setText("User");
-            }
-        });
-    }
+//    private void loadUserName() {
+//        userRepository.getUserById(userId, new UserRepository.FirestoreUserCallback() {
+//            @Override
+//            public void onSuccess(User user) {
+//                if (user != null && user.getUserName() != null && !user.getUserName().isEmpty()) {
+//                    textUserName.setText(user.getUserName());
+//                } else {
+//                    textUserName.setText("User");
+//                }
+//            }
+//
+//            @Override
+//            public void onFailure(Exception e) {
+//                Toast.makeText(SettingsActivity.this, "Failed to load username", Toast.LENGTH_SHORT).show();
+//                textUserName.setText("User");
+//            }
+//        });
+//    }
 }
