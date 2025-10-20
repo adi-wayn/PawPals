@@ -1,0 +1,379 @@
+#
+# There is insufficient memory for the Java Runtime Environment to continue.
+# Native memory allocation (malloc) failed to allocate 32744 bytes for Chunk::new
+# Possible reasons:
+#   The system is out of physical RAM or swap space
+#   The process is running with CompressedOops enabled, and the Java Heap may be blocking the growth of the native heap
+# Possible solutions:
+#   Reduce memory load on the system
+#   Increase physical memory or swap space
+#   Check if swap backing store is full
+#   Decrease Java heap size (-Xmx/-Xms)
+#   Decrease number of Java threads
+#   Decrease Java thread stack sizes (-Xss)
+#   Set larger code cache with -XX:ReservedCodeCacheSize=
+#   JVM is running with Zero Based Compressed Oops mode in which the Java heap is
+#     placed in the first 32GB address space. The Java Heap base address is the
+#     maximum limit for the native heap growth. Please use -XX:HeapBaseMinAddress
+#     to set the Java Heap base and to place the Java Heap above 32GB virtual address.
+# This output file may be truncated or incomplete.
+#
+#  Out of Memory Error (arena.cpp:168), pid=6908, tid=4284
+#
+# JRE version: OpenJDK Runtime Environment (21.0.2+13) (build 21.0.2+13-58)
+# Java VM: OpenJDK 64-Bit Server VM (21.0.2+13-58, mixed mode, tiered, compressed oops, compressed class ptrs, g1 gc, windows-amd64)
+# No core dump will be written. Minidumps are not enabled by default on client versions of Windows
+#
+
+---------------  S U M M A R Y ------------
+
+Command Line: -Dapplication.home=C:\Users\Chana\.jdks\openjdk-21.0.2 --add-modules=ALL-DEFAULT -Xms8m -Djdk.module.main=jdk.jlink jdk.jlink/jdk.tools.jlink.internal.Main --version
+
+Host: Intel(R) Core(TM) i7-7700HQ CPU @ 2.80GHz, 8 cores, 15G,  Windows 10 , 64 bit Build 19041 (10.0.19041.5915)
+Time: Sun Oct 19 14:46:57 2025  Windows 10 , 64 bit Build 19041 (10.0.19041.5915) elapsed time: 0.118822 seconds (0d 0h 0m 0s)
+
+---------------  T H R E A D  ---------------
+
+Current thread (0x000001ab8f344c50):  JavaThread "C2 CompilerThread0" daemon [_thread_in_vm, id=4284, stack(0x000000252f900000,0x000000252fa00000) (1024K)]
+
+Stack: [0x000000252f900000,0x000000252fa00000]
+Native frames: (J=compiled Java code, j=interpreted, Vv=VM code, C=native code)
+V  [jvm.dll+0x6cade9]
+V  [jvm.dll+0x8569c1]
+V  [jvm.dll+0x858d2e]
+V  [jvm.dll+0x859413]
+V  [jvm.dll+0x280e56]
+V  [jvm.dll+0xc3f3d]
+V  [jvm.dll+0xc4473]
+V  [jvm.dll+0x6f6a6e]
+V  [jvm.dll+0x1e22d6]
+V  [jvm.dll+0x249d22]
+V  [jvm.dll+0x248276]
+V  [jvm.dll+0x724a99]
+V  [jvm.dll+0x724615]
+V  [jvm.dll+0x1c990d]
+V  [jvm.dll+0x257a10]
+V  [jvm.dll+0x256d07]
+V  [jvm.dll+0x3ef6c6]
+V  [jvm.dll+0x7ff568]
+V  [jvm.dll+0x6c953d]
+C  [ucrtbase.dll+0x21bb2]
+C  [KERNEL32.DLL+0x17374]
+C  [ntdll.dll+0x4cc91]
+
+
+---------------  P R O C E S S  ---------------
+
+Threads class SMR info:
+_java_thread_list=0x000001ab8f1ef200, length=9, elements={
+0x000001abebd06470, 0x000001ab8f1f78e0, 0x000001ab8f1cf180, 0x000001ab8f357b90,
+0x000001ab8f3585f0, 0x000001ab8f33e250, 0x000001ab8f33f060, 0x000001ab8f344c50,
+0x000001ab8f1fafc0
+}
+
+Java Threads: ( => current thread )
+  0x000001abebd06470 JavaThread "main"                              [_thread_in_vm, id=14156, stack(0x000000252eb00000,0x000000252ec00000) (1024K)]
+  0x000001ab8f1f78e0 JavaThread "Reference Handler"          daemon [_thread_blocked, id=9248, stack(0x000000252f300000,0x000000252f400000) (1024K)]
+  0x000001ab8f1cf180 JavaThread "Finalizer"                  daemon [_thread_blocked, id=16412, stack(0x000000252f400000,0x000000252f500000) (1024K)]
+  0x000001ab8f357b90 JavaThread "Signal Dispatcher"          daemon [_thread_blocked, id=5664, stack(0x000000252f500000,0x000000252f600000) (1024K)]
+  0x000001ab8f3585f0 JavaThread "Attach Listener"            daemon [_thread_blocked, id=17768, stack(0x000000252f600000,0x000000252f700000) (1024K)]
+  0x000001ab8f33e250 JavaThread "Service Thread"             daemon [_thread_blocked, id=16908, stack(0x000000252f700000,0x000000252f800000) (1024K)]
+  0x000001ab8f33f060 JavaThread "Monitor Deflation Thread"   daemon [_thread_blocked, id=1860, stack(0x000000252f800000,0x000000252f900000) (1024K)]
+=>0x000001ab8f344c50 JavaThread "C2 CompilerThread0"         daemon [_thread_in_vm, id=4284, stack(0x000000252f900000,0x000000252fa00000) (1024K)]
+  0x000001ab8f1fafc0 JavaThread "C1 CompilerThread0"         daemon [_thread_in_native, id=16376, stack(0x000000252fa00000,0x000000252fb00000) (1024K)]
+Total: 9
+
+Other Threads:
+  0x000001abebcdd950 VMThread "VM Thread"                           [id=4664, stack(0x000000252f200000,0x000000252f300000) (1024K)]
+  0x000001ab8f11db60 WatcherThread "VM Periodic Task Thread"        [id=10028, stack(0x000000252f100000,0x000000252f200000) (1024K)]
+  0x000001abebcdef10 WorkerThread "GC Thread#0"                     [id=18640, stack(0x000000252ec00000,0x000000252ed00000) (1024K)]
+  0x000001abedfeace0 ConcurrentGCThread "G1 Main Marker"            [id=3912, stack(0x000000252ed00000,0x000000252ee00000) (1024K)]
+  0x000001abebcde090 WorkerThread "G1 Conc#0"                       [id=19140, stack(0x000000252ee00000,0x000000252ef00000) (1024K)]
+  0x000001abee015be0 ConcurrentGCThread "G1 Refine#0"               [id=17660, stack(0x000000252ef00000,0x000000252f000000) (1024K)]
+  0x000001abee017760 ConcurrentGCThread "G1 Service"                [id=17896, stack(0x000000252f000000,0x000000252f100000) (1024K)]
+Total: 7
+
+Threads with active compile tasks:
+C1 CompilerThread0      218   35   !   3       java.util.concurrent.ConcurrentHashMap::putVal (432 bytes)
+Total: 1
+
+VM state: not at safepoint (normal execution)
+
+VM Mutex/Monitor currently owned by a thread:  ([mutex/lock_event])
+[0x00007ff830e6ace8] Metaspace_lock - owner thread: 0x000001abebd06470
+
+Heap address: 0x0000000701c00000, size: 4068 MB, Compressed Oops mode: Zero based, Oop shift amount: 3
+
+CDS archive(s) not mapped
+Compressed class space mapped at: 0x0000000800000000-0x0000000840000000, reserved size: 1073741824
+Narrow klass base: 0x0000000800000000, Narrow klass shift: 0, Narrow klass range: 0x40000000
+
+GC Precious Log:
+ CardTable entry size: 512
+ Card Set container configuration: InlinePtr #cards 4 size 8 Array Of Cards #cards 16 size 48 Howl #buckets 8 coarsen threshold 3686 Howl Bitmap #cards 512 size 80 coarsen threshold 460 Card regions per heap region 1 cards per card region 4096
+ CPUs: 8 total, 8 available
+ Memory: 16268M
+ Large Page Support: Disabled
+ NUMA Support: Disabled
+ Compressed Oops: Enabled (Zero based)
+ Heap Region Size: 2M
+ Heap Min Capacity: 8M
+ Heap Initial Capacity: 8M
+ Heap Max Capacity: 4068M
+ Pre-touch: Disabled
+ Parallel Workers: 8
+ Concurrent Workers: 2
+ Concurrent Refinement Workers: 8
+ Periodic GC: Disabled
+
+Heap:
+ garbage-first heap   total 8192K, used 0K [0x0000000701c00000, 0x0000000800000000)
+  region size 2048K, 1 young (2048K), 0 survivors (0K)
+ Metaspace       used 4431K, committed 4480K, reserved 1114112K
+  class space    used 335K, committed 384K, reserved 1048576K
+
+Heap Regions: E=young(eden), S=young(survivor), O=old, HS=humongous(starts), HC=humongous(continues), CS=collection set, F=free, TAMS=top-at-mark-start, PB=parsable bottom
+|   0|0x0000000701c00000, 0x0000000701c00000, 0x0000000701e00000|  0%| F|  |TAMS 0x0000000701c00000| PB 0x0000000701c00000| Untracked 
+|   1|0x0000000701e00000, 0x0000000701e00000, 0x0000000702000000|  0%| F|  |TAMS 0x0000000701e00000| PB 0x0000000701e00000| Untracked 
+|   2|0x0000000702000000, 0x0000000702000000, 0x0000000702200000|  0%| F|  |TAMS 0x0000000702000000| PB 0x0000000702000000| Untracked 
+|   3|0x0000000702200000, 0x0000000702299cc0, 0x0000000702400000| 30%| E|  |TAMS 0x0000000702200000| PB 0x0000000702200000| Complete 
+
+Card table byte_map: [0x000001abf6f00000,0x000001abf7700000] _byte_map_base: 0x000001abf36f2000
+
+Marking Bits: (CMBitMap*) 0x000001abedfda410
+ Bits: [0x000001abf7700000, 0x000001abfb690000)
+
+Polling page: 0x000001abebf10000
+
+Metaspace:
+
+Usage:
+  Non-class:      4.00 MB used.
+      Class:    335.34 KB used.
+       Both:      4.33 MB used.
+
+Virtual space:
+  Non-class space:       64.00 MB reserved,       4.00 MB (  6%) committed,  1 nodes.
+      Class space:        1.00 GB reserved,     384.00 KB ( <1%) committed,  1 nodes.
+             Both:        1.06 GB reserved,       4.38 MB ( <1%) committed. 
+
+Chunk freelists:
+   Non-Class:  11.00 MB
+       Class:  15.62 MB
+        Both:  26.62 MB
+
+MaxMetaspaceSize: unlimited
+CompressedClassSpaceSize: 1.00 GB
+Initial GC threshold: 21.00 MB
+Current GC threshold: 21.00 MB
+CDS: off
+ - commit_granule_bytes: 65536.
+ - commit_granule_words: 8192.
+ - virtual_space_node_default_size: 8388608.
+ - enlarge_chunks_in_place: 1.
+ - use_allocation_guard: 0.
+
+
+Internal statistics:
+
+num_allocs_failed_limit: 0.
+num_arena_births: 2.
+num_arena_deaths: 0.
+num_vsnodes_births: 2.
+num_vsnodes_deaths: 0.
+num_space_committed: 70.
+num_space_uncommitted: 0.
+num_chunks_returned_to_freelist: 0.
+num_chunks_taken_from_freelist: 4.
+num_chunk_merges: 0.
+num_chunk_splits: 3.
+num_chunks_enlarged: 0.
+num_inconsistent_stats: 0.
+
+CodeHeap 'non-profiled nmethods': size=120000Kb used=3Kb max_used=3Kb free=119996Kb
+ bounds [0x000001ab87ad0000, 0x000001ab87d40000, 0x000001ab8f000000]
+CodeHeap 'profiled nmethods': size=120000Kb used=44Kb max_used=44Kb free=119956Kb
+ bounds [0x000001ab80000000, 0x000001ab80270000, 0x000001ab87530000]
+CodeHeap 'non-nmethods': size=5760Kb used=1180Kb max_used=1180Kb free=4579Kb
+ bounds [0x000001ab87530000, 0x000001ab877a0000, 0x000001ab87ad0000]
+ total_blobs=342 nmethods=34 adapters=229
+ compilation: enabled
+              stopped_count=0, restarted_count=0
+ full_count=0
+
+Compilation events (2 events):
+Event: 0.113 Thread 0x000001ab8f1fafc0    1       3       java.lang.Object::<init> (1 bytes)
+Event: 0.114 Thread 0x000001ab8f1fafc0 nmethod 1 0x000001ab80000010 code [0x000001ab800001a0, 0x000001ab800002a8]
+
+GC Heap History (0 events):
+No events
+
+Dll operation events (2 events):
+Event: 0.018 Loaded shared library C:\Users\Chana\.jdks\openjdk-21.0.2\bin\java.dll
+Event: 0.114 Loaded shared library C:\Users\Chana\.jdks\openjdk-21.0.2\bin\jsvml.dll
+
+Deoptimization events (0 events):
+No events
+
+Classes loaded (20 events):
+Event: 0.110 Loading class java/lang/IllegalArgumentException done
+Event: 0.111 Loading class java/lang/invoke/MethodHandleStatics
+Event: 0.112 Loading class java/lang/invoke/MethodHandleStatics done
+Event: 0.112 Loading class java/lang/reflect/ClassFileFormatVersion
+Event: 0.112 Loading class java/lang/reflect/ClassFileFormatVersion done
+Event: 0.112 Loading class sun/security/action/GetPropertyAction
+Event: 0.112 Loading class sun/security/action/GetPropertyAction done
+Event: 0.112 Loading class jdk/internal/util/ClassFileDumper
+Event: 0.112 Loading class jdk/internal/util/ClassFileDumper done
+Event: 0.112 Loading class java/util/HexFormat
+Event: 0.113 Loading class java/util/HexFormat done
+Event: 0.113 Loading class java/lang/Character$CharacterCache
+Event: 0.113 Loading class java/lang/Character$CharacterCache done
+Event: 0.113 Loading class java/util/concurrent/atomic/AtomicInteger
+Event: 0.114 Loading class java/util/concurrent/atomic/AtomicInteger done
+Event: 0.114 Loading class jdk/internal/module/ModuleBootstrap
+Event: 0.115 Loading class jdk/internal/module/ModuleBootstrap done
+Event: 0.115 Loading class java/lang/module/ModuleDescriptor
+Event: 0.116 Loading class java/lang/module/ModuleDescriptor done
+Event: 0.116 Loading class java/lang/invoke/MethodHandles
+
+Classes unloaded (0 events):
+No events
+
+Classes redefined (0 events):
+No events
+
+Internal exceptions (0 events):
+No events
+
+ZGC Phase Switch (0 events):
+No events
+
+VM Operations (0 events):
+No events
+
+Events (9 events):
+Event: 0.026 Thread 0x000001abebd06470 Thread added: 0x000001abebd06470
+Event: 0.109 Thread 0x000001ab8f1f78e0 Thread added: 0x000001ab8f1f78e0
+Event: 0.109 Thread 0x000001ab8f1cf180 Thread added: 0x000001ab8f1cf180
+Event: 0.111 Thread 0x000001ab8f357b90 Thread added: 0x000001ab8f357b90
+Event: 0.111 Thread 0x000001ab8f3585f0 Thread added: 0x000001ab8f3585f0
+Event: 0.111 Thread 0x000001ab8f33e250 Thread added: 0x000001ab8f33e250
+Event: 0.111 Thread 0x000001ab8f33f060 Thread added: 0x000001ab8f33f060
+Event: 0.111 Thread 0x000001ab8f344c50 Thread added: 0x000001ab8f344c50
+Event: 0.111 Thread 0x000001ab8f1fafc0 Thread added: 0x000001ab8f1fafc0
+
+
+Dynamic libraries:
+0x00007ff6eaef0000 - 0x00007ff6eaef8000 	C:\Users\Chana\.jdks\openjdk-21.0.2\bin\jlink.exe
+0x00007ff8ad170000 - 0x00007ff8ad368000 	C:\WINDOWS\SYSTEM32\ntdll.dll
+0x00007ff8ac9c0000 - 0x00007ff8aca82000 	C:\WINDOWS\System32\KERNEL32.DLL
+0x00007ff8aac40000 - 0x00007ff8aaf36000 	C:\WINDOWS\System32\KERNELBASE.dll
+0x00007ff8aa9c0000 - 0x00007ff8aaac0000 	C:\WINDOWS\System32\ucrtbase.dll
+0x00007ff881e10000 - 0x00007ff881e2b000 	C:\Users\Chana\.jdks\openjdk-21.0.2\bin\VCRUNTIME140.dll
+0x00007ff8a4e30000 - 0x00007ff8a4e48000 	C:\Users\Chana\.jdks\openjdk-21.0.2\bin\jli.dll
+0x00007ff8acb30000 - 0x00007ff8acccd000 	C:\WINDOWS\System32\USER32.dll
+0x00007ff8aaac0000 - 0x00007ff8aaae2000 	C:\WINDOWS\System32\win32u.dll
+0x00007ff8853b0000 - 0x00007ff88564b000 	C:\WINDOWS\WinSxS\amd64_microsoft.windows.common-controls_6595b64144ccf1df_6.0.19041.6280_none_60bc30a171f2f3f3\COMCTL32.dll
+0x00007ff8acb00000 - 0x00007ff8acb2b000 	C:\WINDOWS\System32\GDI32.dll
+0x00007ff8accd0000 - 0x00007ff8acd6e000 	C:\WINDOWS\System32\msvcrt.dll
+0x00007ff8aab20000 - 0x00007ff8aac39000 	C:\WINDOWS\System32\gdi32full.dll
+0x00007ff8aa920000 - 0x00007ff8aa9bd000 	C:\WINDOWS\System32\msvcp_win.dll
+0x00007ff8ac220000 - 0x00007ff8ac24f000 	C:\WINDOWS\System32\IMM32.DLL
+0x00007ff8a5100000 - 0x00007ff8a510c000 	C:\Users\Chana\.jdks\openjdk-21.0.2\bin\vcruntime140_1.dll
+0x00007ff873980000 - 0x00007ff873a0e000 	C:\Users\Chana\.jdks\openjdk-21.0.2\bin\msvcp140.dll
+0x00007ff830230000 - 0x00007ff830f47000 	C:\Users\Chana\.jdks\openjdk-21.0.2\bin\server\jvm.dll
+0x00007ff8abc50000 - 0x00007ff8abd01000 	C:\WINDOWS\System32\ADVAPI32.dll
+0x00007ff8acee0000 - 0x00007ff8acf7f000 	C:\WINDOWS\System32\sechost.dll
+0x00007ff8abb20000 - 0x00007ff8abc40000 	C:\WINDOWS\System32\RPCRT4.dll
+0x00007ff8aaaf0000 - 0x00007ff8aab17000 	C:\WINDOWS\System32\bcrypt.dll
+0x00007ff8ac0e0000 - 0x00007ff8ac14b000 	C:\WINDOWS\System32\WS2_32.dll
+0x00007ff8a3e30000 - 0x00007ff8a3e3a000 	C:\WINDOWS\SYSTEM32\VERSION.dll
+0x00007ff8aa180000 - 0x00007ff8aa1cb000 	C:\WINDOWS\SYSTEM32\POWRPROF.dll
+0x00007ff889460000 - 0x00007ff889487000 	C:\WINDOWS\SYSTEM32\WINMM.dll
+0x00007ff8aa160000 - 0x00007ff8aa172000 	C:\WINDOWS\SYSTEM32\UMPDC.dll
+0x00007ff8a8650000 - 0x00007ff8a8662000 	C:\WINDOWS\SYSTEM32\kernel.appcore.dll
+0x00007ff881e00000 - 0x00007ff881e0a000 	C:\Users\Chana\.jdks\openjdk-21.0.2\bin\jimage.dll
+0x00007ff8a0310000 - 0x00007ff8a0511000 	C:\WINDOWS\SYSTEM32\DBGHELP.DLL
+0x00007ff8a0290000 - 0x00007ff8a02c4000 	C:\WINDOWS\SYSTEM32\dbgcore.DLL
+0x00007ff8aa890000 - 0x00007ff8aa912000 	C:\WINDOWS\System32\bcryptPrimitives.dll
+0x00007ff87f380000 - 0x00007ff87f39f000 	C:\Users\Chana\.jdks\openjdk-21.0.2\bin\java.dll
+0x00007ff8ac250000 - 0x00007ff8ac9c0000 	C:\WINDOWS\System32\SHELL32.dll
+0x00007ff8a8850000 - 0x00007ff8a8ff5000 	C:\WINDOWS\SYSTEM32\windows.storage.dll
+0x00007ff8abd80000 - 0x00007ff8ac0d3000 	C:\WINDOWS\System32\combase.dll
+0x00007ff8aa240000 - 0x00007ff8aa26b000 	C:\WINDOWS\SYSTEM32\Wldp.dll
+0x00007ff8acf80000 - 0x00007ff8ad04d000 	C:\WINDOWS\System32\OLEAUT32.dll
+0x00007ff8ac150000 - 0x00007ff8ac1fd000 	C:\WINDOWS\System32\SHCORE.dll
+0x00007ff8abd10000 - 0x00007ff8abd6b000 	C:\WINDOWS\System32\shlwapi.dll
+0x00007ff8aa740000 - 0x00007ff8aa764000 	C:\WINDOWS\SYSTEM32\profapi.dll
+0x00007ff869430000 - 0x00007ff869507000 	C:\Users\Chana\.jdks\openjdk-21.0.2\bin\jsvml.dll
+
+dbghelp: loaded successfully - version: 4.0.5 - missing functions: none
+symbol engine: initialized successfully - sym options: 0x614 - pdb path: .;C:\Users\Chana\.jdks\openjdk-21.0.2\bin;C:\WINDOWS\SYSTEM32;C:\WINDOWS\WinSxS\amd64_microsoft.windows.common-controls_6595b64144ccf1df_6.0.19041.6280_none_60bc30a171f2f3f3;C:\Users\Chana\.jdks\openjdk-21.0.2\bin\server
+
+VM Arguments:
+jvm_args: -Dapplication.home=C:\Users\Chana\.jdks\openjdk-21.0.2 --add-modules=ALL-DEFAULT -Xms8m -Djdk.module.main=jdk.jlink 
+java_command: jdk.jlink/jdk.tools.jlink.internal.Main --version
+java_class_path (initial): <not set>
+Launcher Type: SUN_STANDARD
+
+[Global flags]
+     intx CICompilerCount                          = 4                                         {product} {ergonomic}
+     uint ConcGCThreads                            = 2                                         {product} {ergonomic}
+     uint G1ConcRefinementThreads                  = 8                                         {product} {ergonomic}
+   size_t G1HeapRegionSize                         = 2097152                                   {product} {ergonomic}
+    uintx GCDrainStackTargetSize                   = 64                                        {product} {ergonomic}
+   size_t InitialHeapSize                          = 8388608                                   {product} {command line}
+   size_t MarkStackSize                            = 4194304                                   {product} {ergonomic}
+   size_t MaxHeapSize                              = 4265607168                                {product} {ergonomic}
+   size_t MaxNewSize                               = 2558525440                                {product} {ergonomic}
+   size_t MinHeapDeltaBytes                        = 2097152                                   {product} {ergonomic}
+   size_t MinHeapSize                              = 8388608                                   {product} {command line}
+    uintx NonNMethodCodeHeapSize                   = 5839372                                {pd product} {ergonomic}
+    uintx NonProfiledCodeHeapSize                  = 122909434                              {pd product} {ergonomic}
+    uintx ProfiledCodeHeapSize                     = 122909434                              {pd product} {ergonomic}
+    uintx ReservedCodeCacheSize                    = 251658240                              {pd product} {ergonomic}
+     bool SegmentedCodeCache                       = true                                      {product} {ergonomic}
+   size_t SoftMaxHeapSize                          = 4265607168                             {manageable} {ergonomic}
+     bool UseCompressedOops                        = true                           {product lp64_product} {ergonomic}
+     bool UseG1GC                                  = true                                      {product} {ergonomic}
+     bool UseLargePagesIndividualAllocation        = false                                  {pd product} {ergonomic}
+
+Logging:
+Log output configuration:
+ #0: stdout all=warning uptime,level,tags foldmultilines=false
+ #1: stderr all=off uptime,level,tags foldmultilines=false
+
+Environment Variables:
+JAVA_HOME=C:\Program Files\Java
+PATH=C:\Program Files (x86)\Common Files\Oracle\Java\java8path;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\ProgramData\Oracle\Java\;C:\Program Files\Docker Toolbox;C:\Program Files\Intel\HAXM;C:\Program Files\Microsoft SQL Server\Client;SDK\ODBC\170\Tools\Binn\;C:\Program Files\MongoDB\Server\4.2\bin;C:\Program Files\NVIDIA Corporation\NVIDIA NvDLISR;C:\Python310\;C:\Python310\Scripts\;C:\Users\Chana\.dotnet;C:\Users\Chana\AppData\Local\Microsoft\WindowsApps;C:\Users\Chana\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\Chana\AppData\Local\Programs\Python\Python37-32\Scripts\;C:\Windows;C:\Windows\System32;C:\Windows\System32\OpenSSH;C:\Windows\System32\WindowsPowerShell\v1.0;C:\Windows\System32\wbem;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files (x86)\AOMEI\AOMEI Backupper 6.4.0;C:\Program Files\dotnet\;C:\Program Files\Git\cmd;C:\Users\Chana\AppData\Roaming\nvm;C:\Users\Chana\AppData\Roaming\nvm;C:\Program Files\nodejs;C:\Program Files\nodejs\;C:\Windows\System32;C:\Windows;C:\Windows\System32\wbem;C:\Windows\System32\OpenSSH;C:\Windows\System32\WindowsPowerShell\v1.0;C:ProgramData\Oracle\Java\;C:\Program Files\heroku\bin;C:\Program Files\MongoDB\Server\4.2\bin;C:\Program Files\Intel\HAXM;C:\Program Files\dotnet\;C:\Program Files\Microsoft SQL Server\130\Tools\Binn\;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn\;C:\Program Files\NVIDIA Corporation\NVIDIA NvDLISR;C:\Program Files\Git\cmd;C:\kQA_0.2.0\;C:\Users\Chana\AppData\Local\Microsoft\WindowsApps;C:\nvm;C:\Users\Chana\bin;C:\Users\Chana\.dotnet\tools;C:\kQA_0.2.0\;C:\Users\Chana\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\Chana\AppData\Roaming\nvm;C:\Program Files\nodejs;C:\Users\Chana\AppData\Roaming\npm
+USERNAME=Chana
+OS=Windows_NT
+PROCESSOR_IDENTIFIER=Intel64 Family 6 Model 158 Stepping 9, GenuineIntel
+TMP=C:\Users\Chana\AppData\Local\Temp
+TEMP=C:\Users\Chana\AppData\Local\Temp
+
+
+
+
+Periodic native trim disabled
+
+---------------  S Y S T E M  ---------------
+
+OS:
+ Windows 10 , 64 bit Build 19041 (10.0.19041.5915)
+OS uptime: 11 days 3:44 hours
+Hyper-V role detected
+
+CPU: total 8 (initial active 8) (4 cores per cpu, 2 threads per core) family 6 model 158 stepping 9 microcode 0xb4, cx8, cmov, fxsr, ht, mmx, 3dnowpref, sse, sse2, sse3, ssse3, sse4.1, sse4.2, popcnt, lzcnt, tsc, tscinvbit, avx, avx2, aes, erms, clmul, bmi1, bmi2, adx, fma, vzeroupper, clflush, clflushopt, hv, rdtscp, f16c
+Processor Information for all 8 processors :
+  Max Mhz: 2808, Current Mhz: 2808, Mhz Limit: 2808
+
+Memory: 4k page, system-wide physical 16268M (626M free)
+TotalPageFile size 16268M (AvailPageFile size 2M)
+current process WorkingSet (physical memory assigned to process): 26M, peak: 26M
+current process commit charge ("private bytes"): 77M, peak: 77M
+
+vm_info: OpenJDK 64-Bit Server VM (21.0.2+13-58) for windows-amd64 JRE (21.0.2+13-58), built on 2024-01-05T18:32:24Z by "mach5one" with MS VC++ 17.1 (VS2022)
+
+END.
