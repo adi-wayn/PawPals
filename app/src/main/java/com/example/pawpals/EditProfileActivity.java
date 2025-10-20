@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -31,6 +32,8 @@ public class EditProfileActivity extends AppCompatActivity {
     private Spinner spinnerCommunities;
     private MaterialButton buttonSave;
     private TextView textCommunityLabel;
+    private CheckBox checkboxCreateCommunity;
+
 
 
     private final String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
@@ -50,7 +53,10 @@ public class EditProfileActivity extends AppCompatActivity {
 
         initViews();
         locationClient = LocationServices.getFusedLocationProviderClient(this);
-
+        checkboxCreateCommunity.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            inputNewCommunity.setVisibility(isChecked ? View.VISIBLE : View.GONE);
+            spinnerCommunities.setVisibility(isChecked ? View.GONE : View.VISIBLE);
+        });
         loadCurrentUser();
         requestLocationAndLoadCommunities();
 
@@ -65,7 +71,9 @@ public class EditProfileActivity extends AppCompatActivity {
         textCommunityLabel = findViewById(R.id.text_community_label);
         spinnerCommunities = findViewById(R.id.spinner_communities);
         buttonSave = findViewById(R.id.button_save);
+        checkboxCreateCommunity = findViewById(R.id.checkbox_create_community);
     }
+
 
     private void loadCurrentUser() {
         userRepository.getUserById(userId, new UserRepository.FirestoreUserCallback() {
@@ -151,14 +159,21 @@ public class EditProfileActivity extends AppCompatActivity {
         updates.put("fieldsOfInterest", fieldsOfInterest);
 
         if (!isManager) {
-            // 🔹 Non-managers can change community
-            String newCommunity = spinnerCommunities.getSelectedItem() != null
-                    ? spinnerCommunities.getSelectedItem().toString()
-                    : safeText(inputNewCommunity);
+            boolean wantsToCreate = checkboxCreateCommunity.isChecked();
 
-            if (newCommunity.isEmpty()) {
-                Toast.makeText(this, "Please select or enter a community", Toast.LENGTH_SHORT).show();
-                return;
+            String newCommunity;
+            if (wantsToCreate) {
+                newCommunity = safeText(inputNewCommunity);
+                if (newCommunity.isEmpty()) {
+                    Toast.makeText(this, "Please enter a community name to create", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+            } else {
+                if (spinnerCommunities.getSelectedItem() == null) {
+                    Toast.makeText(this, "Please select a community", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                newCommunity = spinnerCommunities.getSelectedItem().toString();
             }
 
             // Use CommunityUtils to validate/create community and update profile
@@ -169,10 +184,11 @@ public class EditProfileActivity extends AppCompatActivity {
                     fieldsOfInterest,
                     newCommunity,
                     userId,
-                    false, // non-manager
+                    wantsToCreate, // true if creating community
                     currentLat,
                     currentLng
             );
+
 
         } else {
             // Managers cannot change community

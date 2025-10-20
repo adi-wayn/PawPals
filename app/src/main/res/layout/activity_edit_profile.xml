@@ -103,6 +103,16 @@
             android:background="@drawable/bg_input"
             android:layout_marginBottom="24dp" />
 
+        <CheckBox
+            android:id="@+id/checkbox_create_community"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Create a new community"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:visibility="visible" />
+
+
         <!-- Save Button -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button_save"
