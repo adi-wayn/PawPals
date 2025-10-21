@@ -22,6 +22,7 @@ import android.widget.Toast;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.bumptech.glide.Glide;
 import com.example.pawpals.OtherUserProfileActivity;
 import com.example.pawpals.R;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -32,6 +33,7 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.Priority;
 import com.google.android.gms.maps.*;
 import com.google.android.gms.maps.model.*;
+import com.google.android.material.imageview.ShapeableImageView;
 
 import java.util.HashMap;
 import java.util.List;
@@ -66,6 +68,7 @@ public class MapController {
 
     // cache של משתמשים להצגת הפריוויו מהר
     private final Map<String, User> userCache = new HashMap<>();
+    private final Map<String, String> userImageCache = new HashMap<>();
 
     // תג לסימון סוג מרקר (משתמש/דיווח)
     private enum MarkerKind { USER, REPORT }
@@ -124,7 +127,7 @@ public class MapController {
                     TextView tvManager = v.findViewById(R.id.tvManager);
                     TextView tvDogs = v.findViewById(R.id.tvDogs);
                     TextView tvContact = v.findViewById(R.id.tvContact);
-                    TextView tvAvatar = v.findViewById(R.id.tvAvatar);
+                    ShapeableImageView imgProfilePreview = v.findViewById(R.id.imgProfilePreview);
 
                     // ברירת מחדל
                     tvName.setText(marker.getTitle());
@@ -164,40 +167,60 @@ public class MapController {
                             }
                         });
 
-                        // אווטאר לפי שם
-                        String n = u.getUserName();
-                        String initial = !TextUtils.isEmpty(n) ? n.substring(0, 1).toUpperCase() : "?";
-                        tvAvatar.setText(initial);
+                        // --- טעינת תמונת פרופיל עם cache פנימי ---
+                        String cachedUrl = userImageCache.get(userId);
+
+                        if (cachedUrl != null && !cachedUrl.isEmpty()) {
+                            // אם כבר במטמון — טען ישירות עם Glide
+                            Glide.with(context)
+                                    .load(cachedUrl)
+                                    .placeholder(R.drawable.ic_profile_placeholder)
+                                    .into(imgProfilePreview);
+                        } else {
+                            // אחרת שלוף פעם אחת מה־Firestore
+                            userRepo.getUserProfileImage(userId, new UserRepository.FirestoreStringCallback() {
+                                @Override
+                                public void onSuccess(String imageUrl) {
+                                    Log.d("MapController", "profileImageUrl for " + userId + " = " + imageUrl);
+                                    if (imageUrl != null && !imageUrl.isEmpty()) {
+                                        // שמור במטמון (שלא נשלוף שוב)
+                                        userImageCache.put(userId, imageUrl);
+
+                                        // טען עם Glide
+                                        Glide.with(context)
+                                                .load(imageUrl)
+                                                .placeholder(R.drawable.ic_profile_placeholder)
+                                                .into(new com.bumptech.glide.request.target.CustomTarget<android.graphics.drawable.Drawable>() {
+                                                    @Override
+                                                    public void onResourceReady(android.graphics.drawable.Drawable resource, com.bumptech.glide.request.transition.Transition<? super android.graphics.drawable.Drawable> transition) {
+                                                        imgProfilePreview.setImageDrawable(resource);
+
+                                                        // רענון חד פעמי בלבד
+                                                        if (marker.isInfoWindowShown()) {
+                                                            marker.hideInfoWindow();
+                                                            new Handler(Looper.getMainLooper()).postDelayed(marker::showInfoWindow, 120);
+                                                        }
+                                                    }
+
+                                                    @Override
+                                                    public void onLoadCleared(android.graphics.drawable.Drawable placeholder) {
+                                                        imgProfilePreview.setImageDrawable(placeholder);
+                                                    }
+                                                });
+                                    } else {
+                                        imgProfilePreview.setImageResource(R.drawable.ic_profile_placeholder);
+                                    }
+                                }
+
+                                @Override
+                                public void onFailure(Exception e) {
+                                    imgProfilePreview.setImageResource(R.drawable.ic_profile_placeholder);
+                                }
+                            });
+                        }
+
                     } else {
-                        // שליפה אם לא בקאש
-                        String n = marker.getTitle();
-                        String initial = !TextUtils.isEmpty(n) ? n.substring(0, 1).toUpperCase() : "?";
-                        tvAvatar.setText(initial);
-
-                        userRepo.getUserById(userId, new UserRepository.FirestoreUserCallback() {
-                            @Override
-                            public void onSuccess(User user) {
-                                userCache.put(userId, user);
-                                if (marker.isInfoWindowShown()) marker.showInfoWindow();
-                            }
-
-                            @Override
-                            public void onFailure(Exception e) { /* no-op */ }
-                        });
-
-                        // שליפת כמות כלבים גם בלי Cache
-                        userRepo.getDogsForUser(userId, new UserRepository.FirestoreDogsListCallback() {
-                            @Override
-                            public void onSuccess(java.util.List<model.Dog> dogs) {
-                                int count = (dogs != null) ? dogs.size() : 0;
-                                tvDogs.setText("Dogs: " + count);
-                            }
-
-                            @Override
-                            public void onFailure(Exception e) {
-                                tvDogs.setText("Dogs: -");
-                            }
-                        });
+                        imgProfilePreview.setImageResource(R.drawable.ic_profile_placeholder);
                     }
 
                     return v;

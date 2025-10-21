@@ -39,12 +39,18 @@ public class AuthHelper {
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(activity, task -> {
                     if (task.isSuccessful()) {
-                        callback.onSuccess(mAuth.getCurrentUser());
+                        FirebaseUser user = mAuth.getCurrentUser();
+                        if (user != null) {
+                            Log.d(TAG, "Login success. UID: " + user.getUid());
+                            Log.d(TAG, "Email: " + user.getEmail());
+                        }
+                        callback.onSuccess(user);
                     } else {
                         Log.w(TAG, "Login failed", task.getException());
                         Toast.makeText(activity, "Login failed", Toast.LENGTH_SHORT).show();
                         callback.onFailure(task.getException());
                     }
+
                 });
     }
 
