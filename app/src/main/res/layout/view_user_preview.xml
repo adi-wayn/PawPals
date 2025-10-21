@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:padding="2dp"
     android:layout_width="wrap_content"
@@ -21,16 +22,18 @@
             android:orientation="horizontal"
             android:gravity="center_vertical">
 
-            <TextView
-                android:id="@+id/tvAvatar"
-                android:layout_width="28dp"
-                android:layout_height="28dp"
-                android:background="@drawable/bg_avatar_circle"
-                android:text="A"
-                android:textColor="@android:color/white"
-                android:textStyle="bold"
-                android:gravity="center"
-                android:textSize="14sp"/>
+            <!-- תמונת פרופיל עגולה -->
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/imgProfilePreview"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:scaleType="centerCrop"
+                android:contentDescription="User profile picture"
+                android:src="@drawable/ic_profile_placeholder"
+                app:shapeAppearanceOverlay="@style/Shape.Round24"
+                app:strokeColor="@color/pp_colorPrimary"
+                app:strokeWidth="1dp"
+                android:background="@drawable/bg_avatar_circle" />
 
             <TextView
                 android:id="@+id/tvName"

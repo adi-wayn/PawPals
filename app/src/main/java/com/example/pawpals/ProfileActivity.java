@@ -18,8 +18,10 @@ import androidx.appcompat.widget.SearchView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.ChipGroup;
+import com.google.android.material.imageview.ShapeableImageView;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -86,6 +88,9 @@ public class ProfileActivity extends AppCompatActivity {
     // Result launcher לרענון כלבים אחרי שמירה
     private ActivityResultLauncher<Intent> addDogLauncher;
 
+    private ShapeableImageView userProfilePicture;
+
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -93,6 +98,7 @@ public class ProfileActivity extends AppCompatActivity {
 
         // ===== Views =====
         userName        = findViewById(R.id.user_name);
+        userProfilePicture = findViewById(R.id.user_profile_picture);
         bioText         = findViewById(R.id.bio_text);
         contactText     = findViewById(R.id.contact_text);
         communityStatus = findViewById(R.id.community_status);
@@ -251,6 +257,32 @@ public class ProfileActivity extends AppCompatActivity {
         contactText.setText(nn(user.getContactDetails()));
         String community = nn(user.getCommunityName());
         communityStatus.setText(getString(R.string.user_community) + (community.isEmpty() ? "" : (" " + community)));
+
+        // --- טען תמונת פרופיל מה־Firestore ---
+        String userId = user.getUid();
+        if (userId != null && !userId.isEmpty()) {
+            repo.getUserProfileImage(userId, new UserRepository.FirestoreStringCallback() {
+                @Override
+                public void onSuccess(String imageUrl) {
+                    if (imageUrl != null && !imageUrl.isEmpty()) {
+                        Glide.with(ProfileActivity.this)
+                                .load(imageUrl)
+                                .placeholder(R.drawable.ic_profile_placeholder)
+                                .into(userProfilePicture);
+                    } else {
+                        userProfilePicture.setImageResource(R.drawable.ic_profile_placeholder);
+                    }
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                    Log.w(TAG, "Failed to load profile image: " + e.getMessage());
+                    userProfilePicture.setImageResource(R.drawable.ic_profile_placeholder);
+                }
+            });
+        } else {
+            userProfilePicture.setImageResource(R.drawable.ic_profile_placeholder);
+        }
     }
 
     // ====== Friends (כמו CommunitySearch) ======

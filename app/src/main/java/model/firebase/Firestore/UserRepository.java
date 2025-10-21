@@ -72,6 +72,52 @@ public class UserRepository {
                 });
     }
 
+    // עדכון כתובת תמונת פרופיל למשתמש קיים
+    public void updateUserProfileImage(String userId, String imageUrl, FirestoreCallback callback) {
+        if (userId == null || userId.isEmpty()) {
+            callback.onFailure(new IllegalArgumentException("userId is empty"));
+            return;
+        }
+
+        Map<String, Object> update = new HashMap<>();
+        update.put("profileImageUrl", imageUrl);
+
+        db.collection("users")
+                .document(userId)
+                .update(update)
+                .addOnSuccessListener(aVoid -> {
+                    Log.d(TAG, "Profile image updated for user: " + userId);
+                    callback.onSuccess(userId);
+                })
+                .addOnFailureListener(e -> {
+                    Log.w(TAG, "Failed to update profile image", e);
+                    callback.onFailure(e);
+                });
+    }
+
+    // שליפת כתובת תמונת פרופיל בלבד לפי userId
+    public void getUserProfileImage(String userId, FirestoreStringCallback callback) {
+        Log.d("UserRepository", "Fetching profile image for user: " + userId);
+        if (userId == null || userId.isEmpty()) {
+            callback.onFailure(new IllegalArgumentException("userId is empty"));
+            return;
+        }
+
+        db.collection("users")
+                .document(userId)
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    if (snapshot.exists()) {
+                        String imageUrl = snapshot.getString("profileImageUrl");
+                        callback.onSuccess(imageUrl != null ? imageUrl : "");
+                    } else {
+                        callback.onSuccess("");
+                    }
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
+
     // בדיקה אם משתמש קיים
     public void checkIfUserProfileExists(String userId, FirestoreExistCallback callback) {
         db.collection("users")
@@ -476,6 +522,11 @@ public class UserRepository {
 
     public interface FirestoreUserNamesCallback {
         void onSuccess(Map<String, String> userNamesById);
+        void onFailure(Exception e);
+    }
+
+    public interface FirestoreStringCallback {
+        void onSuccess(String value);
         void onFailure(Exception e);
     }
 

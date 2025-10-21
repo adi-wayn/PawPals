@@ -2,6 +2,7 @@ package com.example.pawpals;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -10,6 +11,8 @@ import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.bumptech.glide.Glide;
+import com.google.android.material.imageview.ShapeableImageView;
 import com.google.firebase.auth.FirebaseAuth;
 
 import model.User;
@@ -20,6 +23,7 @@ public class SettingsActivity extends AppCompatActivity {
     private TextView textUserName;
     private final String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
     private final UserRepository userRepository = new UserRepository();
+    private ShapeableImageView imgProfile;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +32,7 @@ public class SettingsActivity extends AppCompatActivity {
 
         // Initialize views
         textUserName = findViewById(R.id.text_user_name);
+        imgProfile   = findViewById(R.id.img_profile);
         Button deleteButton = findViewById(R.id.button_delete_account);
 
         // Load user's name and manager status
@@ -45,6 +50,27 @@ public class SettingsActivity extends AppCompatActivity {
                 if (user != null && user.isManager()) {
                     deleteButton.setVisibility(View.GONE);
                 }
+
+                // טען תמונת פרופיל
+                userRepository.getUserProfileImage(userId, new UserRepository.FirestoreStringCallback() {
+                    @Override
+                    public void onSuccess(String imageUrl) {
+                        if (imageUrl != null && !imageUrl.isEmpty()) {
+                            Glide.with(SettingsActivity.this)
+                                    .load(imageUrl)
+                                    .placeholder(R.drawable.ic_profile_placeholder)
+                                    .into(imgProfile);
+                        } else {
+                            imgProfile.setImageResource(R.drawable.ic_profile_placeholder);
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        Log.w("SettingsActivity", "Failed to load profile image", e);
+                        imgProfile.setImageResource(R.drawable.ic_profile_placeholder);
+                    }
+                });
             }
 
             @Override

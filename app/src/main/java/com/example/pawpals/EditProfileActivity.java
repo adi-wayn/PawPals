@@ -3,17 +3,24 @@ package com.example.pawpals;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
+import com.bumptech.glide.Glide;
 import com.example.pawpals.utils.CommunityUtils;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -24,7 +31,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import model.User;
+import model.firebase.Authentication.AuthHelper;
 import model.firebase.Firestore.UserRepository;
+import model.firebase.Storage.StorageRepository;
 
 public class EditProfileActivity extends AppCompatActivity {
 
@@ -33,9 +42,10 @@ public class EditProfileActivity extends AppCompatActivity {
     private MaterialButton buttonSave;
     private TextView textCommunityLabel;
     private CheckBox checkboxCreateCommunity;
-
-
-
+    private ImageView imgProfile;
+    private Button btnUploadProfileImage;
+    private Uri selectedImageUri;
+    private StorageRepository storageRepo;
     private final String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
     private final UserRepository userRepository = new UserRepository();
 
@@ -60,6 +70,21 @@ public class EditProfileActivity extends AppCompatActivity {
         loadCurrentUser();
         requestLocationAndLoadCommunities();
 
+        storageRepo = new StorageRepository();
+
+        // בורר תמונה
+        ActivityResultLauncher<String> imagePicker = registerForActivityResult(
+                new ActivityResultContracts.GetContent(),
+                uri -> {
+                    if (uri != null) {
+                        selectedImageUri = uri;
+                        Glide.with(this).load(uri).into(imgProfile);
+                    }
+                }
+        );
+
+        btnUploadProfileImage.setOnClickListener(v -> imagePicker.launch("image/*"));
+
         buttonSave.setOnClickListener(v -> handleProfileUpdate());
     }
 
@@ -72,6 +97,8 @@ public class EditProfileActivity extends AppCompatActivity {
         spinnerCommunities = findViewById(R.id.spinner_communities);
         buttonSave = findViewById(R.id.button_save);
         checkboxCreateCommunity = findViewById(R.id.checkbox_create_community);
+        imgProfile = findViewById(R.id.image_profile);
+        btnUploadProfileImage = findViewById(R.id.button_change_picture);
     }
 
 
@@ -194,6 +221,37 @@ public class EditProfileActivity extends AppCompatActivity {
         } else {
             // Managers cannot change community
             updateUserProfile(updates, "Profile updated!");
+        }
+
+        if (selectedImageUri != null) {
+            storageRepo.uploadUserProfilePhotoCompressed(
+                    EditProfileActivity.this,
+                    selectedImageUri,
+                    FirebaseAuth.getInstance().getUid(),
+                    1080,
+                    80,
+                    null,
+                    new StorageRepository.UploadCallback() {
+                        @Override
+                        public void onSuccess(@NonNull String downloadUrl) {
+                            userRepository.updateUserProfileImage(userId, downloadUrl, new UserRepository.FirestoreCallback() {
+                                @Override
+                                public void onSuccess(String id) {
+                                    Toast.makeText(EditProfileActivity.this, "Profile image updated!", Toast.LENGTH_SHORT).show();
+                                }
+                                @Override
+                                public void onFailure(Exception e) {
+                                    Toast.makeText(EditProfileActivity.this, "Failed to update image URL", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        }
+
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Toast.makeText(EditProfileActivity.this, "Upload failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        }
+                    }
+            );
         }
     }
 
