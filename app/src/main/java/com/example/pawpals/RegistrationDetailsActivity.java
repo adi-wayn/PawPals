@@ -172,84 +172,84 @@ public class RegistrationDetailsActivity extends AppCompatActivity {
 
 
 
-    private void checkCommunityExistence(String name,
-                                         String contactDetails,
-                                         String bio,
-                                         String communityName,
-                                         boolean wantsToCreate) {
-        db.collection("communities")
-                .document(communityName)
-                .get()
-                .addOnSuccessListener(snapshot -> {
-                    boolean exists = snapshot.exists();
-                    if (exists && wantsToCreate) {
-                        Toast.makeText(this, "Community already exists!", Toast.LENGTH_SHORT).show();
-                    } else if (!exists && !wantsToCreate) {
-                        Toast.makeText(this, "Community doesn't exist. Please check 'create' to create it.", Toast.LENGTH_SHORT).show();
-                    } else if (wantsToCreate) {
-                        Intent intent = new Intent(RegistrationDetailsActivity.this, CommunityCreationDetailsActivity.class);
-                        intent.putExtra("communityName", communityName);
-                        intent.putExtra("userId", userId);
-                        intent.putExtra("userName", name);
-                        intent.putExtra("contactDetails", contactDetails);
-                        intent.putExtra("bio", bio);
-                        intent.putExtra("lat", currentLat);
-                        intent.putExtra("lng", currentLng);
-                        startActivity(intent);
-                        new Handler(Looper.getMainLooper()).postDelayed(this::finish, 300);
-                    } else {
-                        // הצטרפות לקהילה קיימת
-                        saveUser(name, contactDetails, bio, communityName, false);
-                    }
-                })
-                .addOnFailureListener(e ->
-                        Toast.makeText(this, "Error checking community", Toast.LENGTH_SHORT).show()
-                );
-    }
-
-    private void saveUser(String name,
-                          String contactDetails,
-                          String bio,
-                          String communityName,
-                          boolean isManager) {
-        UserRepository userRepository = new UserRepository();
-
-        // אם Community שלך מקבל מנהל בבנאי – נעביר כבר עם פרטי קשר וביו
-        Community community = isManager
-                ? new Community(
-                communityName,
-                currentLat,
-                currentLng,
-                new CommunityManager(name, communityName, contactDetails, bio)
-        )
-                : new Community(communityName, currentLat, currentLng);
-
-        // בניית המשתמש לשמירה ב-Firestore
-        User user = isManager
-                ? new CommunityManager(name, communityName, contactDetails, bio)
-                : new User(name, communityName, contactDetails, bio);
-
-        user.setIsManager(isManager);
-
-        User finalUser = user;
-        userRepository.createUserProfile(userId, finalUser, new UserRepository.FirestoreCallback() {
-            @Override
-            public void onSuccess(String documentId) {
-                Toast.makeText(RegistrationDetailsActivity.this, "Welcome!", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(RegistrationDetailsActivity.this, MainActivity.class);
-                intent.putExtra("currentUser", finalUser);
-                startActivity(intent);
-                finish();
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-                Toast.makeText(RegistrationDetailsActivity.this,
-                        "Failed to save user data", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
+//    private void checkCommunityExistence(String name,
+//                                         String contactDetails,
+//                                         String bio,
+//                                         String communityName,
+//                                         boolean wantsToCreate) {
+//        db.collection("communities")
+//                .document(communityName)
+//                .get()
+//                .addOnSuccessListener(snapshot -> {
+//                    boolean exists = snapshot.exists();
+//                    if (exists && wantsToCreate) {
+//                        Toast.makeText(this, "Community already exists!", Toast.LENGTH_SHORT).show();
+//                    } else if (!exists && !wantsToCreate) {
+//                        Toast.makeText(this, "Community doesn't exist. Please check 'create' to create it.", Toast.LENGTH_SHORT).show();
+//                    } else if (wantsToCreate) {
+//                        Intent intent = new Intent(RegistrationDetailsActivity.this, CommunityCreationDetailsActivity.class);
+//                        intent.putExtra("communityName", communityName);
+//                        intent.putExtra("userId", userId);
+//                        intent.putExtra("userName", name);
+//                        intent.putExtra("contactDetails", contactDetails);
+//                        intent.putExtra("bio", bio);
+//                        intent.putExtra("lat", currentLat);
+//                        intent.putExtra("lng", currentLng);
+//                        startActivity(intent);
+//                        new Handler(Looper.getMainLooper()).postDelayed(this::finish, 300);
+//                    } else {
+//                        // הצטרפות לקהילה קיימת
+//                        saveUser(name, contactDetails, bio, communityName, false);
+//                    }
+//                })
+//                .addOnFailureListener(e ->
+//                        Toast.makeText(this, "Error checking community", Toast.LENGTH_SHORT).show()
+//                );
+//    }
+//
+//    private void saveUser(String name,
+//                          String contactDetails,
+//                          String bio,
+//                          String communityName,
+//                          boolean isManager) {
+//        UserRepository userRepository = new UserRepository();
+//
+//        // אם Community שלך מקבל מנהל בבנאי – נעביר כבר עם פרטי קשר וביו
+//        Community community = isManager
+//                ? new Community(
+//                communityName,
+//                currentLat,
+//                currentLng,
+//                new CommunityManager(name, communityName, contactDetails, bio)
+//        )
+//                : new Community(communityName, currentLat, currentLng);
+//
+//        // בניית המשתמש לשמירה ב-Firestore
+//        User user = isManager
+//                ? new CommunityManager(name, communityName, contactDetails, bio)
+//                : new User(name, communityName, contactDetails, bio);
+//
+//        user.setIsManager(isManager);
+//
+//        User finalUser = user;
+//        userRepository.createUserProfile(userId, finalUser, new UserRepository.FirestoreCallback() {
+//            @Override
+//            public void onSuccess(String documentId) {
+//                Toast.makeText(RegistrationDetailsActivity.this, "Welcome!", Toast.LENGTH_SHORT).show();
+//                Intent intent = new Intent(RegistrationDetailsActivity.this, MainActivity.class);
+//                intent.putExtra("currentUser", finalUser);
+//                startActivity(intent);
+//                finish();
+//            }
+//
+//            @Override
+//            public void onFailure(Exception e) {
+//                Toast.makeText(RegistrationDetailsActivity.this,
+//                        "Failed to save user data", Toast.LENGTH_SHORT).show();
+//            }
+//        });
+//    }
+//
     private String safeText(EditText et) {
         return et == null || et.getText() == null ? "" : et.getText().toString().trim();
     }

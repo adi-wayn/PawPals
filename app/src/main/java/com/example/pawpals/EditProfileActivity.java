@@ -85,13 +85,13 @@ public class EditProfileActivity extends AppCompatActivity {
                     inputFieldsOfInterest.setText(user.getFieldsOfInterest());
                     isManager = user.isManager();
 
-                    // 🔹 Hide community selection for managers
+                    // 🔹 Hide community-related inputs entirely for managers
                     if (isManager) {
                         spinnerCommunities.setVisibility(View.GONE);
                         inputNewCommunity.setVisibility(View.GONE);
-                        textCommunityLabel.setVisibility(View.GONE); // hide the "Select Community" label
+                        textCommunityLabel.setVisibility(View.GONE);
+                        checkboxCreateCommunity.setVisibility(View.GONE); // ✅ hide the checkbox too
                     }
-
                 }
             }
 
@@ -101,6 +101,7 @@ public class EditProfileActivity extends AppCompatActivity {
             }
         });
     }
+
 
     private void requestLocationAndLoadCommunities() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)

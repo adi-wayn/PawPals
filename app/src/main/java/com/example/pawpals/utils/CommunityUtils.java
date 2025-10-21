@@ -9,6 +9,8 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 import android.util.Log;
+
+import com.example.pawpals.CommunityCreationDetailsActivity;
 import com.example.pawpals.MainActivity;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -130,9 +132,27 @@ public class CommunityUtils {
                 Log.d(TAG, "User saved successfully: " + documentId);
                 Toast.makeText(context, "Welcome, " + name + "!", Toast.LENGTH_SHORT).show();
 
-                Intent intent = new Intent(context, MainActivity.class);
+                Intent intent;
+
+                if (isManager) {
+                    // If the user created a new community, go to the setup screen
+                    intent = new Intent(context, CommunityCreationDetailsActivity.class);
+                    intent.putExtra("communityName", communityName);
+                    intent.putExtra("lat", lat);
+                    intent.putExtra("lng", lng);
+                    intent.putExtra("userId", userId);
+                    intent.putExtra("userName", name);
+                    intent.putExtra("contactDetails", contactDetails);
+                    intent.putExtra("bio", bio);
+
+                } else {
+                    // If the user just joined an existing community, go back to main
+                    intent = new Intent(context, MainActivity.class);
+                }
+
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 context.startActivity(intent);
+
             }
 
             @Override
