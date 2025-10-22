@@ -128,6 +128,49 @@ public class StorageRepository {
         return task;
     }
 
+    @Nullable
+    public UploadTask uploadDogPhotoCompressed(@NonNull Context ctx,
+                                               @NonNull Uri fileUri,
+                                               @NonNull String userId,
+                                               @NonNull String dogName,
+                                               int maxDimPx,
+                                               int quality,
+                                               @NonNull UploadCallback cb) {
+        if (userId.isEmpty()) {
+            cb.onFailure(new IllegalArgumentException("userId is empty"));
+            return null;
+        }
+
+        // נשתמש בשם הכלב כדי ליצור שם קובץ ייחודי
+        String safeName = (dogName != null && !dogName.isEmpty()) ? dogName.replaceAll("[^a-zA-Z0-9_-]", "_") : "dog";
+        String fileName = safeName + "_" + System.currentTimeMillis() + ".jpg";
+
+        StorageReference ref = storage.getReference()
+                .child("users")
+                .child(userId)
+                .child("dogs")
+                .child(fileName);
+
+        byte[] data;
+        try {
+            data = decodeAndCompress(ctx, fileUri, maxDimPx, quality);
+        } catch (Exception e) {
+            cb.onFailure(e);
+            return null;
+        }
+
+        UploadTask task = ref.putBytes(data, new StorageMetadata.Builder()
+                .setContentType("image/jpeg")
+                .build());
+
+        task.addOnSuccessListener(snap ->
+                ref.getDownloadUrl().addOnSuccessListener(url -> cb.onSuccess(url.toString()))
+                        .addOnFailureListener(cb::onFailure)
+        ).addOnFailureListener(cb::onFailure);
+
+        return task;
+    }
+
     public UploadTask uploadCommunityProfileImage(
             @NonNull Context ctx,
             @NonNull String communityId,

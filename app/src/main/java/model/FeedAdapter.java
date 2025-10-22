@@ -1,6 +1,7 @@
 package model;
 
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,8 +12,10 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.pawpals.R;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.imageview.ShapeableImageView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,6 +65,43 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.PostViewHolder
         holder.subject.setText(post.getSubject());
         holder.message.setText(post.getText());
         holder.type.setText(post.getType());
+
+        // ✅ טעינת תמונת הפרופיל של השולח
+        String senderId = post.getSenderId();
+        Log.d("FeedAdapter", "onBindViewHolder: senderId=" + senderId + " | senderName=" + post.getSenderName());
+
+
+        if (senderId != null && !senderId.isEmpty()) {
+            model.firebase.Firestore.UserRepository userRepo = new model.firebase.Firestore.UserRepository();
+
+            Log.d("FeedAdapter", "Fetching profile image for senderId=" + senderId);
+            userRepo.getUserProfileImage(senderId, new model.firebase.Firestore.UserRepository.FirestoreStringCallback() {
+                @Override
+                public void onSuccess(String imageUrl) {
+                    Log.d("FeedAdapter", "Profile image URL for " + senderId + ": " + imageUrl);
+
+                    if (imageUrl != null && !imageUrl.isEmpty()) {
+                        Glide.with(holder.itemView.getContext())
+                                .load(imageUrl)
+                                .placeholder(R.drawable.ic_profile_placeholder)
+                                .centerCrop()
+                                .into(holder.senderImage);
+                    } else {
+                        Log.w("FeedAdapter", "No image found for user " + senderId + ", using placeholder");
+                        holder.senderImage.setImageResource(R.drawable.ic_profile_placeholder);
+                    }
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                    android.util.Log.e("FeedAdapter", "Failed to load image for " + senderId, e);
+                    holder.senderImage.setImageResource(R.drawable.ic_profile_placeholder);
+                }
+            });
+        } else {
+            android.util.Log.w("FeedAdapter", "Missing senderId for post: " + post.getId());
+            holder.senderImage.setImageResource(R.drawable.ic_profile_placeholder);
+        }
 
         // טיפול בתמונות (בודדת או רשימה)
         List<String> all = new ArrayList<>();
@@ -129,6 +169,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.PostViewHolder
     // --- ViewHolder ---
     static class PostViewHolder extends RecyclerView.ViewHolder {
         TextView sender, subject, message, type;
+        ShapeableImageView senderImage;
         RecyclerView imagesRv;
         ImagesAdapter imagesAdapter;
         MaterialButton buttonDelete;
@@ -139,6 +180,7 @@ public class FeedAdapter extends RecyclerView.Adapter<FeedAdapter.PostViewHolder
             subject = itemView.findViewById(R.id.text_post_subject);
             message = itemView.findViewById(R.id.text_post_message);
             type    = itemView.findViewById(R.id.text_post_type);
+            senderImage = itemView.findViewById(R.id.image_sender_profile);
 
             imagesRv = itemView.findViewById(R.id.postImagesRv);
             imagesRv.setLayoutManager(

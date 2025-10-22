@@ -13,7 +13,9 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.bumptech.glide.Glide;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.imageview.ShapeableImageView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.ListenerRegistration;
@@ -33,6 +35,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
     private TextView userName, bioText, contactText, communityStatus;
     private View friendStatusIndicator;
     private MaterialButton btnFriendAction;
+    private ShapeableImageView userProfilePicture;  // ✅ תמונת פרופיל
 
     // Content
     private MaterialButton btnShowDogs;
@@ -58,6 +61,7 @@ public class OtherUserProfileActivity extends AppCompatActivity {
         communityStatus = findViewById(R.id.community_status);
         friendStatusIndicator = findViewById(R.id.friend_status_indicator);
         btnFriendAction = findViewById(R.id.btn_friend_action);
+        userProfilePicture = findViewById(R.id.user_profile_picture); // ✅ תמונת פרופיל
 
         btnShowDogs = findViewById(R.id.btn_show_dogs);
         dogsScroll = findViewById(R.id.dogs_scroll);
@@ -84,7 +88,6 @@ public class OtherUserProfileActivity extends AppCompatActivity {
     }
 
     // ===== UI Control =====
-
     private void showDogs() {
         dogsScroll.setVisibility(View.VISIBLE);
         btnShowDogs.setChecked(true);
@@ -96,10 +99,35 @@ public class OtherUserProfileActivity extends AppCompatActivity {
         contactText.setText(nn(user.getContactDetails()));
         String community = nn(user.getCommunityName());
         communityStatus.setText(getString(R.string.user_community) + (community.isEmpty() ? "" : (" " + community)));
+
+        // ✅ טעינת תמונת פרופיל מה־Firestore
+        String userId = user.getUid();
+        if (userId != null && !userId.isEmpty() && userProfilePicture != null) {
+            repo.getUserProfileImage(userId, new UserRepository.FirestoreStringCallback() {
+                @Override
+                public void onSuccess(String imageUrl) {
+                    if (imageUrl != null && !imageUrl.isEmpty()) {
+                        Glide.with(OtherUserProfileActivity.this)
+                                .load(imageUrl)
+                                .placeholder(R.drawable.ic_profile_placeholder)
+                                .into(userProfilePicture);
+                    } else {
+                        userProfilePicture.setImageResource(R.drawable.ic_profile_placeholder);
+                    }
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                    Log.w(TAG, "Failed to load profile image: " + e.getMessage());
+                    userProfilePicture.setImageResource(R.drawable.ic_profile_placeholder);
+                }
+            });
+        } else if (userProfilePicture != null) {
+            userProfilePicture.setImageResource(R.drawable.ic_profile_placeholder);
+        }
     }
 
     // ===== Load User =====
-
     private void loadOtherUser() {
         repo.getUserById(otherUid, new UserRepository.FirestoreUserCallback() {
             @Override
@@ -135,7 +163,6 @@ public class OtherUserProfileActivity extends AppCompatActivity {
     }
 
     // ===== Dogs =====
-
     @SuppressLint("MissingInflatedId")
     private void renderDogs(@Nullable List<Dog> dogs) {
         dogsContainer.removeAllViews();
@@ -156,12 +183,30 @@ public class OtherUserProfileActivity extends AppCompatActivity {
             TextView tvName = card.findViewById(R.id.dog_name);
             TextView tvBreed = card.findViewById(R.id.dog_breed);
             TextView tvAge = card.findViewById(R.id.dog_age);
+            ShapeableImageView ivDog = card.findViewById(R.id.dog_profile_picture); // ✅ חדש
 
+            if (tvName == null || tvBreed == null || tvAge == null || ivDog == null) {
+                Log.e(TAG, "item_dog_card.xml missing IDs (dog_name/dog_breed/dog_age/dog_profile_picture)");
+                continue;
+            }
+
+            // ===== הצגת נתונים =====
             tvName.setText(nn(d.getName()));
-            tvBreed.setText(nn(d.getBreed()));
-            tvAge.setText(d.getAge() != null ? String.valueOf(d.getAge()) : "");
+            tvBreed.setText("Breed: " + (d.getBreed() != null ? d.getBreed() : ""));
+            tvAge.setText("Age: " + (d.getAge() != null ? d.getAge() : "—"));
 
-            // פתח פרטי כלב (קריאה בלבד)
+            // ✅ טעינת תמונת הכלב עם Glide
+            if (d.getPhotoUrl() != null && !d.getPhotoUrl().isEmpty()) {
+                Glide.with(this)
+                        .load(d.getPhotoUrl())
+                        .placeholder(R.drawable.rex_image)
+                        .centerCrop()
+                        .into(ivDog);
+            } else {
+                ivDog.setImageResource(R.drawable.rex_image);
+            }
+
+            // ===== לחיצה על כרטיס כלב =====
             card.setOnClickListener(v -> {
                 try {
                     Intent it = new Intent(OtherUserProfileActivity.this, DogDetailsActivity.class);
@@ -179,7 +224,6 @@ public class OtherUserProfileActivity extends AppCompatActivity {
     }
 
     // ===== Friends =====
-
     private void bindFriendButtonLive() {
         if (myUid == null || myUid.equals(otherUid)) {
             btnFriendAction.setVisibility(View.GONE);

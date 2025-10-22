@@ -22,6 +22,7 @@ public class Report implements Parcelable {
     public static final String FIELD_APPLICANT_UID  = "applicantUserId";
     public static final String FIELD_IMAGE_URL      = "imageUrl";
     public static final String FIELD_IMAGE_URLS     = "imageUrls";
+    public static final String FIELD_SENDER_ID      = "senderId"; // ✅ חדש
 
     // Type constants
     public static final String TYPE_POST = "Post";
@@ -32,10 +33,11 @@ public class Report implements Parcelable {
 
     // Data fields
     private String type;
-    private String senderName;       // ממופה ל-"sender name" ע"י @PropertyName
+    private String senderName;       // ממופה ל-"sender name"
     private String subject;
     private String text;
     private String applicantUserId;  // אופציונלי – רק למועמדות
+    private String senderId;         // ✅ מזהה המשתמש שפרסם את הפוסט
 
     // תמונות לפיד
     private String imageUrl;         // תמונה בודדת
@@ -79,6 +81,9 @@ public class Report implements Parcelable {
     public String getApplicantUserId() { return applicantUserId; }
     public void setApplicantUserId(String applicantUserId) { this.applicantUserId = applicantUserId; }
 
+    public String getSenderId() { return senderId; }               // ✅ חדש
+    public void setSenderId(String senderId) { this.senderId = senderId; } // ✅ חדש
+
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 
@@ -94,6 +99,9 @@ public class Report implements Parcelable {
         if (text != null)             map.put(FIELD_TEXT, text);
         if (applicantUserId != null && !applicantUserId.isEmpty()) {
             map.put(FIELD_APPLICANT_UID, applicantUserId);
+        }
+        if (senderId != null && !senderId.isEmpty()) {              // ✅ חדש
+            map.put(FIELD_SENDER_ID, senderId);
         }
         if (imageUrl != null && !imageUrl.isEmpty()) {
             map.put(FIELD_IMAGE_URL, imageUrl);
@@ -112,6 +120,7 @@ public class Report implements Parcelable {
         subject = in.readString();
         text = in.readString();
         applicantUserId = in.readString();
+        senderId = in.readString(); // ✅ חדש
         imageUrl = in.readString();
         imageUrls = in.createStringArrayList();
     }
@@ -128,6 +137,7 @@ public class Report implements Parcelable {
         dest.writeString(subject);
         dest.writeString(text);
         dest.writeString(applicantUserId);
+        dest.writeString(senderId); // ✅ חדש
         dest.writeString(imageUrl);
         dest.writeStringList(imageUrls);
     }
@@ -147,6 +157,6 @@ public class Report implements Parcelable {
     }
 
     @Override public String toString() {
-        return "Report{id='" + id + "', type='" + type + "', senderName='" + senderName + "', subject='" + subject + "'}";
+        return "Report{id='" + id + "', type='" + type + "', senderName='" + senderName + "', senderId='" + senderId + "', subject='" + subject + "'}";
     }
 }

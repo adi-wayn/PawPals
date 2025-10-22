@@ -9,10 +9,14 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.pawpals.R;
+import com.google.android.material.imageview.ShapeableImageView;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import android.util.Pair;
 import model.firebase.Firestore.UserRepository;
@@ -25,6 +29,10 @@ public class CommunityAdapter extends RecyclerView.Adapter<CommunityAdapter.View
 
     private final List<Pair<String, User>> rows = new ArrayList<>();
     @Nullable private OnUserClickListener clickListener;
+    private final UserRepository userRepo = new UserRepository();
+
+    // 🧠 Cache לתמונות (userId → imageUrl)
+    private final Map<String, String> imageCache = new HashMap<>();
 
     public CommunityAdapter(@Nullable List<Pair<String, User>> rows) {
         if (rows != null) this.rows.addAll(rows);
@@ -53,7 +61,7 @@ public class CommunityAdapter extends RecyclerView.Adapter<CommunityAdapter.View
         Pair<String, User> row = rows.get(position);
         String userId = row.first;
         User user = row.second;
-        holder.bind(user, userId);
+        holder.bind(user, userId, userRepo, imageCache);
 
         holder.itemView.setOnClickListener(v -> {
             if (clickListener == null) return;
@@ -70,23 +78,58 @@ public class CommunityAdapter extends RecyclerView.Adapter<CommunityAdapter.View
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
+        ShapeableImageView profilePicture;
         TextView nameText, infoText, communityText;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
-            nameText      = itemView.findViewById(R.id.profile_name);
-            infoText      = itemView.findViewById(R.id.profile_info);
+            profilePicture = itemView.findViewById(R.id.profile_picture);
+            nameText = itemView.findViewById(R.id.profile_name);
+            infoText = itemView.findViewById(R.id.profile_info);
             communityText = itemView.findViewById(R.id.profile_community);
         }
 
-        void bind(@Nullable User user, @NonNull String userId) {
-            if (user == null) return;
+        void bind(@Nullable User user,
+                  @NonNull String userId,
+                  @NonNull UserRepository repo,
+                  @NonNull Map<String, String> imageCache) {
 
+            if (user == null) return;
             nameText.setText(user.getUserName() != null ? user.getUserName() : "Unknown");
 
-            // שליפה לפי userId
-            UserRepository userRepo = new UserRepository();
-            userRepo.getDogsForUser(userId, new UserRepository.FirestoreDogsListCallback() {
+            // ✅ טעינת תמונת פרופיל עם cache
+            String cachedUrl = imageCache.get(userId);
+            if (cachedUrl != null) {
+                Glide.with(profilePicture.getContext())
+                        .load(cachedUrl)
+                        .placeholder(R.drawable.ic_profile_placeholder)
+                        .centerCrop()
+                        .into(profilePicture);
+            } else {
+                repo.getUserProfileImage(userId, new UserRepository.FirestoreStringCallback() {
+                    @Override
+                    public void onSuccess(String imageUrl) {
+                        if (imageUrl != null && !imageUrl.isEmpty()) {
+                            imageCache.put(userId, imageUrl); // 🧠 שומר במטמון
+                            Glide.with(profilePicture.getContext())
+                                    .load(imageUrl)
+                                    .placeholder(R.drawable.ic_profile_placeholder)
+                                    .centerCrop()
+                                    .into(profilePicture);
+                        } else {
+                            profilePicture.setImageResource(R.drawable.ic_profile_placeholder);
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        profilePicture.setImageResource(R.drawable.ic_profile_placeholder);
+                    }
+                });
+            }
+
+            // 🐶 הצגת כמות כלבים
+            repo.getDogsForUser(userId, new UserRepository.FirestoreDogsListCallback() {
                 @Override
                 public void onSuccess(List<Dog> dogs) {
                     int dogCount = (dogs != null) ? dogs.size() : 0;
@@ -99,6 +142,7 @@ public class CommunityAdapter extends RecyclerView.Adapter<CommunityAdapter.View
                 }
             });
 
+            // 🌍 שם קהילה
             if (communityText != null) {
                 communityText.setText(
                         user.getCommunityName() != null
