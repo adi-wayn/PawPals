@@ -196,17 +196,19 @@ public class CommunitySearchActivity extends AppCompatActivity {
             preFiltered.add(row);
         }
 
-        if (checkedChipIds == null || checkedChipIds.isEmpty()) {
-            // אין צורך לבדוק כלבים – נעדכן מיד
-            filteredRows.addAll(preFiltered);
-            adapter.updateData(filteredRows);
-            return;
-        }
 
         // במידה ויש פילטר לפי כמות כלבים – נטען זאת דרך Firestore
         UserRepository repo = new UserRepository();
         final int total = preFiltered.size();
         final int[] completed = {0};
+
+        if (checkedChipIds == null || checkedChipIds.isEmpty() ||
+                (!checkedChipIds.contains(R.id.chipOneDog) && !checkedChipIds.contains(R.id.chipTwoPlusDogs))) {
+            // אם לא מסונן לפי כלבים בכלל — אל תיכנס ללולאת ה-getDogsForUser
+            filteredRows.addAll(preFiltered);
+            adapter.updateData(filteredRows);
+            return;
+        }
 
         for (Pair<String, User> row : preFiltered) {
             String userId = row.first;
