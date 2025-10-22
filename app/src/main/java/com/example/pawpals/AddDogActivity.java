@@ -1,6 +1,7 @@
 package com.example.pawpals;
 
 import android.content.Context;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -8,41 +9,66 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.Switch;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.bumptech.glide.Glide;
+
 import model.Dog;
-import model.User;
 import model.firebase.Firestore.UserRepository;
+import model.firebase.Storage.StorageRepository;
 
 public class AddDogActivity extends AppCompatActivity {
 
     public static final String EXTRA_USER_ID = "userId";
     private static final String TAG = "AddDogActivity";
-    private EditText etName, etBreed, etAge;
-    private Button btnSave;
+
+    private EditText etName, etBreed, etAge, etPersonality, etMood, etNotes;
+    private Switch switchNeutered;
+    private Button btnSave, btnUploadDogImage;
+    private ImageView imgDog;
+    private Uri selectedImageUri;
+
     private final UserRepository repo = new UserRepository();
+    private StorageRepository storageRepo;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d(TAG, "onCreate()");
-        setContentView(R.layout.activity_add_dog); // ודאי שהקובץ קיים וה-IDs תואמים
+        setContentView(R.layout.activity_add_dog);
 
-        etName  = findViewById(R.id.et_dog_name);
+        // Bind views
+        etName = findViewById(R.id.et_dog_name);
         etBreed = findViewById(R.id.et_dog_breed);
-        etAge   = findViewById(R.id.et_dog_age);
+        etAge = findViewById(R.id.et_dog_age);
+        etPersonality = findViewById(R.id.et_dog_personality);
+        etMood = findViewById(R.id.et_dog_mood);
+        etNotes = findViewById(R.id.et_dog_notes);
+        switchNeutered = findViewById(R.id.switch_neutered);
+        imgDog = findViewById(R.id.img_dog);
         btnSave = findViewById(R.id.btn_save_dog);
+        btnUploadDogImage = findViewById(R.id.btn_upload_dog_image);
 
-        // בדיקת עשן ל-IDs לא נכונים ב-XML
-        if (etName == null || etBreed == null || etAge == null || btnSave == null) {
-            Toast.makeText(this, "בעיה ב-IDs של layout (activity_add_dog.xml)", Toast.LENGTH_LONG).show();
-            Log.e(TAG, "One or more views are null. Check IDs in layout.");
-            finish();
-            return;
-        }
+        storageRepo = new StorageRepository();
+
+        // Image picker
+        ActivityResultLauncher<String> imagePicker = registerForActivityResult(
+                new ActivityResultContracts.GetContent(),
+                uri -> {
+                    if (uri != null) {
+                        selectedImageUri = uri;
+                        Glide.with(this).load(uri).into(imgDog);
+                    }
+                }
+        );
+        btnUploadDogImage.setOnClickListener(v -> imagePicker.launch("image/*"));
 
         btnSave.setOnClickListener(v -> {
             hideKeyboard();
@@ -51,85 +77,87 @@ public class AddDogActivity extends AppCompatActivity {
     }
 
     private void saveDog() {
-        Log.d(TAG, "saveDog() clicked");
-        String name   = etName.getText().toString().trim();
-        String breed  = etBreed.getText().toString().trim();
+        String name = etName.getText().toString().trim();
+        String breed = etBreed.getText().toString().trim();
         String ageStr = etAge.getText().toString().trim();
+        String personality = etPersonality.getText().toString().trim();
+        String mood = etMood.getText().toString().trim();
+        String notes = etNotes.getText().toString().trim();
+        Boolean neutered = switchNeutered.isChecked();
 
-        // שם חובה
         if (TextUtils.isEmpty(name)) {
-            etName.setError("שימי שם לכלב");
-            etName.requestFocus();
-            Log.w(TAG, "Validation failed: empty name");
+            etName.setError("Please enter your dog's name");
             return;
         }
 
-        // בניית האובייקט לפי המודל
         Dog dog = new Dog();
         dog.setName(name);
         dog.setBreed(TextUtils.isEmpty(breed) ? null : breed);
+        dog.setPersonality(TextUtils.isEmpty(personality) ? null : personality);
+        dog.setMood(TextUtils.isEmpty(mood) ? null : mood);
+        dog.setNotes(TextUtils.isEmpty(notes) ? null : notes);
+        dog.setNeutered(neutered);
 
         if (!TextUtils.isEmpty(ageStr)) {
             try {
-                dog.setAge(Integer.valueOf(ageStr)); // ודאי של- Dog.setAge יש פרמטר Integer (לא int)
+                dog.setAge(Integer.valueOf(ageStr));
             } catch (NumberFormatException e) {
-                etAge.setError("גיל חייב להיות מספר");
-                etAge.requestFocus();
-                Log.w(TAG, "Age parse failed", e);
+                etAge.setError("Age must be a number");
                 return;
             }
-        } else {
-            dog.setAge(null);
         }
 
-        // קבלת userId שנשלח ע"י ה-ProfileActivity
         String userId = getIntent().getStringExtra(EXTRA_USER_ID);
-        Log.d(TAG, "Incoming userId: " + userId);
         if (TextUtils.isEmpty(userId)) {
-            Toast.makeText(this, "חסר userId לשמירה", Toast.LENGTH_SHORT).show();
-            Log.e(TAG, "userId is missing in Intent extras");
+            Toast.makeText(this, "User ID is missing", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // מניעת דאבל-קליק
         btnSave.setEnabled(false);
-        Log.d(TAG, "Calling repo.addDogToUser()");
 
-        try {
-            repo.addDogToUser(userId, dog, new UserRepository.FirestoreCallback() {
-                @Override
-                public void onSuccess(String documentId) {
-                    Log.d(TAG, "Dog saved. docId=" + documentId);
-                    Toast.makeText(AddDogActivity.this, "הכלב נשמר", Toast.LENGTH_SHORT).show();
-                    setResult(RESULT_OK); // לאפשר למסך קודם לרענן
-                    finish();
-                }
+        if (selectedImageUri != null) {
+            storageRepo.uploadDogPhotoCompressed(
+                    AddDogActivity.this, selectedImageUri, userId, name, 1080, 80,
+                    new StorageRepository.UploadCallback() {
+                        @Override
+                        public void onSuccess(@NonNull String downloadUrl) {
+                            dog.setPhotoUrl(downloadUrl);
+                            actuallySaveDog(userId, dog);
+                        }
 
-                @Override
-                public void onFailure(Exception e) {
-                    btnSave.setEnabled(true);
-                    String msg = (e != null && e.getMessage() != null) ? e.getMessage() : "שגיאה לא ידועה";
-                    Log.e(TAG, "Failed to save dog: " + msg, e);
-                    Toast.makeText(AddDogActivity.this, "נכשל: " + msg, Toast.LENGTH_LONG).show();
-                }
-            });
-        } catch (Exception e) {
-            // הגנה נוספת במקרה של חריגה מיידית לפני הקולבקים (למשל שגיאת שימוש ב-Repository)
-            btnSave.setEnabled(true);
-            String msg = (e.getMessage() != null) ? e.getMessage() : "שגיאה לא ידועה";
-            Log.e(TAG, "Unexpected exception while saving dog: " + msg, e);
-            Toast.makeText(this, "נכשל: " + msg, Toast.LENGTH_LONG).show();
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Toast.makeText(AddDogActivity.this, "Image upload failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            btnSave.setEnabled(true);
+                        }
+                    });
+        } else {
+            actuallySaveDog(userId, dog);
         }
+    }
+
+    private void actuallySaveDog(String userId, Dog dog) {
+        repo.addDogToUser(userId, dog, new UserRepository.FirestoreCallback() {
+            @Override
+            public void onSuccess(String documentId) {
+                Toast.makeText(AddDogActivity.this, "Dog saved successfully!", Toast.LENGTH_SHORT).show();
+                setResult(RESULT_OK);
+                finish();
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                btnSave.setEnabled(true);
+                Toast.makeText(AddDogActivity.this, "Failed to save dog: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void hideKeyboard() {
         View view = getCurrentFocus();
         if (view != null) {
-            InputMethodManager imm =
-                    (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-            if (imm != null) {
-                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-            }
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (imm != null) imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
     }
 }

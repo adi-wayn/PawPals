@@ -17,6 +17,9 @@ import java.util.Map;
 @IgnoreExtraProperties
 public class Dog implements Parcelable {
 
+    // 🔹 מזהה ייחודי (documentId ב-Firestore)
+    private @Nullable String id;
+
     // Basic
     private @Nullable String  name;
     private @Nullable String  breed;
@@ -53,6 +56,7 @@ public class Dog implements Parcelable {
     }
 
     // ------- Getters -------
+    @Nullable public String  getId()         { return id; }
     @Nullable public String  getName()       { return name; }
     @Nullable public String  getBreed()      { return breed; }
     @Nullable public Integer getAge()        { return age; }
@@ -63,14 +67,15 @@ public class Dog implements Parcelable {
     @Nullable public String  getPhotoUrl()   { return photoUrl; }
 
     // ------- Setters -------
-    public void setName(@Nullable String name)             { this.name = name; }
-    public void setBreed(@Nullable String breed)           { this.breed = breed; }
-    public void setAge(@Nullable Integer age)              { this.age = age; }      // Integer כדי לאפשר null
-    public void setNeutered(@Nullable Boolean neutered)    { this.neutered = neutered; }
+    public void setId(@Nullable String id)                { this.id = id; }
+    public void setName(@Nullable String name)            { this.name = name; }
+    public void setBreed(@Nullable String breed)          { this.breed = breed; }
+    public void setAge(@Nullable Integer age)             { this.age = age; }
+    public void setNeutered(@Nullable Boolean neutered)   { this.neutered = neutered; }
     public void setPersonality(@Nullable String personality){ this.personality = personality; }
-    public void setMood(@Nullable String mood)             { this.mood = mood; }
-    public void setNotes(@Nullable String notes)           { this.notes = notes; }
-    public void setPhotoUrl(@Nullable String photoUrl)     { this.photoUrl = photoUrl; }
+    public void setMood(@Nullable String mood)            { this.mood = mood; }
+    public void setNotes(@Nullable String notes)          { this.notes = notes; }
+    public void setPhotoUrl(@Nullable String photoUrl)    { this.photoUrl = photoUrl; }
 
     // ------- Firestore map -------
     public Map<String, Object> toMap() {
@@ -104,6 +109,7 @@ public class Dog implements Parcelable {
 
     // ------- Parcelable -------
     protected Dog(Parcel in) {
+        id          = in.readString();
         name        = in.readString();
         breed       = in.readString();
         age         = (Integer) in.readValue(Integer.class.getClassLoader());
@@ -123,10 +129,11 @@ public class Dog implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(id);
         dest.writeString(name);
         dest.writeString(breed);
-        dest.writeValue(age);        // handles null
-        dest.writeValue(neutered);   // handles null
+        dest.writeValue(age);
+        dest.writeValue(neutered);
         dest.writeString(personality);
         dest.writeString(mood);
         dest.writeString(notes);
@@ -136,7 +143,8 @@ public class Dog implements Parcelable {
     @Override
     public String toString() {
         return "Dog{" +
-                "name='" + name + '\'' +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
                 ", breed='" + breed + '\'' +
                 ", age=" + age +
                 ", neutered=" + neutered +

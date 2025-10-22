@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.util.Pair;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -439,9 +440,10 @@ public class ProfileActivity extends AppCompatActivity {
             TextView tvName  = card.findViewById(R.id.dog_name);
             TextView tvBreed = card.findViewById(R.id.dog_breed);
             TextView tvAge   = card.findViewById(R.id.dog_age);
+            ImageView ivDog  = card.findViewById(R.id.dog_profile_picture);
 
-            if (tvName == null || tvBreed == null || tvAge == null) {
-                Log.e(TAG, "item_dog_card.xml חסר IDs (dog_name/dog_breed/dog_age)");
+            if (tvName == null || tvBreed == null || tvAge == null || ivDog == null) {
+                Log.e(TAG, "item_dog_card.xml חסר IDs (dog_name/dog_breed/dog_age/dog_profile_picture)");
                 continue;
             }
 
@@ -450,9 +452,21 @@ public class ProfileActivity extends AppCompatActivity {
             Integer age  = (d != null) ? d.getAge()   : null;
 
             tvName.setText(nn(name));
-            tvBreed.setText(nn(breed));
-            tvAge.setText(age != null ? String.valueOf(age) : "");
+            tvBreed.setText("Breed: " + (breed != null ? breed : ""));
+            tvAge.setText("Age: " + (age != null ? age : "—"));
 
+            // ✅ טען תמונת כלב עם Glide
+            if (d != null && d.getPhotoUrl() != null && !d.getPhotoUrl().isEmpty()) {
+                Glide.with(this)
+                        .load(d.getPhotoUrl())
+                        .placeholder(R.drawable.rex_image)
+                        .centerCrop()
+                        .into(ivDog);
+            } else {
+                ivDog.setImageResource(R.drawable.rex_image);
+            }
+
+            // לחיצה על כרטיס הכלב
             card.setOnClickListener(v -> {
                 if (d == null) return;
                 if (displayedUserId == null || displayedUserId.isEmpty()) {

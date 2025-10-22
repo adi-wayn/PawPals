@@ -10,6 +10,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.pawpals.R;
 
 import java.util.ArrayList;
@@ -54,15 +55,26 @@ public class DogAdapter extends RecyclerView.Adapter<DogAdapter.DogViewHolder> {
         Integer age  = dog != null ? dog.getAge()   : null;
 
         holder.dogName.setText(name != null ? name : "");
-        holder.dogBreed.setText(breed != null ? breed : "");
-        holder.dogAge.setText("גיל: " + (age != null ? age : "—"));
+        holder.dogBreed.setText("Breed: " + (breed != null ? breed : ""));
+        holder.dogAge.setText("Age: " + (age != null ? age : "—"));
 
-        // קליק רגיל -> פעולה חיצונית (לרוב פתיחת DogDetailsActivity)
+        // ✅ טען תמונה עם Glide
+        if (dog != null && dog.getPhotoUrl() != null && !dog.getPhotoUrl().isEmpty()) {
+            Glide.with(holder.dogProfilePicture.getContext())
+                    .load(dog.getPhotoUrl())
+                    .placeholder(R.drawable.rex_image) // תמונה ברירת מחדל
+                    .centerCrop()
+                    .into(holder.dogProfilePicture);
+        } else {
+            holder.dogProfilePicture.setImageResource(R.drawable.rex_image);
+        }
+
+        // קליק רגיל -> פתיחת פרטים
         holder.itemView.setOnClickListener(v -> {
             if (listener != null && dog != null) listener.onDogClick(dog);
         });
 
-        // לחיצה ארוכה -> מחיקה (אם תרצי להשתמש בזה)
+        // לחיצה ארוכה -> מחיקה
         holder.itemView.setOnLongClickListener(v -> {
             if (listener != null && dog != null) {
                 listener.onDeleteDog(dog);

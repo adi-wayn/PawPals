@@ -382,6 +382,8 @@ public class UserRepository {
                             dog.setNotes((String) m.get("notes"));
                             dog.setPhotoUrl((String) m.get("photoUrl"));
                         }
+                        // ✅ שמירת ה-id האמיתי של המסמך
+                        dog.setId(d.getId());
                         list.add(dog);
                     }
                     callback.onSuccess(list);

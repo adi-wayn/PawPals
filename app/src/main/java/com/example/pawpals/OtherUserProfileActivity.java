@@ -183,11 +183,30 @@ public class OtherUserProfileActivity extends AppCompatActivity {
             TextView tvName = card.findViewById(R.id.dog_name);
             TextView tvBreed = card.findViewById(R.id.dog_breed);
             TextView tvAge = card.findViewById(R.id.dog_age);
+            ShapeableImageView ivDog = card.findViewById(R.id.dog_profile_picture); // ✅ חדש
 
+            if (tvName == null || tvBreed == null || tvAge == null || ivDog == null) {
+                Log.e(TAG, "item_dog_card.xml missing IDs (dog_name/dog_breed/dog_age/dog_profile_picture)");
+                continue;
+            }
+
+            // ===== הצגת נתונים =====
             tvName.setText(nn(d.getName()));
-            tvBreed.setText(nn(d.getBreed()));
-            tvAge.setText(d.getAge() != null ? String.valueOf(d.getAge()) : "");
+            tvBreed.setText("Breed: " + (d.getBreed() != null ? d.getBreed() : ""));
+            tvAge.setText("Age: " + (d.getAge() != null ? d.getAge() : "—"));
 
+            // ✅ טעינת תמונת הכלב עם Glide
+            if (d.getPhotoUrl() != null && !d.getPhotoUrl().isEmpty()) {
+                Glide.with(this)
+                        .load(d.getPhotoUrl())
+                        .placeholder(R.drawable.rex_image)
+                        .centerCrop()
+                        .into(ivDog);
+            } else {
+                ivDog.setImageResource(R.drawable.rex_image);
+            }
+
+            // ===== לחיצה על כרטיס כלב =====
             card.setOnClickListener(v -> {
                 try {
                     Intent it = new Intent(OtherUserProfileActivity.this, DogDetailsActivity.class);

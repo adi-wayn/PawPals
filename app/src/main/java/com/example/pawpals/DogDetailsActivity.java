@@ -8,12 +8,14 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.bumptech.glide.Glide;
+
 import model.Dog;
 
 public class DogDetailsActivity extends AppCompatActivity {
 
     public static final String EXTRA_DOG = "extra_dog";
-    public static final String EXTRA_OWNER_ID = "extra_owner_id"; // אופציונלי לשימוש עתידי
+    public static final String EXTRA_OWNER_ID = "extra_owner_id"; // Optional for future use
 
     private ImageView dogPicture;
     private TextView dogName, dogAge, dogBreed, dogNeutered, dogPersonality, dogMood, dogNotes;
@@ -34,7 +36,7 @@ public class DogDetailsActivity extends AppCompatActivity {
 
         Dog dog = getIntent().getParcelableExtra(EXTRA_DOG);
         if (dog == null) {
-            Toast.makeText(this, "לא נמצאו פרטי כלב", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Dog details not found", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
@@ -47,7 +49,7 @@ public class DogDetailsActivity extends AppCompatActivity {
         dogBreed.setText(nn(dog.getBreed()));
 
         Boolean neut = dog.getNeutered();
-        dogNeutered.setText(neut == null ? "—" : (neut ? "כן" : "לא"));
+        dogNeutered.setText(neut == null ? "—" : (neut ? "Yes" : "No"));
 
         dogPersonality.setText(nn(dog.getPersonality()));
         dogMood.setText(nn(dog.getMood()));
@@ -55,10 +57,11 @@ public class DogDetailsActivity extends AppCompatActivity {
 
         String photoUrl = dog.getPhotoUrl();
         if (photoUrl != null && !photoUrl.isEmpty()) {
-            // אם יש לך Glide בפרויקט, אפשר לפתוח ולהשתמש:
-            // Glide.with(this).load(photoUrl).into(dogPicture);
+            Glide.with(this).load(photoUrl).placeholder(R.drawable.rex_image).into(dogPicture);
         }
     }
 
-    private String nn(String s) { return s == null ? "" : s; }
+    private String nn(String s) {
+        return s == null ? "" : s;
+    }
 }
