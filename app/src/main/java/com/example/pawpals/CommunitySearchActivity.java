@@ -46,6 +46,8 @@ public class CommunitySearchActivity extends AppCompatActivity {
     private SearchView searchView;
     private CircularProgressIndicator progressBar;
     private UserRepository userRepo;
+    private boolean communityLoaded = false;
+    private boolean friendsLoaded = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,8 +70,11 @@ public class CommunitySearchActivity extends AppCompatActivity {
                 if (err == null && qs != null) {
                     for (DocumentSnapshot d : qs.getDocuments()) {
                         myFriendIds.add(d.getId());
+                        Log.d("CommunitySearch", "Friend ID added: " + d.getId());
                     }
                 }
+                Log.d("CommunitySearch", "Total friends loaded: " + myFriendIds.size());
+                friendsLoaded = true;
                 filterProfiles(searchView.getQuery() != null ? searchView.getQuery().toString() : "");
             });
         }
@@ -148,7 +153,10 @@ public class CommunitySearchActivity extends AppCompatActivity {
                 showLoading(false);
                 masterRows.clear();
                 if (rows != null) masterRows.addAll(rows);
-                filterProfiles(searchView.getQuery() != null ? searchView.getQuery().toString() : "");
+                communityLoaded = true;
+                if (friendsLoaded) { // רק אם גם רשימת חברים כבר נטענה
+                    filterProfiles(searchView.getQuery() != null ? searchView.getQuery().toString() : "");
+                }
             }
 
             @Override
@@ -163,6 +171,10 @@ public class CommunitySearchActivity extends AppCompatActivity {
         final String lowerQuery = (query == null ? "" : query).toLowerCase(Locale.ROOT);
         final List<Integer> checkedChipIds = filterChipGroup.getCheckedChipIds();
         final boolean requireFriend = checkedChipIds != null && checkedChipIds.contains(R.id.chipFriends);
+
+        Log.d("CommunitySearch", "Filtering profiles... requireFriend=" + requireFriend
+                + ", myFriendIds=" + myFriendIds
+                + ", masterRows=" + masterRows.size());
 
         filteredRows.clear();
 

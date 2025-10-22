@@ -479,9 +479,17 @@ public class UserRepository {
 
     public ListenerRegistration observeFriendsIds(String uid,
                                                   EventListener<QuerySnapshot> listener) {
+        Log.d("UserRepo", "observeFriendsIds listening to users/" + uid + "/friends");
         return friendsCol(uid)
                 .orderBy("createdAt", Query.Direction.DESCENDING)
-                .addSnapshotListener(listener);
+                .addSnapshotListener((qs, e) -> {
+                    if (e != null) {
+                        Log.e("UserRepo", "Listener error: " + e.getMessage());
+                    } else if (qs != null) {
+                        Log.d("UserRepo", "Listener received " + qs.size() + " docs");
+                    }
+                    listener.onEvent(qs, e);
+                });
     }
 
     // קבלת רשימת חברים כ-Users, עם טעינה מרוכזת
