@@ -150,8 +150,10 @@ public class ReportFormActivity extends AppCompatActivity {
         }
 
         Report report = new Report(type, senderName, subject, text);
+        String uid = FirebaseAuth.getInstance().getUid();
+        report.setSenderId(uid);
+
         if ("Manager Application".equalsIgnoreCase(type)) {
-            String uid = FirebaseAuth.getInstance().getUid();
             report.setApplicantUserId(uid);
             report.setType(Report.TYPE_MANAGER_APPLICATION);
         }

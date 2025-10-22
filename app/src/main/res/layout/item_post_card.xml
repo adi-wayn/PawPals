@@ -39,17 +39,36 @@
             android:textColor="?attr/colorOnSurface"
             android:layout_marginBottom="2dp"/>
 
-        <!-- שם השולח -->
-        <TextView
-            android:id="@+id/text_post_sender"
-            style="@style/TextAppearance.Material3.BodySmall"
-            android:layout_width="wrap_content"
+        <!-- שם השולח + תמונת פרופיל -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="by Sender Name"
-            android:textStyle="italic"
-            android:textColor="?attr/colorOnSurface"
-            android:alpha="0.7"
-            android:layout_marginBottom="6dp"/>
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="6dp">
+
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/image_sender_profile"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="8dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_profile_placeholder"
+                app:shapeAppearanceOverlay="@style/Shape.Round16"
+                app:strokeColor="@color/pp_colorPrimary"
+                app:strokeWidth="1dp"
+                android:contentDescription="Sender profile picture" />
+
+            <TextView
+                android:id="@+id/text_post_sender"
+                style="@style/TextAppearance.Material3.BodySmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="by Sender Name"
+                android:textStyle="italic"
+                android:textColor="?attr/colorOnSurface"
+                android:alpha="0.7" />
+        </LinearLayout>
 
         <!-- גוף ההודעה -->
         <TextView

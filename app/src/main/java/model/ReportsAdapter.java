@@ -5,6 +5,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,13 +16,16 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
+import com.bumptech.glide.Glide;
 import com.example.pawpals.R;
+import com.google.android.material.imageview.ShapeableImageView;
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import model.firebase.Firestore.CommunityRepository;
+import model.firebase.Firestore.UserRepository;
 
 public class ReportsAdapter extends RecyclerView.Adapter<ReportsAdapter.ReportViewHolder> {
 
@@ -66,12 +70,44 @@ public class ReportsAdapter extends RecyclerView.Adapter<ReportsAdapter.ReportVi
         holder.textPostMessage.setText(report.getText());
         holder.textPostMessageFull.setText(report.getText());
 
-        // ✅ הצגת preview קצר (20 תווים לדוגמה)
-        String full = report.getText();
-        if (full != null && full.length() > 20) {
-            holder.textPostMessage.setText(full.substring(0, 20) + "...");
+        // 🪵 לוגים לבדיקה
+        Log.d("ReportsAdapter", "senderId=" + report.getSenderId() +
+                " | senderName=" + report.getSenderName() +
+                " | reportId=" + report.getId());
+
+        // ✅ טעינת תמונת פרופיל של השולח
+        String senderId = report.getSenderId();
+        if (senderId != null && !senderId.isEmpty()) {
+            UserRepository userRepo = new UserRepository();
+            Log.d("ReportsAdapter", "Fetching profile image for senderId=" + senderId);
+
+            userRepo.getUserProfileImage(senderId, new UserRepository.FirestoreStringCallback() {
+                @Override
+                public void onSuccess(String imageUrl) {
+                    Log.d("ReportsAdapter", "profileImageUrl for " + senderId + " = " + imageUrl);
+
+                    if (imageUrl != null && !imageUrl.isEmpty()) {
+                        Glide.with(holder.itemView.getContext())
+                                .load(imageUrl)
+                                .placeholder(R.drawable.ic_profile_placeholder)
+                                .centerCrop()
+                                .into(holder.senderImage);
+                        Log.d("ReportsAdapter", "✅ loaded image for senderId=" + senderId);
+                    } else {
+                        holder.senderImage.setImageResource(R.drawable.ic_profile_placeholder);
+                        Log.w("ReportsAdapter", "⚠️ imageUrl empty for " + senderId);
+                    }
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                    Log.e("ReportsAdapter", "❌ failed to fetch image for " + senderId, e);
+                    holder.senderImage.setImageResource(R.drawable.ic_profile_placeholder);
+                }
+            });
         } else {
-            holder.textPostMessage.setText(full);
+            Log.w("ReportsAdapter", "⚠️ Missing senderId for report: " + report.getId());
+            holder.senderImage.setImageResource(R.drawable.ic_profile_placeholder);
         }
 
         // ✅ טיפול בתמונות
@@ -216,6 +252,7 @@ public class ReportsAdapter extends RecyclerView.Adapter<ReportsAdapter.ReportVi
 
     static class ReportViewHolder extends RecyclerView.ViewHolder {
         TextView textPostSender, textPostType, textPostSubject, textPostMessage, textPostMessageFull;
+        ShapeableImageView senderImage;
         Button buttonApprove, buttonDelete;
         LinearLayout actionButtonsLayout;
         RecyclerView postImagesRv;
@@ -230,6 +267,7 @@ public class ReportsAdapter extends RecyclerView.Adapter<ReportsAdapter.ReportVi
             textPostSubject = itemView.findViewById(R.id.text_post_subject);
             textPostMessage = itemView.findViewById(R.id.text_post_message);
             textPostMessageFull = itemView.findViewById(R.id.text_post_message_full);
+            senderImage = itemView.findViewById(R.id.image_sender_profile);
             buttonApprove = itemView.findViewById(R.id.buttonApprove);
             buttonDelete = itemView.findViewById(R.id.buttonDelete);
             actionButtonsLayout = itemView.findViewById(R.id.actionButtonsLayout);

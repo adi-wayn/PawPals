@@ -101,7 +101,10 @@ public class WritePostManagerActivity extends AppCompatActivity {
             return;
         }
 
+        String uid = currentUser.getUid(); // או FirebaseAuth.getInstance().getUid()
         Report report = new Report(Report.TYPE_POST, senderName, subject, text);
+        report.setSenderId(uid); // ✅ כדי שנוכל להביא את תמונת הפרופיל בהמשך
+
         CommunityRepository repo = new CommunityRepository();
 
         // 1) השג communityId לפי שם
