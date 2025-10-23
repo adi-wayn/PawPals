@@ -256,18 +256,55 @@ public class MainActivity extends AppCompatActivity {
             ViewCompat.setLayoutDirection(menuButton, ViewCompat.LAYOUT_DIRECTION_LOCALE);
             menuButton.setRotationY(isRtl ? 180f : 0f);
 
-            // לחיצה על הכפתור פותחת/סוגרת את המגירה
-            menuButton.setOnClickListener(v -> {
-                boolean wantOpen = drawerMotion.getCurrentState() != OPEN_ID;
-                drawerMotion.transitionToState(wantOpen ? OPEN_ID : CLOSED_ID);
+            // 🔹 TransitionListener – כדי לסגור את ה-BottomSheet כשפותחים מגירה
+            drawerMotion.setTransitionListener(new MotionLayout.TransitionListener() {
+                @Override
+                public void onTransitionStarted(MotionLayout motionLayout, int startId, int endId) {
+                    // אם המגירה נפתחת – סגור את ה-BottomSheet
+                    if (endId == OPEN_ID && mainMotion.getProgress() > 0f) {
+                        mainMotion.transitionToStart();
+                    }
+                }
+
+                @Override
+                public void onTransitionChange(MotionLayout motionLayout, int startId, int endId, float progress) {}
+
+                @Override
+                public void onTransitionCompleted(MotionLayout motionLayout, int currentId) {}
+
+                @Override
+                public void onTransitionTrigger(MotionLayout motionLayout, int triggerId, boolean positive, float progress) {}
             });
 
-            // לחיצה על overlay סוגרת את המגירה
+            // 🔹 לחיצה על הכפתור פותחת/סוגרת את המגירה, מסונכרן עם BottomSheet
+            menuButton.setOnClickListener(v -> {
+                boolean isBottomSheetOpen = mainMotion.getProgress() > 0.3f;
+                boolean wantOpen = drawerMotion.getCurrentState() != OPEN_ID;
+
+                if (isBottomSheetOpen) {
+                    // אם ה-BottomSheet פתוח – סגור אותו לפני פתיחת המגירה
+                    mainMotion.transitionToStart();
+                    new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                        drawerMotion.transitionToState(wantOpen ? OPEN_ID : CLOSED_ID);
+                    }, 300);
+                } else {
+                    drawerMotion.transitionToState(wantOpen ? OPEN_ID : CLOSED_ID);
+                }
+            });
+
+            // 🔹 לחיצה על overlay סוגרת את המגירה
             overlay.setOnClickListener(v -> drawerMotion.transitionToState(CLOSED_ID));
         });
 
         // === BottomSheet ===
         bottomSheet.setOnTouchListener((v, event) -> {
+            // 🧱 מניעת גרירה כשמגירה פתוחה
+            boolean isRtl = ViewCompat.getLayoutDirection(root) == ViewCompat.LAYOUT_DIRECTION_RTL;
+            final int OPEN_ID = isRtl ? R.id.open_rtl : R.id.open_ltr;
+            if (drawerMotion.getCurrentState() == OPEN_ID) {
+                return true; // אל תאפשר תנועה של הבוטום שיט
+            }
+
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     initialTouchY = event.getRawY();
