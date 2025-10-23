@@ -1,9 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.PawPals" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+
+    <style name="Theme.PawPals" parent="Theme.Material3.Light.NoActionBar">
+        <!-- Colors -->
+        <item name="colorPrimary">@color/pp_colorPrimary</item>
+        <item name="colorOnPrimary">@color/pp_colorOnPrimary</item>
+        <item name="colorSecondary">@color/pp_colorSecondary</item>
+        <item name="colorOnSecondary">@color/pp_colorOnSecondary</item>
+        <item name="colorTertiary">@color/pp_colorTertiary</item>
+        <item name="colorOnTertiary">@color/pp_colorOnTertiary</item>
+        <item name="android:colorBackground">@color/pp_colorBackground</item>
+        <item name="colorSurface">@color/pp_colorSurface</item>
+        <item name="colorOnSurface">@color/pp_colorOnSurface</item>
+        <item name="colorOutline">@color/pp_colorOutline</item>
+        <item name="colorError">@color/pp_colorError</item>
+        <item name="colorOnError">@color/pp_colorOnError</item>
+
+        <!-- Window / Bars -->
+        <item name="android:windowBackground">@color/pp_colorBackground</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarDividerColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
+
+        <!-- Shapes -->
+        <item name="shapeAppearanceSmallComponent">@style/Shape.Round12</item>
+        <item name="shapeAppearanceMediumComponent">@style/Shape.Round16</item>
+        <item name="shapeAppearanceLargeComponent">@style/Shape.Round24</item>
+
+        <!-- Typography -->
+        <item name="textAppearanceHeadlineMedium">@style/PawPals.TextTitle</item>
+        <item name="textAppearanceLabelLarge">@style/PawPals.TextButton</item>
+
+        <!-- Buttons -->
+        <item name="materialButtonStyle">@style/Widget.PawPals.Button</item>
+        <item name="materialButtonOutlinedStyle">@style/Widget.PawPals.ButtonTransparent</item>
     </style>
 
-    <style name="Theme.PawPals" parent="Base.Theme.PawPals" />
+    <!-- Splash -->
+    <style name="Theme.PawPals.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/pp_colorBackground</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="postSplashScreenTheme">@style/Theme.PawPals</item>
+    </style>
+
 </resources>

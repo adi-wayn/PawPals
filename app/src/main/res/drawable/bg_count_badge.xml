@@ -1,0 +1,5 @@
+<!-- res/drawable/bg_count_badge.xml -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="#88000000"/> <!-- שחור חצי-שקוף -->
+    <corners android:radius="12dp"/>
+</shape>

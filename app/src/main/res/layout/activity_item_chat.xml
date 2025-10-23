@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root_message_item"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingStart="12dp"
+    android:paddingEnd="12dp"
+    android:paddingTop="6dp"
+    android:paddingBottom="6dp"
+    android:layoutDirection="locale">
+
+    <LinearLayout
+        android:id="@+id/message_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="bottom">
+
+        <!-- בועת ההודעה -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- שם השולח -->
+            <TextView
+                android:id="@+id/text_sender_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/default_sender_name"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/darker_gray"
+                android:layout_marginBottom="2dp"/>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/bubble"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="16dp"
+                app:cardUseCompatPadding="true"
+                app:strokeWidth="0dp"
+                android:elevation="2dp"
+                app:cardBackgroundColor="@color/bubble_incoming">
+
+                <RelativeLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="6dp">
+
+                    <TextView
+                        android:id="@+id/text_message_body"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:autoLink="web"
+                        android:lineSpacingExtra="2dp"
+                        android:linksClickable="true"
+                        android:maxWidth="220dp"
+                        android:paddingEnd="36dp"
+                        android:text="@string/default_message_text"
+                        android:textColor="@android:color/black"
+                        android:textIsSelectable="true"
+                        android:textSize="16sp" />
+
+                    <TextView
+                        android:id="@+id/text_message_time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignBottom="@id/text_message_body"
+                        android:layout_alignEnd="@id/text_message_body"
+                        android:layout_marginEnd="6dp"
+                        android:layout_marginBottom="2dp"
+                        android:text="22:45"
+                        android:textSize="10sp"
+                        android:textColor="@android:color/darker_gray"
+                        android:gravity="end"
+                        android:includeFontPadding="false" />
+
+                </RelativeLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/button_delete_message"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginBottom="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/delete_message"
+            android:src="@drawable/delete"
+            android:visibility="gone"
+            app:tint="@android:color/holo_red_dark" />
+
+    </LinearLayout>
+</LinearLayout>

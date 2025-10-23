@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Tabs: סוג הדיווח -->
+        <RadioGroup
+            android:id="@+id/type_tabs"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="start"
+            android:layout_marginBottom="8dp">
+
+            <RadioButton
+                android:id="@+id/tab_post"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Post"
+                android:checked="true"/>
+        </RadioGroup>
+
+        <!-- קו הפרדה -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@android:color/darker_gray"
+            android:layout_marginBottom="12dp" />
+
+        <!-- נושא ההודעה -->
+        <EditText
+            android:id="@+id/input_sender_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Sender Name"
+            android:inputType="text"
+            android:layout_marginBottom="8dp"/>
+
+        <!-- תיאור קצר נוסף -->
+        <EditText
+            android:id="@+id/input_subject"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Subject"
+            android:inputType="text"
+            android:layout_marginBottom="8dp"/>
+
+        <!-- תוכן ההודעה -->
+        <EditText
+            android:id="@+id/input_text"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:hint="Message Content"
+            android:gravity="top|start"
+            android:background="@android:drawable/editbox_background"
+            android:inputType="textMultiLine"
+            android:layout_marginBottom="16dp"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_add_images"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/add_images" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/selectedImagesRv"
+            android:layout_width="match_parent"
+            android:layout_height="84dp"
+            android:layout_marginBottom="12dp"
+            android:clipToPadding="false"/>
+
+        <!-- כפתור שליחה -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_submit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Submit Report"
+            style="@style/Widget.PawPals.Button"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="16dp"
+            android:drawableStart="@drawable/ic_heart"
+            android:drawablePadding="8dp" />
+    </LinearLayout>
+</ScrollView>

@@ -1,0 +1,4 @@
+<resources>
+    <dimen name="drawer_width">280dp</dimen>
+    <dimen name="drawer_width_plus_margin">560dp</dimen>
+</resources>

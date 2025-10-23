@@ -1,26 +1,75 @@
-<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Permissions -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/pawpals_logo"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@mipmap/pawpals_logo"
         android:supportsRtl="true"
         android:theme="@style/Theme.PawPals"
         tools:targetApi="31">
-        <activity
-            android:name=".MainActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
+        <!-- Google Maps API key -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="@string/maps_api_key"/>
+
+        <!-- Launcher -->
+        <activity
+            android:name=".LauncherActivity"
+            android:exported="true"
+            android:theme="@style/Theme.PawPals.Splash">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-    </application>
 
+        <!-- Activities -->
+        <activity android:name=".ReportFormActivity" android:exported="false" />
+        <activity android:name=".ProfileActivity" android:exported="false" />
+        <activity android:name=".MainActivity" android:exported="false" />
+        <activity android:name=".SettingsActivity" android:exported="false" />
+        <activity android:name=".CommunityActivity" android:exported="false"/>
+        <activity android:name=".ReportMapActivity" android:exported="false"/>
+        <activity android:name=".CommunitySearchActivity" android:exported="false"/>
+        <activity android:name=".ChatActivity" android:exported="false"/>
+        <activity android:name=".RegistrationDetailsActivity" android:exported="false"/>
+        <activity android:name=".LoginActivity" android:exported="false"/>
+        <activity android:name=".RegisterActivity" android:exported="false"/>
+        <activity android:name=".ManagerCommunityActivity" android:exported="false"/>
+        <activity android:name=".ReportsListActivity" android:exported="false"/>
+        <activity android:name=".WritePostManagerActivity" android:exported="false"/>
+        <activity android:name=".OtherUserProfileActivity" android:exported="false" />
+        <activity android:name=".CommunitySettingsActivity" android:exported="false" />
+        <activity android:name=".AddDogActivity" android:exported="false" />
+        <activity android:name=".CommunityCreationDetailsActivity" android:exported="false" />
+        <activity android:name=".EditDogsActivity" android:exported="false" />
+        <activity android:name=".PrivacyPolicyActivity" android:exported="false" />
+        <activity android:name=".DeleteAccountActivity" android:exported="false" />
+        <activity android:name=".DogDetailsActivity" android:exported="false" />
+        <activity android:name=".AlertsActivity" android:exported="false" />
+        <activity android:name=".EditProfileActivity" android:exported="false" />
+        <activity android:name=".ChangeProfilePicActivity" android:exported="false" />
+        <activity android:name=".EditSingleDogActivity" android:exported="false" />
+
+        <!-- Firebase Messaging service -->
+        <service
+            android:name="model.firebase.CloudMessaging.MyFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+    </application>
 </manifest>

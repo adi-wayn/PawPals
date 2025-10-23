@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="dog_picture" type="id" />
+    <item name="dog_details_root" type="id" />
+    <item name="dog_breed" type="id" />
+    <item name="dog_neutered" type="id" />
+    <item name="dog_personality" type="id" />
+    <item name="dog_mood" type="id" />
+    <item name="dog_notes" type="id" />
+    <item name="btn_save_dog" type="id" />
+    <item name="et_dog_age" type="id" />
+    <item name="et_dog_breed" type="id" />
+    <item name="et_dog_name" type="id" />
+    <item name="progress" type="id" />
+</resources>

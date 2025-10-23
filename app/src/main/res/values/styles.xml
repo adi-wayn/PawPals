@@ -1,0 +1,55 @@
+<resources>
+
+    <!-- כותרות -->
+    <style name="PawPals.TextTitle" parent="TextAppearance.Material3.HeadlineMedium">
+        <item name="android:textSize">26sp</item>
+        <item name="fontFamily">@font/poppins_semibold</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
+    <!-- טקסט לכפתורים / Labels -->
+    <style name="PawPals.TextButton" parent="TextAppearance.Material3.LabelLarge">
+        <item name="android:textSize">14sp</item>
+        <item name="fontFamily">@font/poppins_semibold</item>
+        <item name="android:textColor">?attr/colorOnPrimary</item>
+    </style>
+
+    <!-- ElevatedButton כברירת מחדל -->
+    <style name="Widget.PawPals.Button" parent="Widget.Material3.Button.ElevatedButton">
+        <item name="backgroundTint">?attr/colorPrimary</item>
+        <item name="android:textColor">?attr/colorOnPrimary</item>
+        <item name="iconTint">?attr/colorOnPrimary</item>
+        <item name="shapeAppearance">@style/Shape.Round16</item>
+
+        <!-- רווחי קצה אחידים -->
+        <item name="android:insetLeft">0dp</item>
+        <item name="android:insetRight">0dp</item>
+
+        <!-- יישור תוכן למרכז -->
+        <item name="android:textAlignment">center</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <!-- OutlinedButton שקוף -->
+    <style name="Widget.PawPals.ButtonTransparent" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="backgroundTint">@android:color/transparent</item>
+        <item name="strokeColor">?attr/colorOutline</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+        <item name="iconTint">?attr/colorOnSurface</item>
+        <item name="shapeAppearance">@style/Shape.Round16</item>
+
+        <!-- יישור תוכן למרכז (אופציונלי) -->
+        <item name="android:textAlignment">center</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <style name="Widget.PawPals.TextButton" parent="Widget.MaterialComponents.Button.TextButton">
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:textAlignment">viewStart</item>
+        <item name="android:paddingStart">0dp</item>
+        <item name="android:paddingEnd">0dp</item>
+    </style>
+
+</resources>

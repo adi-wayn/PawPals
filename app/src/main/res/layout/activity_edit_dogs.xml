@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="?android:attr/windowBackground"
+    android:padding="16dp"
+    tools:context=".EditDogsActivity">
+
+    <!-- Title -->
+    <TextView
+        android:id="@+id/text_title_edit_dogs"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="My Dogs 🐾"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/black"
+        android:gravity="center"
+        android:paddingTop="8dp"
+        android:paddingBottom="12dp"
+        android:background="@android:color/transparent"
+        android:elevation="4dp" />
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#DDDDDD"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Dog list -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_edit_dogs"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:overScrollMode="never"
+        android:paddingBottom="8dp"
+        tools:listitem="@layout/item_dog_card" />
+
+</LinearLayout>

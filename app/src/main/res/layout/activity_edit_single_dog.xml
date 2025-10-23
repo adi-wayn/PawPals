@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="20dp"
+    android:background="?android:attr/windowBackground"
+    tools:context=".EditSingleDogActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Title -->
+        <TextView
+            android:id="@+id/title_edit_dog"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Edit Dog Profile"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/black"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="20dp" />
+
+        <!-- Dog Picture -->
+        <ImageView
+            android:id="@+id/img_dog"
+            android:layout_width="140dp"
+            android:layout_height="140dp"
+            android:layout_gravity="center_horizontal"
+            android:src="@drawable/rex_image"
+            android:scaleType="centerCrop"
+            android:background="@drawable/circle_background"
+            android:contentDescription="Dog Picture"
+            android:layout_marginBottom="12dp" />
+
+        <Button
+            android:id="@+id/btn_upload_dog_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="Change Picture"
+            android:layout_marginBottom="20dp" />
+
+        <!-- Basic Info -->
+        <EditText
+            android:id="@+id/et_dog_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Dog name"
+            android:inputType="textPersonName"
+            android:layout_marginBottom="8dp" />
+
+        <EditText
+            android:id="@+id/et_dog_breed"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Dog breed"
+            android:inputType="textPersonName"
+            android:layout_marginBottom="8dp" />
+
+        <EditText
+            android:id="@+id/et_dog_age"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Dog age"
+            android:inputType="number"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Neutered -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Neutered"
+                android:textSize="16sp"
+                android:textColor="@android:color/black" />
+
+            <Switch
+                android:id="@+id/switch_neutered"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <!-- Personality -->
+        <EditText
+            android:id="@+id/et_dog_personality"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Personality (e.g. friendly, playful)"
+            android:inputType="textCapSentences"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Mood -->
+        <EditText
+            android:id="@+id/et_dog_mood"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Current mood (e.g. calm, excited)"
+            android:inputType="textCapSentences"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Notes -->
+        <EditText
+            android:id="@+id/et_dog_notes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Additional notes"
+            android:inputType="textMultiLine"
+            android:minLines="3"
+            android:maxLines="5"
+            android:gravity="top"
+            android:layout_marginBottom="20dp" />
+
+        <!-- Save -->
+        <Button
+            android:id="@+id/btn_save_dog"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Save Changes"
+            android:layout_marginBottom="10dp" />
+
+        <!-- Delete -->
+        <Button
+            android:id="@+id/btn_delete_dog"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Delete Dog"
+            android:backgroundTint="@android:color/holo_red_light"
+            android:textColor="@android:color/white" />
+
+    </LinearLayout>
+</ScrollView>

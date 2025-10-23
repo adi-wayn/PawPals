@@ -1,0 +1,119 @@
+<MotionScene xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:motion="http://schemas.android.com/apk/res-auto">
+
+    <!-- ===== LTR ===== -->
+    <ConstraintSet android:id="@+id/closed_ltr">
+        <!-- Drawer סגור -->
+        <Constraint
+            android:id="@id/sideDrawer"
+            android:layout_width="@dimen/drawer_width"
+            android:layout_height="match_parent"
+            motion:layout_constraintTop_toTopOf="parent"
+            motion:layout_constraintBottom_toBottomOf="parent"
+            motion:layout_constraintStart_toStartOf="parent"
+            android:translationX="-280dp" />
+
+        <!-- כפתור תפריט במצב רגיל -->
+        <Constraint
+            android:id="@id/imageButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            motion:layout_constraintTop_toTopOf="parent"
+            motion:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="24dp"
+            android:layout_marginStart="80dp"
+            android:translationX="0dp" />
+
+        <Constraint android:id="@id/overlay" android:visibility="gone" />
+    </ConstraintSet>
+
+    <ConstraintSet android:id="@+id/open_ltr">
+        <!-- Drawer פתוח -->
+        <Constraint
+            android:id="@id/sideDrawer"
+            android:layout_width="@dimen/drawer_width"
+            android:layout_height="match_parent"
+            motion:layout_constraintTop_toTopOf="parent"
+            motion:layout_constraintBottom_toBottomOf="parent"
+            motion:layout_constraintStart_toStartOf="parent"
+            android:translationX="0dp" />
+
+        <!-- כפתור תפריט זז שמאלה -->
+        <Constraint
+            android:id="@id/imageButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            motion:layout_constraintTop_toTopOf="parent"
+            motion:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="24dp"
+            android:layout_marginStart="80dp"
+            android:translationX="200dp" />
+
+        <Constraint android:id="@id/overlay" android:visibility="visible" />
+    </ConstraintSet>
+
+    <!-- ===== RTL ===== -->
+    <ConstraintSet android:id="@+id/closed_rtl">
+        <!-- Drawer סגור -->
+        <Constraint
+            android:id="@id/sideDrawer"
+            android:layout_width="@dimen/drawer_width"
+            android:layout_height="match_parent"
+            motion:layout_constraintTop_toTopOf="parent"
+            motion:layout_constraintBottom_toBottomOf="parent"
+            motion:layout_constraintEnd_toEndOf="parent"
+            android:translationX="@dimen/drawer_width_plus_margin" />
+
+        <!-- כפתור תפריט במיקום הרגיל (ימין) -->
+        <Constraint
+            android:id="@id/imageButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            motion:layout_constraintTop_toTopOf="parent"
+            motion:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="24dp"
+            android:layout_marginEnd="80dp"
+            android:translationX="250dp" />
+
+        <Constraint android:id="@id/overlay" android:visibility="gone" />
+    </ConstraintSet>
+
+    <ConstraintSet android:id="@+id/open_rtl">
+        <!-- Drawer פתוח -->
+        <Constraint
+            android:id="@id/sideDrawer"
+            android:layout_width="@dimen/drawer_width"
+            android:layout_height="match_parent"
+            motion:layout_constraintTop_toTopOf="parent"
+            motion:layout_constraintBottom_toBottomOf="parent"
+            motion:layout_constraintEnd_toEndOf="parent"
+            android:translationX="170dp" />
+
+        <!-- כפתור תפריט זז שמאלה (שיהיה חשוף בצד שמאל במצב RTL) -->
+        <Constraint
+            android:id="@id/imageButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            motion:layout_constraintTop_toTopOf="parent"
+            motion:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="24dp"
+            android:layout_marginEnd="80dp"
+            android:translationX="40dp" />
+
+        <Constraint android:id="@id/overlay" android:visibility="visible" />
+    </ConstraintSet>
+
+    <!-- ===== Transitions ===== -->
+    <Transition
+        android:id="@+id/t_ltr"
+        motion:constraintSetStart="@id/closed_ltr"
+        motion:constraintSetEnd="@id/open_ltr"
+        motion:duration="400" />
+
+    <Transition
+        android:id="@+id/t_rtl"
+        motion:constraintSetStart="@id/closed_rtl"
+        motion:constraintSetEnd="@id/open_rtl"
+        motion:duration="400" />
+
+</MotionScene>
