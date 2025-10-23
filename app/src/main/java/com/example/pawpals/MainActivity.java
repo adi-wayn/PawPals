@@ -233,42 +233,85 @@ public class MainActivity extends AppCompatActivity {
         View menuButton = findViewById(R.id.imageButton);
         View overlay = drawerMotion.findViewById(R.id.overlay);
 
-        // RTL support
-        boolean isRtl = ViewCompat.getLayoutDirection(root) == ViewCompat.LAYOUT_DIRECTION_RTL;
-        final int CLOSED_ID = isRtl ? R.id.closed_rtl : R.id.closed_ltr;
-        final int OPEN_ID = isRtl ? R.id.open_rtl : R.id.open_ltr;
-        final int TRANS_ID = isRtl ? R.id.t_rtl : R.id.t_ltr;
+        // ⚙️ RTL support — אחרי שה-View נטען לגמרי
+        drawerMotion.post(() -> {
+            boolean isRtl = ViewCompat.getLayoutDirection(root) == ViewCompat.LAYOUT_DIRECTION_RTL;
 
-        drawerMotion.setTransition(TRANS_ID);
-        drawerMotion.setState(CLOSED_ID, -1, -1);
+            final int CLOSED_ID = isRtl ? R.id.closed_rtl : R.id.closed_ltr;
+            final int OPEN_ID = isRtl ? R.id.open_rtl : R.id.open_ltr;
+            final int TRANS_ID = isRtl ? R.id.t_rtl : R.id.t_ltr;
 
-        final float drawerW = getResources().getDimension(R.dimen.drawer_width);
-        final ViewGroup.MarginLayoutParams mbLp = (ViewGroup.MarginLayoutParams) menuButton.getLayoutParams();
-        final int marginStartPx = mbLp.getMarginStart();
-        final float gapPx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, -4, getResources().getDisplayMetrics());
+            drawerMotion.setTransition(TRANS_ID);
+            drawerMotion.setState(CLOSED_ID, -1, -1);
 
-        drawerMotion.setTransitionListener(new MotionLayout.TransitionListener() {
-            @Override
-            public void onTransitionStarted(MotionLayout ml, int s, int e) {
-            }
+            // כיוון ומיקום מדויק
+            ViewCompat.setLayoutDirection(drawerMotion, ViewCompat.LAYOUT_DIRECTION_LOCALE);
+            ViewCompat.setLayoutDirection(menuButton, ViewCompat.LAYOUT_DIRECTION_LOCALE);
+            menuButton.setRotationY(isRtl ? 180f : 0f);
 
-            @Override
-            public void onTransitionChange(MotionLayout ml, int s, int e, float p) {
-                float dir = isRtl ? -1f : 1f;
-                float delta = (drawerW - marginStartPx - gapPx) * p * dir;
-                menuButton.setTranslationX(delta);
-            }
+            // הגדרה של האנימציה והכפתור לפי כיוון
+            final float drawerW = getResources().getDimension(R.dimen.drawer_width);
+            final ViewGroup.MarginLayoutParams mbLp = (ViewGroup.MarginLayoutParams) menuButton.getLayoutParams();
+            final int marginStartPx = mbLp.getMarginStart();
+            final float gapPx = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, -4, getResources().getDisplayMetrics());
 
-            @Override
-            public void onTransitionCompleted(MotionLayout ml, int id) {
-            }
+            drawerMotion.setTransitionListener(new MotionLayout.TransitionListener() {
+                private boolean drawerOpen = false;
 
-            @Override
-            public void onTransitionTrigger(MotionLayout ml, int id, boolean b, float v) {
-            }
+                @Override
+                public void onTransitionStarted(MotionLayout motionLayout, int startId, int endId) {}
+
+                @Override
+                public void onTransitionChange(MotionLayout motionLayout, int startId, int endId, float progress) {
+                    // הגדרת כיוון (RTL מזיז שמאלה, LTR ימינה)
+                    float direction = isRtl ? -1f : 1f;
+
+                    // כמה להזיז את הכפתור — נגיד עד 80dp לכל כיוון
+                    float moveRange = TypedValue.applyDimension(
+                            TypedValue.COMPLEX_UNIT_DIP,
+                            200,
+                            getResources().getDisplayMetrics()
+                    );
+
+                    // תזוזת הכפתור רק בזמן האנימציה
+                    if (!drawerOpen || progress < 1f) {
+                        menuButton.setTranslationX(progress * moveRange * direction);
+                    }
+                }
+
+                @Override
+                public void onTransitionCompleted(MotionLayout motionLayout, int currentId) {
+                    int openState = isRtl ? R.id.open_rtl : R.id.open_ltr;
+                    int closedState = isRtl ? R.id.closed_rtl : R.id.closed_ltr;
+
+                    if (currentId == openState) {
+                        // נשאיר את הכפתור במיקום הסופי של האנימציה
+                        drawerOpen = true;
+                    } else if (currentId == closedState) {
+                        // נחזיר אותו למקום רק אחרי סגירה מלאה
+                        drawerOpen = false;
+                        menuButton.animate()
+                                .translationX(0f)
+                                .setDuration(200)
+                                .start();
+                    }
+                }
+
+                @Override
+                public void onTransitionTrigger(MotionLayout motionLayout, int triggerId, boolean positive, float progress) {}
+            });
+
+            // לחיצה על הכפתור פותחת/סוגרת את המגירה
+            menuButton.setOnClickListener(v -> {
+                boolean wantOpen = drawerMotion.getCurrentState() != OPEN_ID;
+                drawerMotion.transitionToState(wantOpen ? OPEN_ID : CLOSED_ID);
+            });
+
+            // לחיצה על overlay סוגרת את המגירה
+            overlay.setOnClickListener(v -> drawerMotion.transitionToState(CLOSED_ID));
         });
 
-        // BottomSheet drag
+        // === BottomSheet ===
         bottomSheet.setOnTouchListener((v, event) -> {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
@@ -295,34 +338,25 @@ public class MainActivity extends AppCompatActivity {
             return false;
         });
 
-        // Menu button toggle
-        menuButton.setOnClickListener(v -> {
-            final boolean wantOpen = drawerMotion.getCurrentState() != OPEN_ID;
-            drawerMotion.transitionToState(wantOpen ? OPEN_ID : CLOSED_ID);
-        });
-
-        // Close drawer on overlay tap
-        overlay.setOnClickListener(v -> drawerMotion.transitionToState(CLOSED_ID));
-
-        // === Buttons in drawer ===
+        // === ניווט בתוך המגירה ===
         findViewById(R.id.communityButtonContainer).setOnClickListener(v -> {
             if (currentUser != null) {
+                Intent intent;
                 if (currentUser.isManager()) {
-                    Intent intent = new Intent(MainActivity.this, ManagerCommunityActivity.class);
-                    intent.putExtra("currentUser", currentUser);
-                    startActivity(intent);
+                    intent = new Intent(MainActivity.this, ManagerCommunityActivity.class);
                 } else {
-                    Intent intent = new Intent(MainActivity.this, CommunityActivity.class);
-                    intent.putExtra("currentUser", currentUser);
-                    startActivity(intent);
+                    intent = new Intent(MainActivity.this, CommunityActivity.class);
                 }
+                intent.putExtra("currentUser", currentUser);
+                startActivity(intent);
             }
         });
 
         findViewById(R.id.newReportButtonContainer).setOnClickListener(v -> openReportMapPicker());
 
         findViewById(R.id.myProfileButton).setOnClickListener(v -> {
-            drawerMotion.transitionToState(CLOSED_ID);
+            boolean isRtl = ViewCompat.getLayoutDirection(root) == ViewCompat.LAYOUT_DIRECTION_RTL;
+            drawerMotion.transitionToState(isRtl ? R.id.closed_rtl : R.id.closed_ltr);
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
                 Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
                 intent.putExtra("currentUser", currentUser);
@@ -331,7 +365,8 @@ public class MainActivity extends AppCompatActivity {
         });
 
         findViewById(R.id.settingsButton).setOnClickListener(v -> {
-            drawerMotion.transitionToState(CLOSED_ID);
+            boolean isRtl = ViewCompat.getLayoutDirection(root) == ViewCompat.LAYOUT_DIRECTION_RTL;
+            drawerMotion.transitionToState(isRtl ? R.id.closed_rtl : R.id.closed_ltr);
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
                 Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
                 intent.putExtra("currentUser", currentUser);
@@ -340,7 +375,8 @@ public class MainActivity extends AppCompatActivity {
         });
 
         findViewById(R.id.logoutButton).setOnClickListener(v -> {
-            drawerMotion.transitionToState(CLOSED_ID);
+            boolean isRtl = ViewCompat.getLayoutDirection(root) == ViewCompat.LAYOUT_DIRECTION_RTL;
+            drawerMotion.transitionToState(isRtl ? R.id.closed_rtl : R.id.closed_ltr);
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
                 Intent intent = new Intent(MainActivity.this, LoginActivity.class);
                 startActivity(intent);
@@ -370,6 +406,19 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         if (mapController != null) mapController.onResume();
+
+        // === שמירה על RTL גם אחרי שינוי שפה או חזרה מהמסכים האחרים ===
+        View root = findViewById(R.id.rootLayout);
+        boolean isRtl = ViewCompat.getLayoutDirection(root) == ViewCompat.LAYOUT_DIRECTION_RTL;
+
+        View drawerMotion = findViewById(R.id.drawerMotionLayout);
+        View menuButton = findViewById(R.id.imageButton);
+
+        ViewCompat.setLayoutDirection(drawerMotion, ViewCompat.LAYOUT_DIRECTION_LOCALE);
+        ViewCompat.setLayoutDirection(menuButton, ViewCompat.LAYOUT_DIRECTION_LOCALE);
+
+        // הפוך את האייקון רק אם RTL
+        menuButton.setRotationY(isRtl ? 180f : 0f);
     }
 
     @Override

@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -14,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.splashscreen.SplashScreen;
+import androidx.core.view.ViewCompat;
 
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.FirebaseAuth;
@@ -46,6 +48,13 @@ public class LauncherActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         // מסך רקע/Progress קטן כדי שלא יהיה לבן גם לפני splash API:
         setContentView(R.layout.activity_splash);
+
+        // === שמירה על כיוון RTL כבר בזמן הספלש ===
+        View decor = getWindow().getDecorView();
+        ViewCompat.setLayoutDirection(decor, ViewCompat.LAYOUT_DIRECTION_LOCALE);
+        ViewCompat.setLayoutDirection(findViewById(android.R.id.content), ViewCompat.LAYOUT_DIRECTION_LOCALE);
+        getResources().getConfiguration().setLayoutDirection(getResources().getConfiguration().getLocales().get(0));
+        getWindow().getDecorView().setLayoutDirection(View.LAYOUT_DIRECTION_LOCALE);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(
@@ -83,6 +92,15 @@ public class LauncherActivity extends AppCompatActivity {
                     }
                     checkUserProfile(refreshed.getUid());
                 });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // ודא שהכיוון לא התהפך בזמן המעבר ל־MainActivity
+        View decor = getWindow().getDecorView();
+        ViewCompat.setLayoutDirection(decor, ViewCompat.LAYOUT_DIRECTION_LOCALE);
+        getWindow().getDecorView().setLayoutDirection(View.LAYOUT_DIRECTION_LOCALE);
     }
 
     private void checkUserProfile(String userId) {
