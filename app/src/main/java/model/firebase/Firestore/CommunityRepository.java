@@ -383,10 +383,33 @@ public class CommunityRepository {
     // ✅ העברת מנהל קהילה
     public void transferManager(String communityId, String oldManagerId, String newManagerId,
                                 FirestoreCallback callback) {
+        // עדכון מנהל הקהילה החדש ב־communities
         db.collection("communities")
                 .document(communityId)
                 .update("managerId", newManagerId)
-                .addOnSuccessListener(v -> callback.onSuccess(communityId))
+                .addOnSuccessListener(v -> {
+                    // עדכון המשתמש הישן - כבר לא מנהל
+                    db.collection("users")
+                            .document(oldManagerId)
+                            .update("isManager", false)
+                            .addOnSuccessListener(aVoid -> {
+                                // עדכון המשתמש החדש - עכשיו מנהל
+                                db.collection("users")
+                                        .document(newManagerId)
+                                        .update("isManager", true)
+                                        .addOnSuccessListener(bVoid -> {
+                                            callback.onSuccess(communityId);
+                                        })
+                                        .addOnFailureListener(e -> {
+                                            Log.e("Firestore", "Failed to update new manager flag", e);
+                                            callback.onFailure(e);
+                                        });
+                            })
+                            .addOnFailureListener(e -> {
+                                Log.e("Firestore", "Failed to update old manager flag", e);
+                                callback.onFailure(e);
+                            });
+                })
                 .addOnFailureListener(callback::onFailure);
     }
 
